@@ -62,12 +62,13 @@ namespace Bot
             }
             */
 
-            //distribute workers optimally every 10 frames
+            // Distribute workers optimally every 10 frames.
             if (controller.frame % 10 == 0)
             {
                 controller.DistributeWorkers();
             }
 
+            // Setup the game minute.
             if (controller.frame % (22 * 60) == 0)
             {
                 gameMin++;
@@ -112,6 +113,7 @@ namespace Bot
                 }
 
                 // Make sure there is enough vespene to gather.
+                // Note:  Need to add code to make sure vespene is being gathered.
                 if (saveForVespene > 0)
                 {
                     var gasBuildings = controller.GetUnits(Units.GasGeysersStructures);
@@ -131,6 +133,7 @@ namespace Bot
 
             if (controller.frame > nextWaitFrame)
             {
+                // This is for a bot that randomly dose all its actions.
                 if (totalRandom)
                 {
                     var randAction = random.Next(4);
@@ -154,6 +157,7 @@ namespace Bot
                 }
                 else
                 {
+                    // Bot will try and do actions more intelligently.
                     var randAction = random.Next(100);
                     //Logger.Info("Random = {0}", randAction);
 
@@ -179,6 +183,7 @@ namespace Bot
             return controller.CloseFrame();
         }
 
+        // Try and create buildings intelligently.
         private void BuildBuildings()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -192,6 +197,7 @@ namespace Bot
                 BuildBuilding(Units.SPAWNING_POOL);
             }
 
+            // Note: Need to figure a better way to decide when to create extractors.
             if (controller.vespene < 1)
             {
                 //Logger.Info("Build EX");
@@ -222,17 +228,18 @@ namespace Bot
                 var randCrawler = random.Next(100);
                 //Logger.Info("Def = {0};   Crawler = {1}", randDef, randCrawler);
 
-                if (randCrawler < 50 && controller.GetTotalCount(Units.SPINE_CRAWLER) < SPINE_PER_RC * GetTotalRCs())
+                if (randCrawler < 50 && controller.GetTotalCount(Units.SPINE_CRAWLER) < SPINE_PER_RC * controller.GetTotalRCs())
                 {
                     BuildBuilding(Units.SPINE_CRAWLER);
                 }
-                else if (controller.GetTotalCount(Units.SPORE_CRAWLER) < SPORE_PER_RC * GetTotalRCs())
+                else if (controller.GetTotalCount(Units.SPORE_CRAWLER) < SPORE_PER_RC * controller.GetTotalRCs())
                 {
                     BuildBuilding(Units.SPORE_CRAWLER);
                 }
             }
         }
 
+        // Try and create units intelligently.
         private void BuildUnits()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -249,7 +256,7 @@ namespace Bot
             {
                 BuildOverlord();
             }
-            else if (controller.GetTotalCount(Units.DRONE) < (DRONE_PER_RC * GetTotalRCs()))
+            else if (controller.GetTotalCount(Units.DRONE) < (DRONE_PER_RC * controller.GetTotalRCs()))
             {
                 BuildUnit(Units.DRONE);
             }
@@ -267,6 +274,7 @@ namespace Bot
             }
         }
 
+        // Try and preform actions intelligently.
         private void UnitActions()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
@@ -293,8 +301,11 @@ namespace Bot
             }
         }
 
-        // -----------------------------------------------BUILDINGS---------------------------------------------
+        /**********
+         * BUILDINGS
+         **********/
 
+        // Basic code to create a building.
         private void BuildBuilding(uint unitType, bool saveFor = true)
         {
             //Logger.Info("Trying to build {0}.", ControllerDefault.GetUnitName(unitType));
@@ -313,6 +324,7 @@ namespace Bot
             }
         }
 
+        // Build an extractor.
         private void BuildExtractor(bool saveFor = true)
         {
             if (controller.CanConstruct(Units.EXTRACTOR))
@@ -325,6 +337,7 @@ namespace Bot
             }
         }
 
+        // Upgrade a hatchery to a lair.
         private void UpgradeToLair(bool saveFor = true)
         {
             var hatcheries = controller.GetUnits(Units.HATCHERY, onlyCompleted: true);
@@ -352,6 +365,7 @@ namespace Bot
             }
         }
 
+        // Upgrade a lair to a hive.
         private void UpgradeToHive(bool saveFor = true)
         {
             var lairs = controller.GetUnits(Units.LAIR, onlyCompleted: true);
@@ -380,7 +394,11 @@ namespace Bot
 
         }
 
-        // -----------------------------------------------UNITS---------------------------------------------
+        /**********
+         * UNITS
+         **********/
+        
+        // Basic code to build a unit that requires a larva.
         private void BuildUnit(uint unitType, bool saveFor = true)
         {
             if (controller.CanConstruct(unitType))
@@ -401,6 +419,8 @@ namespace Bot
 
         }
 
+        // Code to build an overlord.
+        // Since you can not have more then 200 supply do not create more overlords at that point.
         private void BuildOverlord(bool saveFor = true)
         {
             if (controller.maxSupply < 200)
@@ -409,6 +429,7 @@ namespace Bot
             }
         }
 
+        // Create a queen.
         private void BirthQueen(bool saveFor = true)
         {
             if (controller.CanConstruct(Units.QUEEN))
@@ -430,7 +451,11 @@ namespace Bot
             }
         }
 
-        // -----------------------------------------------ACTIONS---------------------------------------------
+        /**********
+         * ACTIONS
+         **********/
+        
+        // If there are idle units in the army send them to attack the enemy base at its starting location.
         private void AttackEnemyBase()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
@@ -446,6 +471,7 @@ namespace Bot
             }
         }
 
+        // If there are known enemy structures send any idle units to attack it.
         private void AttackEnemyStructure()
         {
             var enemyStructures = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, onlyVisible: true);
@@ -460,6 +486,8 @@ namespace Bot
             }
         }
 
+        // Recall idle units back to a resouce center.
+        // Note: Maybe I should change it to be the closest resource center.
         private void RecallIdleUnits()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
@@ -470,14 +498,11 @@ namespace Bot
             }
         }
 
-        // -----------------------------------------------UTILITIES---------------------------------------------
+        /**********
+         * UTILITIES
+         **********/
 
-        private int GetTotalRCs()
-        {
-            var resourceCenters = controller.GetUnits(Units.ResourceCenters, onlyCompleted: true);
-            return resourceCenters.Count;
-        }
-
+        // Save resources for the passed unit type.
         private void SaveResourcesFor(uint unitType)
         {
             var rollToSaveFor = random.Next(100);
@@ -505,6 +530,8 @@ namespace Bot
             }
         }
 
+        // Set the resouces that need to be saved to for a unit type.
+        // Not sending in any data to the method will reset it to not saving for a unit.
         private void SetSaveResouces(uint unitType = 0, int minerals = 0, int vespene = 0)
         {
             if (unitType != 0)
@@ -516,6 +543,7 @@ namespace Bot
             saveForVespene = vespene;
         }
 
+        //  Create a unit that resouces were saved for.
         private void CreateSavedForUnit()
         {
 
@@ -553,8 +581,11 @@ namespace Bot
             SetSaveResouces();
         }
 
-        // -----------------------------------------------Total Random Functions---------------------------------------------
+        /**********
+         * Total Random Functions
+         **********/
 
+        // Randomly build bulding.
         private void BuildBuildingsRandom()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -620,6 +651,7 @@ namespace Bot
             }
         }
 
+        // Randomly build units.
         private void BuildUnitsRandom()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -670,6 +702,7 @@ namespace Bot
             }
         }
 
+        // Randomly preform actions.
         private void UnitActionsRandom()
         {
             var randAction = random.Next(3);
@@ -691,7 +724,5 @@ namespace Bot
                     break;
             }
         }
-
-
     }
 }

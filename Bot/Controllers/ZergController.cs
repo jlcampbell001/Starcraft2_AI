@@ -10,6 +10,7 @@ namespace Bot
 {
     class ZergController : ControllerDefault
     {
+        // Check and see if we can afford to make the passed structure or unit and return the costs be reference.
         override
         public bool CanAfford(uint unitType, ref int unitMinerals, ref int unitVespene)
         {
@@ -45,17 +46,19 @@ namespace Bot
             return (minerals >= unitMinerals) && (vespene >= unitVespene);
         }
 
+        // Check and see if we can construct a structure or unit.
+        // Can tell this function to only check if we have the ability to construct the unit and not check the resouces or supply.
         public bool CanConstruct(uint unitType, bool ignoreResourceSupply = false)
         {
             // Check if we have the structures to build the unit.
-            //do we spawning pools for the unit? 
+            // Do we spawning pools for the unit? 
             if (Units.NeedSpawningPool.Contains(unitType))
             {
                 var spawningPools = GetUnits(Units.SPAWNING_POOL, onlyCompleted: true);
                 if (spawningPools.Count == 0) return false;
             }
 
-            //do we lairs or hives for the unit? 
+            // Do we lairs or hives for the unit? 
             if (Units.NeedLairOrHive.Contains(unitType))
             {
                 var lairs = GetUnits(Units.LAIR, onlyCompleted: true);
@@ -63,35 +66,35 @@ namespace Bot
                 if (lairs.Count == 0 && hives.Count == 0) return false;
             }
 
-            //do we lairs only for the unit? 
+            // Do we lairs only for the unit? 
             if (Units.NeedLair.Contains(unitType))
             {
                 var lairs = GetUnits(Units.LAIR, onlyCompleted: true);
                 if (lairs.Count == 0) return false;
             }
 
-            //do we hive only for the unit? 
+            // Do we hive only for the unit? 
             if (Units.NeedHive.Contains(unitType))
             {
                 var hives = GetUnits(Units.HIVE, onlyCompleted: true);
                 if (hives.Count == 0) return false;
             }
 
-            //do we hydralisk dens for the unit? 
+            // Do we hydralisk dens for the unit? 
             if (Units.NeedHydraliskDen.Contains(unitType))
             {
                 var hydraliskDens = GetUnits(Units.HYDRALISK_DEN, onlyCompleted: true);
                 if (hydraliskDens.Count == 0) return false;
             }
 
-            //do we roach warren for the unit? 
+            // Do we roach warren for the unit? 
             if (Units.NeedRoachWarren.Contains(unitType))
             {
                 var roachWarrens = GetUnits(Units.ROACH_WARREN, onlyCompleted: true);
                 if (roachWarrens.Count == 0) return false;
             }
 
-            //do we a spire or greater spire for the unit? 
+            // Do we a spire or greater spire for the unit? 
             if (Units.NeedSpireOrGreaterSpire.Contains(unitType))
             {
                 var spires = GetUnits(Units.SPIRE, onlyCompleted: true);
@@ -99,29 +102,30 @@ namespace Bot
                 if (spires.Count == 0 && greaterSpires.Count == 0) return false;
             }
 
-            //do we an infestation pit for the unit? 
+            // Do we an infestation pit for the unit? 
             if (Units.NeedInfestationPit.Contains(unitType))
             {
                 var infestationPits = GetUnits(Units.INFESTATION_PIT, onlyCompleted: true);
                 if (infestationPits.Count == 0) return false;
             }
 
-            //do we a luker den for the unit? 
+            // Do we a luker den for the unit? 
             if (Units.NeedLurkerDen.Contains(unitType))
             {
                 var lurkerDens = GetUnits(Units.LURKER_DEN, onlyCompleted: true);
                 if (lurkerDens.Count == 0) return false;
             }
 
-            //do we an ultralisk cavern for the unit? 
+            // Do we an ultralisk cavern for the unit? 
             if (Units.NeedUltraliskCavern.Contains(unitType))
             {
                 var ultraliskCaverns = GetUnits(Units.ULTRALISK_CAVERN, onlyCompleted: true);
                 if (ultraliskCaverns.Count == 0) return false;
             }
 
-            //is it a structure?
+
             if (Units.Structures.Contains(unitType))
+            // Preform these checks if it is a structure.
             {
                 if (!ignoreResourceSupply)
                 {
@@ -133,20 +137,21 @@ namespace Bot
                 var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
                 if (resourceCenters.Count == 0) return false;
             }
-
-            //it's an actual unit
             else
+            // Preform these check if it is a unit.
             {
                 if (!ignoreResourceSupply)
                 {
-                    //do we have enough supply?
+                    // Do we have enough supply?
                     var requiredSupply = gameData.Units[(int)unitType].FoodRequired;
                     if (requiredSupply > (maxSupply - currentSupply))
                         return false;
                 }
             }
+
             var ret = true;
 
+            // Check and see if we can aford to make the unit.
             if (!ignoreResourceSupply)
             {
                 ret = CanAfford(unitType);
@@ -154,7 +159,6 @@ namespace Bot
 
             return ret;
         }
-
     }
 }
 

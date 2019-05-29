@@ -2,6 +2,8 @@
 
 namespace Bot {
     internal static class Units {
+        // You can get all these values from the stableid.json file (just search for it on your PC).
+
         public static uint COLOSSUS = 4;
         public static uint TECHLAB = 5;
         public static uint REACTOR = 6;

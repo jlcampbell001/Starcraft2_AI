@@ -374,6 +374,13 @@ namespace Bot
             return counter;
         }
 
+        // Get the total resource centers.
+        public int GetTotalRCs()
+        {
+            var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
+            return resourceCenters.Count;
+        }
+
         /**********
          * Actions
          **********/

@@ -4,7 +4,7 @@ namespace Bot
 {
     internal static class Abilities
     {
-        //you can get all these values from the stableid.json file (just search for it on your PC)
+        // You can get all these values from the stableid.json file (just search for it on your PC).
 
         public static int RESEARCH_BANSHEE_CLOAK = 790;
         public static int RESEARCH_INFERNAL_PREIGNITER = 761;
@@ -86,6 +86,7 @@ namespace Bot
         };
 
 
+        // Get the id of a unit.
         public static int GetID(uint unit)
         {
             return (int)ControllerDefault.gameData.Units[(int)unit].AbilityId;
