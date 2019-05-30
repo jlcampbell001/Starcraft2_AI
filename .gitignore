@@ -53,3 +53,7 @@ dkms.conf
 
 *\bin*
 *\obj*
+*.vs*
+*.suo
+.vs/Bot/v14/.suo
+.vs/Bot/v14/.suo

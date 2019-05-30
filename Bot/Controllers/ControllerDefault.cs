@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Numerics;
-using System.Security.Cryptography;
-using System.Threading;
+﻿using Bot.Utilities;
 using SC2APIProtocol;
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Threading;
 using Action = SC2APIProtocol.Action;
 
 namespace Bot
@@ -15,6 +14,7 @@ namespace Bot
 
         private const int MIN_WORKERS_MINING_PER_ACTIVE_GAS_BUILDING = 2;
         private const int BUILD_RANGE_RADIUS = 12;
+        private const int PLACEMENT_TRIES = 1000;
 
         private readonly static List<Action> actions = new List<Action>();
         private readonly Random random = new Random();
@@ -28,6 +28,7 @@ namespace Bot
         public uint maxSupply;
         public uint minerals;
         public uint vespene;
+        public Vector3 playerStartLocation;
 
         public List<Vector3> enemyLocations = new List<Vector3>();
         public List<string> chatLog = new List<string>();
@@ -81,12 +82,12 @@ namespace Bot
                 var resourceCenters = GetUnits(Units.ResourceCenters);
                 if (resourceCenters.Count > 0)
                 {
-                    var rcPosition = resourceCenters[0].position;
+                    playerStartLocation = resourceCenters[0].position;
 
                     foreach (var startLocation in gameInfo.StartRaw.StartLocations)
                     {
                         var enemyLocation = new Vector3(startLocation.X, startLocation.Y, 0);
-                        var distance = Vector3.Distance(enemyLocation, rcPosition);
+                        var distance = Vector3.Distance(enemyLocation, playerStartLocation);
                         if (distance > 30)
                             enemyLocations.Add(enemyLocation);
                     }
@@ -104,7 +105,18 @@ namespace Bot
         // Get the unit name for the passed unit type.
         public static string GetUnitName(uint unitType)
         {
-            return gameData.Units[(int)unitType].Name;
+            var unitName = "";
+
+            if (unitType == Units.EXPANSION_BASE)
+            {
+                unitName = "Base Expansion";
+            }
+            else
+            {
+                unitName = gameData.Units[(int)unitType].Name;
+            }
+
+            return unitName;
         }
 
         // Get a list of units based on a list of unit types.
@@ -206,7 +218,7 @@ namespace Bot
             return targetingUnits;
         }
 
-        // Get all the units that are gathring from the target tag from a passed unit list.
+        // Get all the units that are gathering from the target tag from a passed unit list.
         public List<Unit> GetUnitsGatheringTag(List<Unit> units, ulong tag)
         {
             var targetingUnits = new List<Unit>();
@@ -401,7 +413,7 @@ namespace Bot
             actions.Add(action);
         }
 
-        // Distriubte the workers as needed.
+        // Distribute the workers as needed.
         public void DistributeWorkers()
         {
             var resourceRange = 12;
@@ -459,9 +471,9 @@ namespace Bot
             {
                 // Assign workers to gather gas.
 
-                // Check to see if there are any gas geysers structures not full of workers that still have gas (see declaring gas builing list).
+                // Check to see if there are any gas geysers structures not full of workers that still have gas (see declaring gas building list).
                 // This will set the max workers gather gas based on how many should be mining.
-                // I.E.: If the min is set at 2 (defualt) and there are 2 gas buildings and there are 16 workers the answer should be 2 workers to assign to each gas building.
+                // I.E.: If the min is set at 2 (default) and there are 2 gas buildings and there are 16 workers the answer should be 2 workers to assign to each gas building.
                 if (gasBuildings.Count > 0)
                 {
                     var workersPerGB = 0;
@@ -502,7 +514,7 @@ namespace Bot
                             //Logger.Info("AW.Count = {0};  GB.AW = {1}", assignedWorkers.Count, gasBuilding.assignedWorkers);
                             if (assignedWorkers.Count > 0)
                             {
-                                // Remove all the workers it can find.  If is lowers it to below neede the next step will fill it back up.
+                                // Remove all the workers it can find.  If is lowers it to below needed the next step will fill it back up.
                                 // Need to do this because workers could be targeting the hatchery instead at the moment so we do not get the true count.
                                 foreach (var worker in assignedWorkers)
                                 {
@@ -525,22 +537,29 @@ namespace Bot
             }
         }
 
-        // Construct a structure based on a loction not a target.
-        public void Construct(uint unitType)
+        // Construct a structure based on a location not a target.
+        // It is possible to pass the starting position.
+        public void Construct(uint unitType, Vector3 startingLocation, int buildRangeRadius = BUILD_RANGE_RADIUS)
         {
             Vector3 startingSpot;
 
-            // Use the first resouce centers as a starting point.
-            // Note: Need to re-work this to handle multiple resouce centers and to get a starting point if there are no resource centers.
-            var resourceCenters = GetUnits(Units.ResourceCenters);
-            if (resourceCenters.Count > 0)
-                startingSpot = resourceCenters[0].position;
+            if (startingLocation != Vector3.Zero)
+            {
+                startingSpot = startingLocation;
+            }
             else
             {
-                Logger.Error("Unable to construct: {0}. No resource center was found.", GetUnitName(unitType));
-                return;
+                // Use the first resource centers as a starting point.
+                // Note: Need to re-work this to handle multiple resource centers and to get a starting point if there are no resource centers.
+                var resourceCenters = GetUnits(Units.ResourceCenters);
+                if (resourceCenters.Count > 0)
+                    startingSpot = resourceCenters[0].position;
+                else
+                {
+                    Logger.Error("Unable to construct: {0}. No resource center was found.", GetUnitName(unitType));
+                    return;
+                }
             }
-
             // Trying to find a valid construction spot
             var mineralFields = GetUnits(Units.MineralFields, onlyVisible: true, alliance: Alliance.Neutral);
             Vector3 constructionSpot;
@@ -550,15 +569,15 @@ namespace Bot
             {
                 i++;
 
-                if (i == 1000)
+                if (i == PLACEMENT_TRIES)
                 {
                     // There might be something wrong or there is no place left to place the structure.
-                    Logger.Error("After 1000 trys we could not find a spot to place {0}.", GetUnitName(unitType));
+                    Logger.Error("After {0} tries we could not find a spot to place {1}.", PLACEMENT_TRIES, GetUnitName(unitType));
                     return;
                 }
 
-                constructionSpot = new Vector3(startingSpot.X + random.Next(-BUILD_RANGE_RADIUS, BUILD_RANGE_RADIUS + 1), 
-                    startingSpot.Y + random.Next(-BUILD_RANGE_RADIUS, BUILD_RANGE_RADIUS + 1), 0);
+                constructionSpot = new Vector3(startingSpot.X + random.Next(-buildRangeRadius, buildRangeRadius + 1),
+                    startingSpot.Y + random.Next(-buildRangeRadius, buildRangeRadius + 1), 0);
 
                 // Avoid building in the mineral line.
                 // Note:  Need to re-work this as it still happens and I need it for gas structures.
@@ -567,7 +586,7 @@ namespace Bot
                 // Check if the building fits.
                 if (!CanPlace(unitType, constructionSpot)) continue;
 
-                // Ok, we found a spot.
+                // OK, we found a spot.
                 break;
             }
 
@@ -593,8 +612,13 @@ namespace Bot
             Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(unitType), constructionSpot.X, constructionSpot.Y);
         }
 
+        public void Construct(uint unitType)
+        {
+            Construct(unitType, Vector3.Zero);
+        }
+
         // Construct a structure on a gas geyser.
-        // This is needed because to can not use the gas geyser loction but need to target the gas geyser to build on it.
+        // This is needed because to can not use the gas geyser location but need to target the gas geyser to build on it.
         // Note: This is similar to construct so see its notes for possible changes.
         public void ConstructOnGasGeyser(uint unitType)
         {
@@ -611,7 +635,7 @@ namespace Bot
             var gasGeysers = GetUnits(Units.GasGeysersAvail, onlyVisible: true, alliance: Alliance.Neutral);
             foreach (var gasGeyser in gasGeysers)
             {
-                //Logger.Info("Gas Geyser Pos = {0}", gasGeyser.position);
+                //Logger.Info("Gas Geyser Position = {0}", gasGeyser.position);
 
                 // Must have vespene.
                 if (gasGeyser.vespene < 1)
@@ -660,7 +684,39 @@ namespace Bot
             return;
         }
 
-        // Tell the passed units to attack at target loction.
+        // Build an expansion at the next available mineral field.
+        // Pass in the recourse center to build.
+        public void BuildExpansion(uint unitType)
+        {
+            // Get all the mineral fields and there distance from the player start location.
+            var mineralFields = GetUnits(Units.MineralFields, alliance: Alliance.Neutral);
+
+            var fromStartLocation = new UnitsDistanceFromList(playerStartLocation);
+
+            fromStartLocation.AddUnits(mineralFields);
+
+            //Logger.Info("Array = {0}.", fromStartLocation);
+
+            var resouceCenters = GetUnits(Units.ResourceCenters);
+
+            // Find a mineral field that is not within sight of the basic resource center.
+            var basicResouceSight = gameData.Units[(int)unitType].SightRange;
+            //var basicResouceSight = BUILD_RANGE_RADIUS;
+
+            foreach (var mineralField in fromStartLocation.toUnits)
+            {
+                var resouceCenter = GetFirstInRange(mineralField.unit.position, resouceCenters, basicResouceSight);
+
+                if (resouceCenter != null) continue;
+
+
+                Construct(unitType, mineralField.unit.position, (int)(basicResouceSight * 0.75));
+
+                break;
+            }
+        }
+
+        // Tell the passed units to attack at target location.
         public void Attack(List<Unit> units, Vector3 target)
         {
             var action = CreateRawUnitCommand(Abilities.ATTACK);
@@ -673,7 +729,7 @@ namespace Bot
         }
 
         /***********
-         * Utilites
+         * Utilities
          ***********/
 
         // Pause the game.

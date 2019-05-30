@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Bot.Utilities;
 using SC2APIProtocol;
+using System.Collections.Generic;
 
 namespace Bot
 {
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = true;
+        private readonly bool totalRandom = false;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -37,6 +38,8 @@ namespace Bot
         private uint saveForUnitType = 0;
         private int saveForMinerals = 0;
         private int saveForVespene = 0;
+
+        private int expandBaseMinute = 0;
 
         private ZergController controller = new ZergController();
 
@@ -221,6 +224,11 @@ namespace Bot
                 BuildBuilding(Units.SPIRE);
             }
 
+            if (gameMin > 1 && gameMin > expandBaseMinute)
+            {
+                BuildExpansionBase();
+            }
+
             var randDef = random.Next(100);
 
             if (randDef < CHANCE_BUILD_DEF_BUILDING)
@@ -249,7 +257,7 @@ namespace Bot
 
             var totalZergling = controller.GetTotalCount(Units.ZERGLING);
 
-            // So no divide by 0 and this sould make them make a zergling.
+            // So no divide by 0 and this should make them make a lingering.
             //if (totalZergling == 0) totalZergling = 1;
 
             if (controller.maxSupply - controller.currentSupply <= BUILD_OVERLORD_RANGE)
@@ -394,10 +402,27 @@ namespace Bot
 
         }
 
+       
+        private void BuildExpansionBase(bool saveFor = true)
+        {
+            if (controller.CanConstruct(Units.HATCHERY))
+            {
+                controller.BuildExpansion();
+                expandBaseMinute = gameMin;
+            }
+            else
+            {
+                if (saveFor)
+                {
+                    SaveResourcesFor(Units.EXPANSION_BASE);
+                }
+            }
+        }
+
         /**********
          * UNITS
          **********/
-        
+
         // Basic code to build a unit that requires a larva.
         private void BuildUnit(uint unitType, bool saveFor = true)
         {
@@ -438,7 +463,7 @@ namespace Bot
                 foreach (var resourceCenter in resourceCenters)
                 {
                     if (resourceCenter.order.AbilityId != 0) continue;
-                    
+
                     resourceCenter.Train(Units.QUEEN);
                 }
             }
@@ -454,7 +479,7 @@ namespace Bot
         /**********
          * ACTIONS
          **********/
-        
+
         // If there are idle units in the army send them to attack the enemy base at its starting location.
         private void AttackEnemyBase()
         {
@@ -486,7 +511,7 @@ namespace Bot
             }
         }
 
-        // Recall idle units back to a resouce center.
+        // Recall idle units back to a resource center.
         // Note: Maybe I should change it to be the closest resource center.
         private void RecallIdleUnits()
         {
@@ -508,42 +533,52 @@ namespace Bot
             var rollToSaveFor = random.Next(100);
             var showNotFoundMessage = false;
 
+            var saveUnitType = unitType;
+
+            // In expanding the base we are really saving resources for the hatchery.
+            if (unitType == Units.EXPANSION_BASE)
+            {
+                saveUnitType = Units.HATCHERY;
+            }
+
             // If there is no structure save to make one.
-            if (Units.Structures.Contains(unitType) && controller.GetTotalCount(unitType, inConstruction: true) == 0 && controller.GetTotalCount(Units.DRONE) > DRONE_MIN_TO_AUTO_SAVE_RESOUCES)
+            if (Units.Structures.Contains(saveUnitType) && controller.GetTotalCount(saveUnitType, inConstruction: true) == 0 && controller.GetTotalCount(Units.DRONE) > DRONE_MIN_TO_AUTO_SAVE_RESOUCES)
             {
                 rollToSaveFor = 0;
                 showNotFoundMessage = true;
             }
 
-            if (rollToSaveFor <= CHANCE_TO_SAVE_RESOURCES && controller.CanConstruct(unitType, ignoreResourceSupply: true))
+            if (rollToSaveFor <= CHANCE_TO_SAVE_RESOURCES && controller.CanConstruct(saveUnitType, ignoreResourceSupply: true))
             {
                 if (showNotFoundMessage)
                 {
-                    Logger.Info("Could not find a {0}, save resouces for it.", ControllerDefault.GetUnitName(unitType));
+                    Logger.Info("Could not find a {0}, save resources for it.", ControllerDefault.GetUnitName(saveUnitType));
                 }
 
                 var mineralCost = 0;
                 var vespeneCost = 0;
-                controller.CanAfford(unitType, ref mineralCost, ref vespeneCost);
+                controller.CanAfford(saveUnitType, ref mineralCost, ref vespeneCost);
 
                 SetSaveResouces(unitType, mineralCost, vespeneCost);
             }
         }
 
-        // Set the resouces that need to be saved to for a unit type.
+        // Set the resources that need to be saved to for a unit type.
         // Not sending in any data to the method will reset it to not saving for a unit.
         private void SetSaveResouces(uint unitType = 0, int minerals = 0, int vespene = 0)
         {
             if (unitType != 0)
             {
-                Logger.Info("Save resources for {0}:  minerals = {1}  vespene = {2}", ControllerDefault.GetUnitName(unitType), minerals, vespene);
+                var unitName = ControllerDefault.GetUnitName(unitType);
+                Logger.Info("Save resources for {0}:  minerals = {1}  vespene = {2}", unitName, minerals, vespene);
             }
+
             saveForUnitType = unitType;
             saveForMinerals = minerals;
             saveForVespene = vespene;
         }
 
-        //  Create a unit that resouces were saved for.
+        //  Create a unit that resources were saved for.
         private void CreateSavedForUnit()
         {
 
@@ -567,6 +602,10 @@ namespace Bot
             {
                 UpgradeToHive(saveFor: false);
             }
+            else if (saveForUnitType == Units.EXPANSION_BASE)
+            {
+                BuildExpansionBase(saveFor: false);
+            }
             else if (Units.Structures.Contains(saveForUnitType))
             {
                 // Build structure.
@@ -585,7 +624,7 @@ namespace Bot
          * Total Random Functions
          **********/
 
-        // Randomly build bulding.
+        // Randomly build building.
         private void BuildBuildingsRandom()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -593,7 +632,7 @@ namespace Bot
                 return;
             }
 
-            var randBuilding = random.Next(16);
+            var randBuilding = random.Next(17);
 
             switch (randBuilding)
             {
@@ -647,6 +686,9 @@ namespace Bot
                     break;
                 case 15:
                     BuildBuilding(Units.ULTRALISK_CAVERN);
+                    break;
+                case 16:
+                    BuildExpansionBase();
                     break;
             }
         }

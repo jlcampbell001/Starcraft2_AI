@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Bot {
-    internal static class Units {
-        // You can get all these values from the stableid.json file (just search for it on your PC).
+namespace Bot
+{
+    internal static class Units
+    {
+        public static uint EXPANSION_BASE = 90000000;
 
+        // You can get all these values from the stableid.json file (just search for it on your PC).
         public static uint COLOSSUS = 4;
         public static uint TECHLAB = 5;
         public static uint REACTOR = 6;
@@ -820,7 +823,7 @@ namespace Bot {
             STARPORT_TECHLAB,
             STARPORT_REACTOR
         };
-        
+
         public static readonly HashSet<uint> SupplyDepots = new HashSet<uint> {
             SUPPLY_DEPOT,
             SUPPLY_DEPOT_LOWERED

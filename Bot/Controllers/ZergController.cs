@@ -1,12 +1,4 @@
-﻿using SC2APIProtocol;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Bot
+﻿namespace Bot
 {
     class ZergController : ControllerDefault
     {
@@ -23,7 +15,7 @@ namespace Bot
             {
                 var droneData = gameData.Units[(int)Units.DRONE];
                 unitMinerals = unitMinerals - (int)droneData.MineralCost;
-                //Logger.Info("Name = {0};  minerals = {1}; vespen = {2}", unitData.Name, unitMinerals, unitVespene);
+                //Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
             // For some reason the mineral cost for lair includes the hatchery cost but this is already paid for so we need to take it out.
@@ -31,7 +23,7 @@ namespace Bot
             {
                 var hatcheryData = gameData.Units[(int)Units.HATCHERY];
                 unitMinerals = unitMinerals - (int)hatcheryData.MineralCost;
-                // Logger.Info("Name = {0};  minerals = {1}; vespen = {2}", unitData.Name, unitMinerals, unitVespene);
+                // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
             // For some reason the mineral cost for hive includes the lair cost but this is already paid for so we need to take it out.
@@ -39,15 +31,15 @@ namespace Bot
             {
                 var lairData = gameData.Units[(int)Units.LAIR];
                 unitMinerals = unitMinerals - (int)lairData.MineralCost;
-                // Logger.Info("Name = {0};  minerals = {1}; vespen = {2}", unitData.Name, unitMinerals, unitVespene);
+                // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
-            //Logger.Info("Name = {0};  minerals = {1}; vespen = {2}", unitData.Name, unitMinerals, unitVespene);
+            //Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             return (minerals >= unitMinerals) && (vespene >= unitVespene);
         }
 
         // Check and see if we can construct a structure or unit.
-        // Can tell this function to only check if we have the ability to construct the unit and not check the resouces or supply.
+        // Can tell this function to only check if we have the ability to construct the unit and not check the resources or supply.
         public bool CanConstruct(uint unitType, bool ignoreResourceSupply = false)
         {
             // Check if we have the structures to build the unit.
@@ -109,7 +101,7 @@ namespace Bot
                 if (infestationPits.Count == 0) return false;
             }
 
-            // Do we a luker den for the unit? 
+            // Do we a lurker den for the unit? 
             if (Units.NeedLurkerDen.Contains(unitType))
             {
                 var lurkerDens = GetUnits(Units.LURKER_DEN, onlyCompleted: true);
@@ -151,13 +143,18 @@ namespace Bot
 
             var ret = true;
 
-            // Check and see if we can aford to make the unit.
+            // Check and see if we can afford to make the unit.
             if (!ignoreResourceSupply)
             {
                 ret = CanAfford(unitType);
             }
 
             return ret;
+        }
+
+        public void BuildExpansion()
+        {
+            BuildExpansion(Units.HATCHERY);
         }
     }
 }

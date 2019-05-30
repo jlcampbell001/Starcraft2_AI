@@ -1,10 +1,8 @@
-﻿using System;
+﻿using SC2APIProtocol;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Numerics;
-using System.Security.Cryptography;
 using System.Threading;
-using SC2APIProtocol;
 using Action = SC2APIProtocol.Action;
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -444,7 +442,7 @@ namespace Bot
                     if (!CanPlace(unitType, constructionSpot)) continue;
                 }
 
-                //ok, we found a spot
+                //OK, we found a spot
                 break;
             }
 
