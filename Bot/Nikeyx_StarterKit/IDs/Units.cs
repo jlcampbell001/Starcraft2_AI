@@ -718,6 +718,27 @@ namespace Bot
             REFINERY
         };
 
+        public static readonly HashSet<uint> resources = new HashSet<uint> {
+            RICH_MINERAL_FIELD,
+            RICH_MINERAL_FIELD_750,
+            MINERAL_FIELD,
+            MINERAL_FIELD_750,
+            LAB_MINERAL_FIELD,
+            LAB_MINERAL_FIELD_750,
+            PURIFIER_RICH_MINERAL_FIELD,
+            PURIFIER_RICH_MINERAL_FIELD_750,
+            PURIFIER_MINERAL_FIELD,
+            PURIFIER_MINERAL_FIELD_750,
+            BATTLE_STATION_MINERAL_FIELD,
+            BATTLE_STATION_MINERAL_FIELD_750,
+            VESPENE_GEYSER,
+            SPACE_PLATFORM_GEYSER,
+            RICH_VESPENE_GEYSER,
+            PROTOSS_VESPENE_GEYSER,
+            PURIFIER_VESPENE_GEYSER,
+            SHAKURAS_VESPENE_GEYSER
+        };
+
         public static readonly HashSet<uint> GasGeysersAvail = new HashSet<uint> {
             VESPENE_GEYSER,
             SPACE_PLATFORM_GEYSER,

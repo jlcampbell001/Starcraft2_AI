@@ -16,7 +16,8 @@ namespace Bot
 
         private const int BUILD_OVERLORD_RANGE = 2;
         private const int DRONE_PER_RC = 19;
-        private const int DRONE_MIN_TO_AUTO_SAVE_RESOUCES = 10;
+        private const int DRONE_MIN = 10;
+        private const int DRONE_MAX = 100;
 
         private const int CHANCE_BUILD_DEF_BUILDING = 10;
         private const int SPINE_PER_RC = 10;
@@ -53,6 +54,7 @@ namespace Bot
                 Logger.Info("--------------------------------------");
                 Logger.Info("Map: {0}", ZergController.gameInfo.MapName);
                 Logger.Info("--------------------------------------");
+                
             }
 
             /*
@@ -256,15 +258,13 @@ namespace Bot
             }
 
             var totalZergling = controller.GetTotalCount(Units.ZERGLING);
-
-            // So no divide by 0 and this should make them make a lingering.
-            //if (totalZergling == 0) totalZergling = 1;
+            var totalWorkers = controller.GetTotalCount(Units.Workers);
 
             if (controller.maxSupply - controller.currentSupply <= BUILD_OVERLORD_RANGE)
             {
                 BuildOverlord();
             }
-            else if (controller.GetTotalCount(Units.DRONE) < (DRONE_PER_RC * controller.GetTotalRCs()))
+            else if (totalWorkers < DRONE_MAX  && totalWorkers < (DRONE_PER_RC * controller.GetTotalRCs()))
             {
                 BuildUnit(Units.DRONE);
             }
@@ -316,6 +316,12 @@ namespace Bot
         // Basic code to create a building.
         private void BuildBuilding(uint unitType, bool saveFor = true)
         {
+            // Do not construct buildings if there are less then a certain amount of drones.
+            if (controller.GetUnits(Units.Workers).Count <= DRONE_MIN)
+            {
+                return;
+            }
+
             //Logger.Info("Trying to build {0}.", ControllerDefault.GetUnitName(unitType));
 
             if (controller.CanConstruct(unitType))
@@ -542,7 +548,7 @@ namespace Bot
             }
 
             // If there is no structure save to make one.
-            if (Units.Structures.Contains(saveUnitType) && controller.GetTotalCount(saveUnitType, inConstruction: true) == 0 && controller.GetTotalCount(Units.DRONE) > DRONE_MIN_TO_AUTO_SAVE_RESOUCES)
+            if (Units.Structures.Contains(saveUnitType) && controller.GetTotalCount(saveUnitType, inConstruction: true) == 0 && controller.GetTotalCount(Units.DRONE) > DRONE_MIN)
             {
                 rollToSaveFor = 0;
                 showNotFoundMessage = true;

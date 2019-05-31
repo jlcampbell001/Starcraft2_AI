@@ -224,6 +224,7 @@ namespace Bot
             dataReq.Data.BuffId = true;
             dataReq.Data.EffectId = true;
             dataReq.Data.UpgradeId = true;
+            
 
             var dataResponse = await proxy.SendRequest(dataReq);
 

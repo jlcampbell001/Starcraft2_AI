@@ -71,8 +71,11 @@
     <Compile Include="Nikeyx_StarterKit\IDs\Units.cs" />
     <Compile Include="Nikeyx_StarterKit\RaxBot.cs" />
     <Compile Include="Controllers\ZergController.cs" />
+    <Compile Include="Utilities\LocationDistance.cs" />
+    <Compile Include="Utilities\ResourceCluster.cs" />
     <Compile Include="Utilities\UnitDistance.cs" />
     <Compile Include="Utilities\UnitsDistanceFromList.cs" />
+    <Compile Include="Utilities\LocationsDistanceFromList.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Notes\ZergUnitCosts.txt" />

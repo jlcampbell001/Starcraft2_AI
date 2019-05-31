@@ -32,6 +32,7 @@ namespace Bot
 
         public List<Vector3> enemyLocations = new List<Vector3>();
         public List<string> chatLog = new List<string>();
+        public LocationsDistanceFromList expansionPositions;
 
         /**********
          * Frames
@@ -48,7 +49,6 @@ namespace Bot
         {
             return actions;
         }
-
 
         // Open the frame.
         public void OpenFrame()
@@ -91,11 +91,219 @@ namespace Bot
                         if (distance > 30)
                             enemyLocations.Add(enemyLocation);
                     }
+
+                    SetExpansionPositions();
                 }
             }
 
             if (frameDelay > 0)
                 Thread.Sleep(frameDelay);
+        }
+
+        // Figure out the best place for base expansion points.
+        // Note: This is really a rework of pysc2 version.
+        //       Need to deal with geysers.
+        private void SetExpansionPositions()
+        {
+            Logger.Info("Setting up expansion points...Please wait.");
+
+            uint baseResourceCenter = 0;
+
+            // Figure out the bot race's base resource center for later.
+            var botRace = getBotRace();
+
+            if (botRace == Race.Terran)
+            {
+                baseResourceCenter = Units.COMMAND_CENTER;
+            }
+            else if (botRace == Race.Protoss)
+            {
+                baseResourceCenter = Units.NEXUS;
+            }
+            else
+            {
+                baseResourceCenter = Units.HATCHERY;
+            }
+
+            // Add the players start location as an expansion position in case their base there gets destroyed.
+            expansionPositions = new LocationsDistanceFromList(playerStartLocation);
+
+            var resources = GetUnits(Units.resources, alliance: Alliance.Neutral);
+            var resourceCenters = GetUnits(Units.ResourceCenters);
+
+            // Get a list of resources that a near each other.
+            List<ResourceCluster> initialResourceClusters = new List<ResourceCluster>();
+            List<ResourceCluster> resourceClusters = new List<ResourceCluster>();
+
+            foreach (var resource in resources)
+            {
+                var addedMineral = false;
+
+                foreach (var resourceCluster in initialResourceClusters)
+                {
+                    // Maps do not have more then 10 mineral together.
+                    if (resourceCluster.resources.Count == 10) continue;
+
+                    // Note: This was the original code but the z axis is not the object sitting on the terrain so it is different for each object.
+                    //if (Vector3.DistanceSquared(resource.position, resourceCluster.resources[0].position) < 225
+                    //&& resource.position.Z == resourceCluster.resources[0].position.Z)
+
+                    if (Vector3.DistanceSquared(resource.position, resourceCluster.resources[0].position) < 225)
+                    {
+                        resourceCluster.resources.Add(resource);
+                        addedMineral = true;
+                        break;
+                    }
+                }
+
+                if (!addedMineral)
+                {
+                    ResourceCluster resourceCluster = new ResourceCluster();
+                    resourceCluster.resources.Add(resource);
+                    initialResourceClusters.Add(resourceCluster);
+                }
+            }
+
+            // Remove all the single resource clusters.
+            foreach (var resourceCluster in initialResourceClusters)
+            {
+                if (resourceCluster.resources.Count != 1)
+                {
+                    resourceClusters.Add(resourceCluster);
+                }
+            }
+
+            // Setup the offsets.
+            List<Vector2> offsets = new List<Vector2>();
+
+            for (var x = -9; x < 11; x++)
+            {
+                for (var y = -9; y < 11; y++)
+                {
+                    var value = Math.Pow(x, 2) + Math.Pow(y, 2);
+                    if (75 >= value && value >= 49)
+                    {
+                        Vector2 vector = new Vector2(x, y);
+                        offsets.Add(vector);
+                    }
+                }
+            }
+
+            // Figure out the closest points to place a resource center to each cluster.
+            foreach (var resourceCluster in resourceClusters)
+            {
+                List<LocationDistance> possiblePoints = new List<LocationDistance>();
+
+                foreach (var resource in resourceCluster.resources)
+                {
+                    // Set up the minimum distance you can build to a resouce.
+                    var minDistance = 6.0;
+                    if (Units.GasGeysers.Contains(resource.unitType))
+                    {
+                        minDistance = 7.0;
+                    }
+
+                    LocationDistance closestPoint = new LocationDistance();
+                    closestPoint.location = Vector3.Zero;
+                    closestPoint.distance = float.MaxValue;
+
+                    // If there is a resource center, the resource this is most likely the starting position for the map so use it for the cluster.
+                    var resourceCenter = GetFirstInRange(resource.position, resourceCenters, 12);
+
+                    if (resourceCenter == null)
+                    {
+                        // Figure out the closest point to the resource based on the offsets setup above.
+                        foreach (var offset in offsets)
+                        {
+                            Vector3 vector = new Vector3(offset.X + resource.position.X, offset.Y + resource.position.Y, resource.position.Z);
+
+
+                            var distance = Vector3.Distance(resource.position, vector);
+                            // Note: Need to figure a better way of doing this.  It takes 30 - 60 seconds total to check the canplace.
+                            if (distance >= minDistance && closestPoint.distance >= distance && CanPlace(baseResourceCenter, vector))
+                            {
+                                closestPoint.location = vector;
+                                closestPoint.distance = distance;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        closestPoint.location = resourceCenter.position;
+                        closestPoint.distance = resourceCenter.GetDistance(resource);
+                    }
+
+                    if (closestPoint.location != Vector3.Zero)
+                    {
+                        possiblePoints.Add(closestPoint);
+                    }
+                }
+
+                // Figure out the 3 closest points to a resource cluster and record them for placement.
+                if (possiblePoints.Count > 0)
+                {
+                    LocationDistance center = new LocationDistance();
+                    center.location = Vector3.Zero;
+                    center.distance = float.MaxValue;
+
+                    LocationDistance center2 = new LocationDistance();
+                    center2.location = Vector3.Zero;
+                    center2.distance = float.MaxValue;
+
+                    LocationDistance center3 = new LocationDistance();
+                    center3.location = Vector3.Zero;
+                    center3.distance = float.MaxValue;
+
+
+                    foreach (var possiblePoint in possiblePoints)
+                    {
+                        if (center.distance > possiblePoint.distance)
+                        {
+                            center3 = center2;
+                            center2 = center;
+                            center = possiblePoint;
+
+                        }
+                    }
+
+                    // Add a possible 3 locations per cluster in case something gets built in its spot.
+                    if (center.location != Vector3.Zero)
+                    {
+                        expansionPositions.AddLocation(center.location, sortAfter: false);
+                    }
+
+                    if (center2.location != Vector3.Zero)
+                    {
+                        expansionPositions.AddLocation(center2.location, sortAfter: false);
+                    }
+
+                    if (center3.location != Vector3.Zero)
+                    {
+                        expansionPositions.AddLocation(center3.location, sortAfter: false);
+                    }
+                }
+            }
+
+            expansionPositions.UpdateDistances();
+            Logger.Info("Finished setup expansion points.");
+        }
+
+        /**********
+         * Player
+         **********/
+
+        // Get the race the bots is setup to use in game.
+        public Race getBotRace()
+        {
+            var botRace = Race.NoRace;
+            foreach (var player in gameInfo.PlayerInfo)
+            {
+                if (player.Type == PlayerType.Participant)
+                {
+                    botRace = player.RaceActual;
+                }
+            }
+            return botRace;
         }
 
         /**********
@@ -120,7 +328,7 @@ namespace Bot
         }
 
         // Get a list of units based on a list of unit types.
-        public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false, bool onlyVisible = false)
+        public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false, bool onlyVisible = false, bool hasVespene = false)
         {
             // Ideally this should be cached in the future and cleared at each new frame.
             var units = new List<Unit>();
@@ -133,13 +341,16 @@ namespace Bot
                     if (onlyVisible && (unit.DisplayType != DisplayType.Visible))
                         continue;
 
+                    if  (hasVespene && Units.GasGeysers.Contains(unit.UnitType) && (unit.VespeneContents < 1))
+                        continue;
+
                     units.Add(new Unit(unit));
                 }
             return units;
         }
 
         // Get a list of units based on a single unit type.
-        public List<Unit> GetUnits(uint unitType, Alliance alliance = Alliance.Self, bool onlyCompleted = false, bool onlyVisible = false)
+        public List<Unit> GetUnits(uint unitType, Alliance alliance = Alliance.Self, bool onlyCompleted = false, bool onlyVisible = false, bool hasVespene = false)
         {
             // Ideally this should be cached in the future and cleared at each new frame.
             var units = new List<Unit>();
@@ -151,7 +362,8 @@ namespace Bot
 
                     if (onlyVisible && (unit.DisplayType != DisplayType.Visible))
                         continue;
-
+                    if (hasVespene && (unit.VespeneContents < 1))
+                        continue;
                     units.Add(new Unit(unit));
                 }
             return units;
@@ -360,6 +572,14 @@ namespace Bot
             return pendingCount + constructionCount;
         }
 
+        // Get the total number of units in game for a passed list of unit type.
+        public int GetTotalCount(HashSet<uint> unitType, bool inConstruction = false)
+        {
+            var pendingCount = GetPendingCount(unitType, inConstruction);
+            var constructionCount = GetUnits(unitType).Count;
+            return pendingCount + constructionCount;
+        }
+
         // Get the total number of units pending in game for a passed unit type.
         public int GetPendingCount(uint unitType, bool inConstruction = true)
         {
@@ -381,6 +601,36 @@ namespace Bot
                 foreach (var unit in GetUnits(unitType))
                     if (unit.buildProgress < 1)
                         counter += 1;
+            }
+
+            return counter;
+        }
+
+        // Get the total number of units pending in game for a passed list of unit type.
+        public int GetPendingCount(HashSet<uint> unitTypes, bool inConstruction = true)
+        {
+            var workers = GetUnits(Units.Workers);
+            var counter = 0;
+
+            foreach (var unitType in unitTypes)
+            {
+                var abilityID = Abilities.GetID(unitType);
+
+
+                //count workers that have been sent to build this structure
+                foreach (var worker in workers)
+                {
+                    if (worker.order.AbilityId == abilityID)
+                        counter += 1;
+                }
+
+                //count buildings that are already in construction
+                if (inConstruction)
+                {
+                    foreach (var unit in GetUnits(unitType))
+                        if (unit.buildProgress < 1)
+                            counter += 1;
+                }
             }
 
             return counter;
@@ -417,7 +667,7 @@ namespace Bot
         public void DistributeWorkers()
         {
             var resourceRange = 12;
-            var gasBuildings = GetUnitsWithVespene(GetUnits(Units.GasGeysersStructures, onlyCompleted: true));
+            var gasBuildings = GetUnits(Units.GasGeysersStructures, onlyCompleted: true, hasVespene: true);
             var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
             var mineralFields = GetUnits(Units.MineralFields, onlyVisible: true, alliance: Alliance.Neutral);
             var workers = GetUnits(Units.Workers);
@@ -550,14 +800,29 @@ namespace Bot
             else
             {
                 // Use the first resource centers as a starting point.
+
+                bool completed = false;
+
+                // Zerg need completed resource centers so there is creep to build on.
+                if (getBotRace() == Race.Zerg)
+                {
+                    completed = true;
+                }
                 // Note: Need to re-work this to handle multiple resource centers and to get a starting point if there are no resource centers.
-                var resourceCenters = GetUnits(Units.ResourceCenters);
+                var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: completed);
                 if (resourceCenters.Count > 0)
                     startingSpot = resourceCenters[0].position;
                 else
                 {
-                    Logger.Error("Unable to construct: {0}. No resource center was found.", GetUnitName(unitType));
-                    return;
+                    if (Units.ResourceCenters.Contains(unitType))
+                    {
+                        startingSpot = playerStartLocation;
+                    }
+                    else
+                    {
+                        Logger.Error("Unable to construct: {0}. No resource center was found.", GetUnitName(unitType));
+                        return;
+                    }
                 }
             }
             // Trying to find a valid construction spot
@@ -688,29 +953,33 @@ namespace Bot
         // Pass in the recourse center to build.
         public void BuildExpansion(uint unitType)
         {
-            // Get all the mineral fields and there distance from the player start location.
-            var mineralFields = GetUnits(Units.MineralFields, alliance: Alliance.Neutral);
+            var resources = GetUnits(Units.resources, alliance: Alliance.Neutral, hasVespene: true);
 
-            var fromStartLocation = new UnitsDistanceFromList(playerStartLocation);
-
-            fromStartLocation.AddUnits(mineralFields);
-
-            //Logger.Info("Array = {0}.", fromStartLocation);
-
-            var resouceCenters = GetUnits(Units.ResourceCenters);
+            var resourceCenters = GetUnits(Units.ResourceCenters);
 
             // Find a mineral field that is not within sight of the basic resource center.
-            var basicResouceSight = gameData.Units[(int)unitType].SightRange;
-            //var basicResouceSight = BUILD_RANGE_RADIUS;
+            var basicResourceSight = gameData.Units[(int)unitType].SightRange;
 
-            foreach (var mineralField in fromStartLocation.toUnits)
+            foreach (var expansionPosition in expansionPositions.toLocations)
             {
-                var resouceCenter = GetFirstInRange(mineralField.unit.position, resouceCenters, basicResouceSight);
+                var resouceCenter = GetFirstInRange(expansionPosition.location, resourceCenters, basicResourceSight);
 
                 if (resouceCenter != null) continue;
 
+                var resource = GetFirstInRange(expansionPosition.location, resources, basicResourceSight);
 
-                Construct(unitType, mineralField.unit.position, (int)(basicResouceSight * 0.75));
+                if (resource == null) continue;
+
+                if (!CanPlace(unitType, expansionPosition.location)) continue;
+
+                var overlords = GetUnits(Units.OVERLORD);
+
+                overlords[0].Move(expansionPosition.location);
+
+                Logger.Info("Placing Expansion @ {0}.", expansionPosition.location);
+
+                //Construct(unitType, expansionPosition.location, (int)basicResourceSight);
+                Construct(unitType, expansionPosition.location, 1);
 
                 break;
             }
