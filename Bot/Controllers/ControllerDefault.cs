@@ -20,6 +20,8 @@ namespace Bot
         private readonly Random random = new Random();
         private const double FRAMES_PER_SECOND = 22.4;
 
+        private bool gatheredInitalInfo = false;
+
         public static ResponseGameInfo gameInfo;
         public static ResponseData gameData;
         public static ResponseObservation obs;
@@ -77,8 +79,10 @@ namespace Bot
             vespene = obs.Observation.PlayerCommon.Vespene;
 
             //initialization
-            if (frame == 0)
+            if (!gatheredInitalInfo)
             {
+                gatheredInitalInfo = true;
+
                 var resourceCenters = GetUnits(Units.ResourceCenters);
                 if (resourceCenters.Count > 0)
                 {
@@ -341,7 +345,7 @@ namespace Bot
                     if (onlyVisible && (unit.DisplayType != DisplayType.Visible))
                         continue;
 
-                    if  (hasVespene && Units.GasGeysers.Contains(unit.UnitType) && (unit.VespeneContents < 1))
+                    if (hasVespene && Units.GasGeysers.Contains(unit.UnitType) && (unit.VespeneContents < 1))
                         continue;
 
                     units.Add(new Unit(unit));
@@ -644,6 +648,120 @@ namespace Bot
         }
 
         /**********
+         * Abilities
+         **********/
+
+        // Get the ability name for the passed ability id.
+        public static string GetAbilityName(int abilityID)
+        {
+            var abilityName = "";
+
+            abilityName = gameData.Abilities[abilityID].FriendlyName;
+            return abilityName;
+        }
+
+        // Checks to see if the passed unit is ordered to preform an ability.
+        public bool IsOrderedTo(Unit unit, int abilityID)
+        {
+            var isOrderedTo = false;
+
+            foreach(var order in unit.orders)
+            {
+                if (order.AbilityId == abilityID)
+                {
+                    isOrderedTo = true;
+                    break;
+                }
+            }
+
+            return isOrderedTo;
+        }
+
+        // Check and see if we have the resources for the passed upgrade and also return the resources costs.
+        public bool CanAffordUpgrade(int abilityID, ref int mineralCost, ref int vespeneCost)
+        {
+            var canAfford = false;
+
+            foreach (var upgrade in gameData.Upgrades)
+            {
+                if (upgrade.AbilityId == abilityID)
+                {
+                    mineralCost = (int)upgrade.MineralCost;
+                    vespeneCost = (int)upgrade.VespeneCost;
+
+                    if (minerals >= mineralCost && vespene >= vespeneCost)
+                    {
+                        canAfford = true;
+                        break;
+                    }
+                }
+            }
+
+            return canAfford;
+        }
+
+        // Check and see if we have the resources for the passed upgrade.
+        public bool CanAffordUpgrade(int abilityID)
+        {
+            var mineralCost = 0;
+            var vespenCost = 0;
+
+            return CanAffordUpgrade(abilityID, ref mineralCost, ref vespenCost);
+        }
+
+        // Check and see if the upgrade has been researched.
+        public bool HasUpgrade(int abilityID)
+        {
+            var hasAbility = false;
+            if (obs.Observation.RawData.Player.UpgradeIds.Contains((uint)abilityID))
+            {
+                hasAbility = true;
+            }
+            return hasAbility;
+        }
+
+        // Check and see if any of the passed units are researching an upgrade.
+        public bool IsResearchingUpgrade(int abilityID, List<Unit> units)
+        {
+            var isResearching = false;
+
+            foreach(var unit in units)
+            {
+                if (IsOrderedTo(unit, abilityID)) {
+                    isResearching = true;
+                    break;
+                }
+            }
+
+            return isResearching;
+        }
+
+        // Check and see if any of the passed unit types are researching an upgrade.
+        public bool IsResearchingUpgrade(int abilityID, HashSet<uint> unitTypes)
+        {
+            var units = GetUnits(unitTypes);
+
+            return IsResearchingUpgrade(abilityID, units);
+        }
+
+        // Check and see if any of the passed unit type are researching an upgrade.
+        public bool IsResearchingUpgrade(int abilityID, uint unitType)
+        {
+            var units = GetUnits(unitType);
+
+            return IsResearchingUpgrade(abilityID, units);
+        }
+
+        // Check and see if any unit type is researching an upgrade.
+        public bool IsResearchingUpgrade(int abilityID)
+        {
+            var units = GetUnits(Units.All);
+
+            return IsResearchingUpgrade(abilityID, units);
+        }
+
+
+        /**********
          * Actions
          **********/
 
@@ -734,6 +852,16 @@ namespace Bot
                         {
                             workersPerGB = i;
                             break;
+                        }
+                    }
+
+                    // If the workers per gas building is 0, then check if the are at least 3 more workers then builds and if this is so set it to 1.
+                    // This is in case there are a lot of buildings that were made.
+                    if (workersPerGB == 0)
+                    {
+                        if (workers.Count - gasBuildings.Count > 2)
+                        {
+                            workersPerGB = 1;
                         }
                     }
 
@@ -1011,6 +1139,17 @@ namespace Bot
             }
         }
 
+        public bool isGatheringVespene(int minWorkersGathering = 1)
+        {
+            var gasBuildings = GetUnits(Units.GasGeysersStructures);
+            var totalWorkersAssigned = 0;
+            foreach (var gasBuilding in gasBuildings)
+            {
+                totalWorkersAssigned = totalWorkersAssigned + gasBuilding.assignedWorkers;
+            }
+
+            return (totalWorkersAssigned >= minWorkersGathering);
+        }
     }
 }
 

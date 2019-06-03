@@ -12,6 +12,9 @@ namespace Bot
         public static int RESEARCH_UPGRADE_MECH_ARMOR = 3700;
         public static int RESEARCH_UPGRADE_MECH_GROUND = 3701;
 
+        public static int RESEARCH_BURROW = 1225;
+        public static int BURROW = 64;
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;

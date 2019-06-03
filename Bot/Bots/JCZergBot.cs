@@ -6,30 +6,31 @@ namespace Bot
 {
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = false;
+        private readonly bool totalRandom = true;
 
         private const int WAIT_IN_SECONDS = 1;
 
-        private const int MAX_SPAWNING_POOLS = 2;
-        private const int MAX_HYDRALISK_DENS = 1;
-        private const int MAX_SPIRES = 1;
 
         private const int BUILD_OVERLORD_RANGE = 2;
         private const int DRONE_PER_RC = 19;
         private const int DRONE_MIN = 10;
         private const int DRONE_MAX = 100;
+        private const int ZERGLINGS_PER_HYDRALISK = 4;
+        private const int ZERGLINGS_PER_MUTALISKS = 3;
 
+        private const int MAX_SPAWNING_POOLS = 2;
+        private const int MAX_HYDRALISK_DENS = 1;
+        private const int MAX_SPIRES = 1;
+        private const int CHANCE_TO_SAVE_RESOURCES = 1;
         private const int CHANCE_BUILD_DEF_BUILDING = 10;
         private const int SPINE_PER_RC = 10;
         private const int SPORE_PER_RC = 10;
+        private const int EXPAND_BASE_INTERVAL_MINS = 5;
 
         private const int ATTACK_ARMY_PER_MIN = 5;
         private const int ATTACK_ARMY_MAX = 50;
 
-        private const int ZERGLINGS_PER_HYDRALISK = 4;
-        private const int ZERGLINGS_PER_MUTALISKS = 3;
-
-        private const int CHANCE_TO_SAVE_RESOURCES = 1;
+        private const int MIN_VESPENE = 50;
 
         private readonly System.Random random = new System.Random();
 
@@ -37,10 +38,12 @@ namespace Bot
         private ulong nextWaitFrame = 0;
 
         private uint saveForUnitType = 0;
+        private int saveForUpgrade = 0;
         private int saveForMinerals = 0;
         private int saveForVespene = 0;
+        private string saveForName = "";
 
-        private int expandBaseMinute = 0;
+        private int expandBaseMinute = EXPAND_BASE_INTERVAL_MINS;
 
         private ZergController controller = new ZergController();
 
@@ -54,7 +57,7 @@ namespace Bot
                 Logger.Info("--------------------------------------");
                 Logger.Info("Map: {0}", ZergController.gameInfo.MapName);
                 Logger.Info("--------------------------------------");
-                
+
             }
 
             /*
@@ -82,9 +85,9 @@ namespace Bot
             if (controller.minerals >= saveForMinerals && controller.vespene >= saveForVespene)
             {
                 // Construct / Train saved for unit.
-                if (saveForUnitType != 0)
+                if (saveForUnitType != 0 || saveForUpgrade !=0)
                 {
-                    CreateSavedForUnit();
+                    CreateSavedFor();
                 }
             }
             else
@@ -93,8 +96,10 @@ namespace Bot
                 var workers = controller.GetUnits(Units.Workers);
                 if (workers.Count == 0)
                 {
-                    Logger.Info("No workers to gather resources to save for {0}.", ControllerDefault.GetUnitName(saveForUnitType));
+                    Logger.Info("No workers to gather resources to save for {0}.", saveForName);
                     SetSaveResouces();
+
+                    BuildUnit(Units.DRONE);
                 }
 
                 // Make sure there is enough minerals to gather.
@@ -123,9 +128,11 @@ namespace Bot
                 {
                     var gasBuildings = controller.GetUnits(Units.GasGeysersStructures);
                     var totalVespeneLeft = 0;
+                    var totalWorkersAssigned = 0;
                     foreach (var gasBuilding in gasBuildings)
                     {
                         totalVespeneLeft = totalVespeneLeft + gasBuilding.vespene;
+                        totalWorkersAssigned = totalWorkersAssigned + gasBuilding.assignedWorkers;
                     }
 
                     if (totalVespeneLeft < saveForVespene)
@@ -133,15 +140,31 @@ namespace Bot
                         Logger.Info("Not enough vespene left: {0} left but need {1}", totalVespeneLeft, saveForVespene);
                         SetSaveResouces();
                     }
+                    else if (totalWorkersAssigned == 0)
+                    {
+                        // This is most likely happening because there are a lot of extractors and not enough drones,
+                        // so the distribution code is not assigning any drones to the extractors.
+                        // I need to re-worked that but for now make more drones.
+                        Logger.Info("No Workers are assigned to collect vespene.");
+                        SetSaveResouces();
+
+                        BuildUnit(Units.DRONE);
+                    }
                 }
             }
 
             if (controller.frame > nextWaitFrame)
             {
+                // If there are no resource centers build one.
+                if (controller.GetTotalCount(Units.ResourceCenters) == 0)
+                {
+                    BuildExpansionBase();
+                }
+
                 // This is for a bot that randomly dose all its actions.
                 if (totalRandom)
                 {
-                    var randAction = random.Next(4);
+                    var randAction = random.Next(5);
 
                     switch (randAction)
                     {
@@ -156,6 +179,9 @@ namespace Bot
                             break;
                         case 3:
                             UnitActionsRandom();
+                            break;
+                        case 4:
+                            ResearchRandom();
                             break;
                     }
 
@@ -203,7 +229,8 @@ namespace Bot
             }
 
             // Note: Need to figure a better way to decide when to create extractors.
-            if (controller.vespene < 1)
+            var gasGeysers = controller.GetUnits(Units.GasGeysersAvail, alliance: Alliance.Neutral, onlyVisible: true, hasVespene: true);
+            if (controller.vespene < MIN_VESPENE && gasGeysers.Count > 0)
             {
                 //Logger.Info("Build EX");
                 BuildExtractor();
@@ -226,7 +253,7 @@ namespace Bot
                 BuildBuilding(Units.SPIRE);
             }
 
-            if (gameMin > 1 && gameMin > expandBaseMinute)
+            if (gameMin >= expandBaseMinute)
             {
                 BuildExpansionBase();
             }
@@ -264,7 +291,7 @@ namespace Bot
             {
                 BuildOverlord();
             }
-            else if (totalWorkers < DRONE_MAX  && totalWorkers < (DRONE_PER_RC * controller.GetTotalRCs()))
+            else if (totalWorkers < DRONE_MAX && totalWorkers < (DRONE_PER_RC * controller.GetTotalRCs()))
             {
                 BuildUnit(Units.DRONE);
             }
@@ -286,19 +313,24 @@ namespace Bot
         private void UnitActions()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
+            var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, onlyVisible: true);
             var enemyBuildings = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, onlyVisible: true);
             var resourceCenters = controller.GetUnits(Units.ResourceCenters);
 
             var canNotSeeRCArmy = controller.GetUnitsNoInSightOfRC(army);
 
-            if (canNotSeeRCArmy.Count > 0 && enemyBuildings.Count == 0)
+            if (canNotSeeRCArmy.Count > 0 && enemyBuildings.Count == 0 && enemyArmy.Count == 0)
             {
                 //Logger.Info("Unit = {0};  Sight = {1}", canNotSeeRCArmy[0].name, canNotSeeRCArmy[0].sight);
                 RecallIdleUnits();
             }
             else if (army.Count > ATTACK_ARMY_MAX || army.Count > ATTACK_ARMY_PER_MIN * gameMin)
             {
-                if (enemyBuildings.Count > 0)
+                if (enemyArmy.Count > 0)
+                {
+                    AttackEnemyUnits();
+                }
+                else if (enemyBuildings.Count > 0)
                 {
                     AttackEnemyStructure();
                 }
@@ -333,7 +365,7 @@ namespace Bot
             {
                 if (saveFor)
                 {
-                    SaveResourcesFor(unitType);
+                    SaveResourcesForUnit(unitType);
                 }
             }
         }
@@ -347,7 +379,7 @@ namespace Bot
             }
             if (saveFor)
             {
-                SaveResourcesFor(Units.EXTRACTOR);
+                SaveResourcesForUnit(Units.EXTRACTOR);
             }
         }
 
@@ -373,7 +405,7 @@ namespace Bot
                 {
                     if (hatchery.order.AbilityId != 0) continue;
 
-                    SaveResourcesFor(Units.LAIR);
+                    SaveResourcesForUnit(Units.LAIR);
                     break;
                 }
             }
@@ -401,26 +433,26 @@ namespace Bot
                 {
                     if (hive.order.AbilityId != 0) continue;
 
-                    SaveResourcesFor(Units.HIVE);
+                    SaveResourcesForUnit(Units.HIVE);
                     break;
                 }
             }
 
         }
 
-       
+
         private void BuildExpansionBase(bool saveFor = true)
         {
             if (controller.CanConstruct(Units.HATCHERY))
             {
                 controller.BuildExpansion();
-                expandBaseMinute = gameMin;
+                expandBaseMinute = gameMin + EXPAND_BASE_INTERVAL_MINS;
             }
             else
             {
                 if (saveFor)
                 {
-                    SaveResourcesFor(Units.EXPANSION_BASE);
+                    SaveResourcesForUnit(Units.EXPANSION_BASE);
                 }
             }
         }
@@ -444,7 +476,7 @@ namespace Bot
             {
                 if (saveFor)
                 {
-                    SaveResourcesFor(unitType);
+                    SaveResourcesForUnit(unitType);
                 }
             }
 
@@ -477,7 +509,47 @@ namespace Bot
             {
                 if (saveFor)
                 {
-                    SaveResourcesFor(Units.QUEEN);
+                    SaveResourcesForUnit(Units.QUEEN);
+                }
+            }
+        }
+
+        /**********
+         * Research
+         **********/
+
+        // Research the burrow upgrade.
+        private void ResearchBurrow(bool saveFor = true)
+        {
+            if (controller.HasUpgrade(Abilities.BURROW)) return;
+
+            if (controller.GetTotalCount(Units.GasGeysersStructures) == 0) return;
+
+            var resourceCenters = controller.GetUnits(Units.ResourceCenters);
+
+            if (resourceCenters.Count > 0)
+            {
+                if (controller.IsResearchingUpgrade(Abilities.RESEARCH_BURROW, resourceCenters)) return;
+
+                
+                if (controller.CanAffordUpgrade(Abilities.RESEARCH_BURROW))
+                {
+
+                    foreach (var resourceCenter in resourceCenters)
+                    {
+                        if (resourceCenter.buildProgress != 1) continue;
+
+                        if (resourceCenter.order.AbilityId != 0) continue;
+                        
+                        resourceCenter.Research(Abilities.RESEARCH_BURROW);
+                    }
+                }
+                else
+                {
+                    if (saveFor)
+                    {
+                        SaveResourcesForUpgrade(Abilities.RESEARCH_BURROW);
+                    }
                 }
             }
         }
@@ -517,6 +589,21 @@ namespace Bot
             }
         }
 
+        // If there are known enemy units send any idle units to attack it.
+        private void AttackEnemyUnits()
+        {
+            var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, onlyVisible: true);
+            if (enemyArmy.Count > 0)
+            {
+                var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
+                if (army.Count > 0)
+                {
+                    Logger.Info("Attacking: {0} @ {1} / {2}", enemyArmy[0].name, enemyArmy[0].position.X, enemyArmy[0].position.Y);
+                    controller.Attack(army, enemyArmy[0].position);
+                }
+            }
+        }
+
         // Recall idle units back to a resource center.
         // Note: Maybe I should change it to be the closest resource center.
         private void RecallIdleUnits()
@@ -534,7 +621,7 @@ namespace Bot
          **********/
 
         // Save resources for the passed unit type.
-        private void SaveResourcesFor(uint unitType)
+        private void SaveResourcesForUnit(uint unitType = 0)
         {
             var rollToSaveFor = random.Next(100);
             var showNotFoundMessage = false;
@@ -565,64 +652,98 @@ namespace Bot
                 var vespeneCost = 0;
                 controller.CanAfford(saveUnitType, ref mineralCost, ref vespeneCost);
 
-                SetSaveResouces(unitType, mineralCost, vespeneCost);
+                SetSaveResouces(unitType, upgradeId: 0, mineralCost, vespeneCost);
             }
         }
-
-        // Set the resources that need to be saved to for a unit type.
-        // Not sending in any data to the method will reset it to not saving for a unit.
-        private void SetSaveResouces(uint unitType = 0, int minerals = 0, int vespene = 0)
+        // Save resources for the passed upgrade.
+        private void SaveResourcesForUpgrade(int saveUpgradeId = 0)
         {
-            if (unitType != 0)
+            var mineralCost = 0;
+            var vespeneCost = 0;
+            controller.CanAffordUpgrade(saveUpgradeId, ref mineralCost, ref vespeneCost);
+
+            SetSaveResouces(unitType: 0, saveUpgradeId, mineralCost, vespeneCost);
+        }
+
+        // Set the resources that need to be saved to for a unit type or upgrade.
+        // Not sending in any data to the method will reset it to not saving for a unit and upgrade.
+        private void SetSaveResouces(uint unitType = 0, int upgradeId = 0, int minerals = 0, int vespene = 0)
+        {
+            saveForName = "";
+
+            // Do not try and save for vespene is no one is gathering it.
+            if (vespene > 0)
             {
-                var unitName = ControllerDefault.GetUnitName(unitType);
-                Logger.Info("Save resources for {0}:  minerals = {1}  vespene = {2}", unitName, minerals, vespene);
+                if (!controller.isGatheringVespene()) return;
             }
 
-            saveForUnitType = unitType;
+                if (unitType != 0)
+            {
+                saveForName = ControllerDefault.GetUnitName(unitType);
+                saveForUnitType = unitType;
+            }
+            else if (upgradeId != 0)
+            {
+                saveForName = ControllerDefault.GetAbilityName(upgradeId);
+                saveForUpgrade = upgradeId;
+            }
+
             saveForMinerals = minerals;
             saveForVespene = vespene;
+
+            if (saveForName != "")
+            {
+                Logger.Info("Save resources for {0}:  minerals = {1}  vespene = {2}", saveForName, minerals, vespene);
+            }
         }
 
         //  Create a unit that resources were saved for.
-        private void CreateSavedForUnit()
+        private void CreateSavedFor()
         {
-
-            if (saveForUnitType == Units.OVERLORD)
+            if (saveForUnitType != 0)
             {
-                BuildOverlord(saveFor: false);
+                if (saveForUnitType == Units.OVERLORD)
+                {
+                    BuildOverlord(saveFor: false);
+                }
+                else if (saveForUnitType == Units.EXTRACTOR)
+                {
+                    BuildExtractor(saveFor: false);
+                }
+                else if (saveForUnitType == Units.QUEEN)
+                {
+                    BirthQueen(saveFor: false);
+                }
+                else if (saveForUnitType == Units.LAIR)
+                {
+                    UpgradeToLair(saveFor: false);
+                }
+                else if (saveForUnitType == Units.HIVE)
+                {
+                    UpgradeToHive(saveFor: false);
+                }
+                else if (saveForUnitType == Units.EXPANSION_BASE)
+                {
+                    BuildExpansionBase(saveFor: false);
+                }
+                else if (Units.Structures.Contains(saveForUnitType))
+                {
+                    // Build structure.
+                    BuildBuilding(saveForUnitType, saveFor: false);
+                }
+                else if ((Units.ArmyUnits.Contains(saveForUnitType)))
+                {
+                    // Build unit.
+                    BuildUnit(saveForUnitType, saveFor: false);
+                }
             }
-            else if (saveForUnitType == Units.EXTRACTOR)
+            else
             {
-                BuildExtractor(saveFor: false);
+                if (saveForUpgrade == Abilities.RESEARCH_BURROW)
+                {
+                    ResearchBurrow(saveFor: false);
+                }
             }
-            else if (saveForUnitType == Units.QUEEN)
-            {
-                BirthQueen(saveFor: false);
-            }
-            else if (saveForUnitType == Units.LAIR)
-            {
-                UpgradeToLair(saveFor: false);
-            }
-            else if (saveForUnitType == Units.HIVE)
-            {
-                UpgradeToHive(saveFor: false);
-            }
-            else if (saveForUnitType == Units.EXPANSION_BASE)
-            {
-                BuildExpansionBase(saveFor: false);
-            }
-            else if (Units.Structures.Contains(saveForUnitType))
-            {
-                // Build structure.
-                BuildBuilding(saveForUnitType, saveFor: false);
-            }
-            else if ((Units.ArmyUnits.Contains(saveForUnitType)))
-            {
-                // Build unit.
-                BuildUnit(saveForUnitType, saveFor: false);
-            }
-
             SetSaveResouces();
         }
 
@@ -750,15 +871,33 @@ namespace Bot
             }
         }
 
+        // Randomly preform research.
+        private void ResearchRandom()
+        {
+            if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
+            {
+                return;
+            }
+
+            var randResearch = random.Next(1);
+
+            switch (randResearch)
+            {
+                case 0:
+                    ResearchBurrow();
+                    break;
+            }
+        }
+
         // Randomly preform actions.
         private void UnitActionsRandom()
         {
-            var randAction = random.Next(3);
+            var randAction = random.Next(4);
+            var army = controller.GetUnits(Units.ArmyUnits);
 
             switch (randAction)
             {
                 case 0:
-                    var army = controller.GetUnits(Units.ArmyUnits);
                     if (army.Count > random.Next(ATTACK_ARMY_PER_MIN, ATTACK_ARMY_MAX))
                     {
                         AttackEnemyBase();
@@ -769,6 +908,12 @@ namespace Bot
                     break;
                 case 2:
                     AttackEnemyStructure();
+                    break;
+                case 3:
+                    if (army.Count > random.Next(ATTACK_ARMY_PER_MIN, ATTACK_ARMY_MAX))
+                    {
+                        AttackEnemyUnits();
+                    }
                     break;
             }
         }

@@ -81,6 +81,19 @@ namespace Bot
             Logger.Info("Started training: {0}", targetName);
         }
 
+        // Research
+        public void Research(int abilityID)
+        {
+            if (orders.Count > 0) return;
+
+            var action = ControllerDefault.CreateRawUnitCommand(abilityID);
+            action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+            ControllerDefault.AddAction(action);
+
+            var researchName = ControllerDefault.GetAbilityName(abilityID);
+            Logger.Info("Started researching: {0}", researchName);
+        }
+
         // Set the camera on a unit.
         private void FocusCamera()
         {

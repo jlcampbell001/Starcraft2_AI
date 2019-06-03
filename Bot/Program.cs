@@ -1,5 +1,6 @@
 ﻿using SC2APIProtocol;
 using System;
+using System.Collections.Generic;
 
 namespace Bot
 {
@@ -13,13 +14,22 @@ namespace Bot
         private static readonly Bot bot = new JCZergBot();
         private const Race race = Race.Zerg;
 
+        private static Random random = new Random();
+
         // Settings for single player mode.
         //        private static string mapName = "AbyssalReefLE.SC2Map";
         //        private static string mapName = "AbiogenesisLE.SC2Map";
         //        private static string mapName = "FrostLE.SC2Map";
         //        private static readonly string mapName = "(2)16-BitLE.SC2Map";
-        private static readonly string mapName = "AutomatonLE.SC2Map";
+        private static String[] maps = {"AutomatonLE.SC2Map",
+            "CyberForestLE.SC2Map",
+            "KairosJunctionLE.SC2Map",
+            "KingsCoveLE.SC2Map",
+            "NewRepugnancyLE.SC2Map",
+            "PortAleksanderLE.SC2Map",
+            "YearZeroLE.SC2Map"};
 
+        private static readonly string mapName = maps[random.Next(maps.Length)];
 
         private static readonly Race opponentRace = Race.Terran;
         //        private static readonly Race opponentRace = Race.Random;
