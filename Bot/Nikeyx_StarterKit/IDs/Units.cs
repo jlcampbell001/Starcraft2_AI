@@ -174,8 +174,11 @@ namespace Bot
         public static uint BATTLE_STATION_MINERAL_FIELD_750 = 887;
         public static uint LURKER_DEN = 504; // Now Using the Lurker Den MP Id. It was 901 for Lurker Den but this would not link to the ability to build it. 
         public static uint LURKER = 502;
+        public static uint LURKER_BURROWED = 503;
         public static uint VIPER = 499;
         public static uint SWARM_HOST = 494;
+        public static uint RAVAGER = 688;
+        public static uint RAVAGER_BURROWED = 690;
 
 
         public static readonly HashSet<uint> All = new HashSet<uint> {
@@ -346,8 +349,11 @@ namespace Bot
             BATTLE_STATION_MINERAL_FIELD_750,
             LURKER_DEN,
             LURKER,
+            LURKER_BURROWED,
             VIPER,
-            SWARM_HOST
+            SWARM_HOST,
+            RAVAGER,
+            RAVAGER_BURROWED
         };
 
 
@@ -411,8 +417,11 @@ namespace Bot
             LARVA,
             LURKER_DEN,
             LURKER,
+            LURKER_BURROWED,
             VIPER,
-            SWARM_HOST
+            SWARM_HOST,
+            RAVAGER,
+            RAVAGER_BURROWED
         };
 
 
@@ -675,8 +684,11 @@ namespace Bot
             ZERGLING,
             ZERGLING_BURROWED,
             LURKER,
+            LURKER_BURROWED,
             VIPER,
-            SWARM_HOST
+            SWARM_HOST,
+            RAVAGER,
+            RAVAGER_BURROWED
         };
 
         public static readonly HashSet<uint> ResourceCenters = new HashSet<uint> {
@@ -923,6 +935,20 @@ namespace Bot
             ULTRALISK_CAVERN
         };
 
-
+        public static readonly HashSet<uint> BurrowedUnits = new HashSet<uint> {
+            BANELING_BURROWED,
+            CREEP_TUMOR_BURROWED,
+            DRONE_BURROWED,
+            HYDRALISK_BURROWED,
+            INFESTOR_BURROWED,
+            INFESTOR_TERRAN_BURROWED,
+            QUEEN_BURROWED,
+            ROACH_BURROWED,
+            ULTRALISK_BURROWED,
+            WIDOW_MINE_BURROWED,
+            ZERGLING_BURROWED,
+            RAVAGER_BURROWED,
+            LURKER_BURROWED
+        };
     }
 }

@@ -14,6 +14,22 @@ namespace Bot
 
         public static int RESEARCH_BURROW = 1225;
         public static int BURROW = 64;
+        public static int BURROW_DRONE = 1378;
+        public static int UNBURROW_DRONE = 1380;
+        public static int BURROW_ZERGLING = 1390;
+        public static int UNBURROW_ZERGLING = 1392;
+        public static int BURROW_QUEEN = 1433;
+        public static int UNBURROW_QUEEN = 1435;
+        public static int BURROW_BANELING = 1374;
+        public static int UNBURROW_BANELING = 1376;
+        public static int BURROW_ROACH = 1386;
+        public static int UNBURROW_ROACH = 1388;
+        public static int BURROW_RAVAGER = 2340;
+        public static int UNBURROW_RAVAGER = 2342;
+        public static int BURROW_HYDRALISK = 1382;
+        public static int UNBURROW_HYDRALISK = 1384;
+        public static int BURROW_LURKER = 2108;
+        public static int UNBURROW_LURKER = 2110;
 
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;

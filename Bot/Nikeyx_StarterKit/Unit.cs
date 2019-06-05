@@ -27,6 +27,7 @@ namespace Bot
         public int minerals;
         public float sight;
         public ulong target;
+        public bool isBurrowed;
 
         public Unit(SC2APIProtocol.Unit unit)
         {
@@ -45,6 +46,7 @@ namespace Bot
             this.order = unit.Orders.Count > 0 ? unit.Orders[0] : new UnitOrder();
             this.orders = unit.Orders;
             this.isVisible = (unit.DisplayType == DisplayType.Visible);
+            this.isBurrowed = unit.IsBurrowed;
 
             this.supply = (int)unitTypeData.FoodRequired;
 
@@ -76,9 +78,29 @@ namespace Bot
             var action = ControllerDefault.CreateRawUnitCommand(abilityID);
             action.ActionRaw.UnitCommand.UnitTags.Add(tag);
             ControllerDefault.AddAction(action);
-
+            
             var targetName = ControllerDefault.GetUnitName(unitType);
             Logger.Info("Started training: {0}", targetName);
+        }
+
+        // Use an ability.
+        public void UseAbility(int abilityID, bool toggleAutoCast = false)
+        {
+            if (orders.Count > 0) return;
+            Action action = null;
+
+            if (toggleAutoCast)
+            {
+                action = ControllerDefault.CreateToggleAutoCast(abilityID);
+                action.ActionRaw.ToggleAutocast.UnitTags.Add(tag);
+            }
+            else
+            {
+                action = ControllerDefault.CreateRawUnitCommand(abilityID);
+                action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+            }
+
+            ControllerDefault.AddAction(action);
         }
 
         // Research

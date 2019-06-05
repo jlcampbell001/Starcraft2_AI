@@ -765,13 +765,23 @@ namespace Bot
          * Actions
          **********/
 
-        // Crate a raw unit command action for the passed ability.
+        // Create a raw unit command action for the passed ability.
         public static Action CreateRawUnitCommand(int ability)
         {
             var action = new Action();
             action.ActionRaw = new ActionRaw();
             action.ActionRaw.UnitCommand = new ActionRawUnitCommand();
             action.ActionRaw.UnitCommand.AbilityId = ability;
+            return action;
+        }
+
+        // Create a toggle auto cast action for the passed ability.
+        public static Action CreateToggleAutoCast(int ability)
+        {
+            var action = new Action();
+            action.ActionRaw = new ActionRaw();
+            action.ActionRaw.ToggleAutocast = new ActionRawToggleAutocast();
+            action.ActionRaw.ToggleAutocast.AbilityId = ability;
             return action;
         }
 

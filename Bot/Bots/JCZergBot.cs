@@ -1,4 +1,5 @@
-﻿using Bot.Utilities;
+﻿using Bot.UnitActions.Zerg;
+using Bot.Utilities;
 using SC2APIProtocol;
 using System.Collections.Generic;
 
@@ -36,6 +37,7 @@ namespace Bot
 
         private int gameMin = -1;
         private ulong nextWaitFrame = 0;
+        private bool burrowedUnits = false;
 
         private uint saveForUnitType = 0;
         private int saveForUpgrade = 0;
@@ -46,6 +48,27 @@ namespace Bot
         private int expandBaseMinute = EXPAND_BASE_INTERVAL_MINS;
 
         private ZergController controller = new ZergController();
+
+        private DroneActions drone;
+        private ZerglingActions zergling;
+        private QueenActions queen;
+        private BanelingActions baneling;
+        private RoachActions roach;
+        private RavagerActions ravager;
+        private HydraliskActions hydralisk;
+        private LurkerActions lurker;
+
+        public JCZergBot()
+        {
+            drone = new DroneActions(controller);
+            zergling = new ZerglingActions(controller);
+            queen = new QueenActions(controller);
+            baneling = new BanelingActions(controller);
+            roach = new RoachActions(controller);
+            ravager = new RavagerActions(controller);
+            hydralisk = new HydraliskActions(controller);
+            lurker = new LurkerActions(controller);
+        }
 
         public IEnumerable<Action> OnFrame()
         {
@@ -85,7 +108,7 @@ namespace Bot
             if (controller.minerals >= saveForMinerals && controller.vespene >= saveForVespene)
             {
                 // Construct / Train saved for unit.
-                if (saveForUnitType != 0 || saveForUpgrade !=0)
+                if (saveForUnitType != 0 || saveForUpgrade != 0)
                 {
                     CreateSavedFor();
                 }
@@ -531,7 +554,7 @@ namespace Bot
             {
                 if (controller.IsResearchingUpgrade(Abilities.RESEARCH_BURROW, resourceCenters)) return;
 
-                
+
                 if (controller.CanAffordUpgrade(Abilities.RESEARCH_BURROW))
                 {
 
@@ -540,7 +563,7 @@ namespace Bot
                         if (resourceCenter.buildProgress != 1) continue;
 
                         if (resourceCenter.order.AbilityId != 0) continue;
-                        
+
                         resourceCenter.Research(Abilities.RESEARCH_BURROW);
                     }
                 }
@@ -555,6 +578,96 @@ namespace Bot
         }
 
         /**********
+         * Abilities
+         **********/
+
+        // Burrow the passed unit if able.
+        private void BurrowUnit(Unit unit)
+        {
+            if (!controller.HasUpgrade(Abilities.BURROW)) return;
+
+            burrowedUnits = true;
+
+            if (unit.unitType == Units.DRONE)
+            {
+                drone.Burrow(unit);
+            }
+            else if (unit.unitType == Units.ZERGLING)
+            {
+                zergling.Burrow(unit);
+            }
+            else if (unit.unitType == Units.QUEEN)
+            {
+                queen.Burrow(unit);
+            }
+            else if (unit.unitType == Units.BANELING)
+            {
+                baneling.Burrow(unit);
+            }
+            else if (unit.unitType == Units.ROACH)
+            {
+                roach.Burrow(unit);
+            }
+            else if (unit.unitType == Units.RAVAGER)
+            {
+                ravager.Burrow(unit);
+            }
+            else if (unit.unitType == Units.HYDRALISK)
+            {
+                hydralisk.Burrow(unit);
+            }
+            else if (unit.unitType == Units.LURKER)
+            {
+                lurker.Burrow(unit);
+            }
+            else
+            {
+                burrowedUnits = false;
+            }
+        }
+
+        // Burrow the passed unit if able.
+        private void UnburrowUnit(Unit unit, bool setAutoCastOn = false)
+        {
+            if (!controller.HasUpgrade(Abilities.BURROW)) return;
+            //Logger.Info("Unburrow {0}, {1}", unit.name, unit.unitType);
+
+            if (unit.unitType == Units.DRONE_BURROWED)
+            {
+                drone.Unburrow(unit);
+            }
+            else if (unit.unitType == Units.ZERGLING_BURROWED)
+            {
+                zergling.Unburrow(unit);
+            }
+            else if (unit.unitType == Units.QUEEN_BURROWED)
+            {
+                queen.Unburrow(unit);
+            }
+            else if (unit.unitType == Units.BANELING_BURROWED)
+            {
+                baneling.Unburrow(unit);
+            }
+            else if (unit.unitType == Units.ROACH_BURROWED)
+            {
+                roach.Unburrow(unit);
+            }
+            else if (unit.unitType == Units.RAVAGER_BURROWED)
+            {
+                ravager.Unburrow(unit);
+            }
+            else if (unit.unitType == Units.HYDRALISK_BURROWED)
+            {
+                hydralisk.Unburrow(unit);
+            }
+            else if (unit.unitType == Units.LURKER_BURROWED)
+            {
+                lurker.Unburrow(unit);
+            }
+        }
+
+
+        /**********
          * ACTIONS
          **********/
 
@@ -567,6 +680,7 @@ namespace Bot
                 // Logger.Info("Army = {0};  gameMin = {1}", army.Count, gameMin);
                 if (controller.enemyLocations.Count > 0)
                 {
+                    UnburrowIdleUnits();
                     // Logger.Info("Locations = {0}", controller.enemyLocations.Count);
                     var enemyLocation = random.Next(controller.enemyLocations.Count);
                     controller.Attack(army, controller.enemyLocations[enemyLocation]);
@@ -583,6 +697,7 @@ namespace Bot
                 var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
                 if (army.Count > 0)
                 {
+                    UnburrowIdleUnits();
                     Logger.Info("Attacking: {0} @ {1} / {2}", enemyStructures[0].name, enemyStructures[0].position.X, enemyStructures[0].position.Y);
                     controller.Attack(army, enemyStructures[0].position);
                 }
@@ -598,8 +713,42 @@ namespace Bot
                 var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
                 if (army.Count > 0)
                 {
+                    UnburrowIdleUnits();
+
                     Logger.Info("Attacking: {0} @ {1} / {2}", enemyArmy[0].name, enemyArmy[0].position.X, enemyArmy[0].position.Y);
                     controller.Attack(army, enemyArmy[0].position);
+                }
+            }
+        }
+
+        // Burrow idle units.
+        private void BurrowIdleUnits()
+        {
+            if (!controller.HasUpgrade(Abilities.BURROW)) return;
+
+            var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
+            foreach (var unit in army)
+            {
+                if (!unit.isBurrowed)
+                {
+                    BurrowUnit(unit);
+                    //Logger.Info("Burrowing: {0}", unit.name);
+                }
+            }
+        }
+
+        // Unburrow idle units.
+        private void UnburrowIdleUnits()
+        {
+            if (!controller.HasUpgrade(Abilities.BURROW)) return;
+
+            var army = controller.GetIdleUnits(controller.GetUnits(Units.BurrowedUnits));
+            foreach (var unit in army)
+            {
+                if (unit.isBurrowed)
+                {
+                    UnburrowUnit(unit);
+                    //Logger.Info("Unburrowing: {0}", unit.name);
                 }
             }
         }
@@ -677,7 +826,7 @@ namespace Bot
                 if (!controller.isGatheringVespene()) return;
             }
 
-                if (unitType != 0)
+            if (unitType != 0)
             {
                 saveForName = ControllerDefault.GetUnitName(unitType);
                 saveForUnitType = unitType;
@@ -791,7 +940,7 @@ namespace Bot
                     BuildBuilding(Units.BANELING_NEST);
                     break;
                 case 9:
-                    BuildBuilding(Units.EVOLUTION_CHAMBER);
+                    //BuildBuilding(Units.EVOLUTION_CHAMBER);
                     break;
                 case 10:
                     BuildBuilding(Units.SPIRE);
@@ -892,7 +1041,7 @@ namespace Bot
         // Randomly preform actions.
         private void UnitActionsRandom()
         {
-            var randAction = random.Next(4);
+            var randAction = random.Next(6);
             var army = controller.GetUnits(Units.ArmyUnits);
 
             switch (randAction)
@@ -914,6 +1063,12 @@ namespace Bot
                     {
                         AttackEnemyUnits();
                     }
+                    break;
+                case 4:
+                    BurrowIdleUnits();
+                    break;
+                case 5:
+                    UnburrowIdleUnits();
                     break;
             }
         }
