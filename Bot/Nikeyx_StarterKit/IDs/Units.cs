@@ -10,7 +10,7 @@ namespace Bot
         public static uint COLOSSUS = 4;
         public static uint TECHLAB = 5;
         public static uint REACTOR = 6;
-        public static uint INFESTOR_TERRAN = 7;
+        public static uint INFESTED_TERRAN = 7; // 898; // 949; 
         public static uint BANELING_COCOON = 8;
         public static uint BANELING = 9;
         public static uint MOTHERSHIP = 10;
@@ -130,7 +130,7 @@ namespace Bot
         public static uint HYDRALISK_BURROWED = 117;
         public static uint ROACH_BURROWED = 118;
         public static uint ZERGLING_BURROWED = 119;
-        public static uint INFESTOR_TERRAN_BURROWED = 120;
+        public static uint INFESTED_TERRAN_BURROWED = 120;  //120
         public static uint QUEEN_BURROWED = 125;
         public static uint QUEEN = 126;
         public static uint INFESTOR_BURROWED = 127;
@@ -177,6 +177,7 @@ namespace Bot
         public static uint LURKER_BURROWED = 503;
         public static uint VIPER = 499;
         public static uint SWARM_HOST = 494;
+        public static uint SWARM_HOST_BURROWED = 493;
         public static uint RAVAGER = 688;
         public static uint RAVAGER_BURROWED = 690;
 
@@ -192,7 +193,7 @@ namespace Bot
             COLOSSUS,
             TECHLAB,
             REACTOR,
-            INFESTOR_TERRAN,
+            INFESTED_TERRAN,
             BANELING_COCOON,
             BANELING,
             MOTHERSHIP,
@@ -305,7 +306,7 @@ namespace Bot
             HYDRALISK_BURROWED,
             ROACH_BURROWED,
             ZERGLING_BURROWED,
-            INFESTOR_TERRAN_BURROWED,
+            INFESTED_TERRAN_BURROWED,
             QUEEN_BURROWED,
             QUEEN,
             INFESTOR_BURROWED,
@@ -352,13 +353,14 @@ namespace Bot
             LURKER_BURROWED,
             VIPER,
             SWARM_HOST,
+            SWARM_HOST_BURROWED,
             RAVAGER,
             RAVAGER_BURROWED
         };
 
 
         public static readonly HashSet<uint> Zerg = new HashSet<uint> {
-            INFESTOR_TERRAN,
+            INFESTED_TERRAN,
             BANELING_COCOON,
             BANELING,
             CHANGELING,
@@ -401,7 +403,7 @@ namespace Bot
             HYDRALISK_BURROWED,
             ROACH_BURROWED,
             ZERGLING_BURROWED,
-            INFESTOR_TERRAN_BURROWED,
+            INFESTED_TERRAN_BURROWED,
             QUEEN_BURROWED,
             QUEEN,
             INFESTOR_BURROWED,
@@ -420,6 +422,7 @@ namespace Bot
             LURKER_BURROWED,
             VIPER,
             SWARM_HOST,
+            SWARM_HOST_BURROWED,
             RAVAGER,
             RAVAGER_BURROWED
         };
@@ -655,9 +658,10 @@ namespace Bot
             HYDRALISK_BURROWED,
             IMMORTAL,
             INFESTED_TERRANS_EGG,
+            INFESTOR,
             INFESTOR_BURROWED,
-            INFESTOR_TERRAN,
-            INFESTOR_TERRAN_BURROWED,
+            INFESTED_TERRAN,
+            INFESTED_TERRAN_BURROWED,
             MARAUDER,
             MARINE,
             MEDIVAC,
@@ -687,6 +691,7 @@ namespace Bot
             LURKER_BURROWED,
             VIPER,
             SWARM_HOST,
+            SWARM_HOST_BURROWED,
             RAVAGER,
             RAVAGER_BURROWED
         };
@@ -941,14 +946,32 @@ namespace Bot
             DRONE_BURROWED,
             HYDRALISK_BURROWED,
             INFESTOR_BURROWED,
-            INFESTOR_TERRAN_BURROWED,
+            INFESTED_TERRAN_BURROWED,
             QUEEN_BURROWED,
             ROACH_BURROWED,
             ULTRALISK_BURROWED,
             WIDOW_MINE_BURROWED,
             ZERGLING_BURROWED,
             RAVAGER_BURROWED,
-            LURKER_BURROWED
+            LURKER_BURROWED,
+            SWARM_HOST_BURROWED
+        };
+
+        public static readonly HashSet<uint> CanBurrowedUnits = new HashSet<uint> {
+            BANELING,
+            CREEP_TUMOR,
+            DRONE,
+            HYDRALISK,
+            INFESTOR,
+            INFESTED_TERRAN,
+            QUEEN,
+            ROACH,
+            ULTRALISK,
+            WIDOW_MINE,
+            ZERGLING,
+            RAVAGER,
+            LURKER,
+            SWARM_HOST
         };
     }
 }

@@ -9,8 +9,11 @@ namespace Bot.UnitActions
     class UnitActions
     {
         protected ControllerDefault controller;
+        protected static Random random = new Random();
 
         protected uint unitType = 0;
+
+        protected double workerHelpDistance = 12.0;
 
         public UnitActions(ControllerDefault controller)
         {
@@ -29,5 +32,86 @@ namespace Bot.UnitActions
 
             return isUnitType;
         }
-    }
+
+        // Add this unit action to the passed unit actions list.
+        virtual
+        public void SetupUnitActionsList(ref UnitActionsList unitActionsList)
+        {
+            unitActionsList.addUnitAction(this, unitType);
+        }
+
+        // Check and see if the unit is busy.
+        virtual
+            public bool IsBusy(Unit unit)
+        {
+            if (unit.order.AbilityId != 0) return true;
+
+            return false;
+        }
+
+        // Try and command actions intelligently.
+        // This is meant to be overridden.
+        virtual
+            public void PreformIntellignetActions(Unit unit)
+        {
+
+        }
+
+        // Command random actions.
+        // This is meant to be overridden.
+        virtual
+            public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false)
+        {
+
+        }
+
+        public void SummonHelp(Unit unit, Unit attacker = null, bool idleArmyOnly = true, bool includeNearByWorkers = false)
+        {
+            var army = controller.GetUnits(Units.ArmyUnits);
+
+            if (idleArmyOnly)
+            {
+                army = controller.GetIdleUnits(army);
+            }
+
+            var targetPos = unit.position;
+
+            if (attacker != null)
+            {
+                targetPos = attacker.position;
+            }
+
+            controller.Attack(army, targetPos);
+
+            if (includeNearByWorkers)
+            {
+                var workers = controller.GetUnits(Units.Workers);
+
+                List<Unit> attackWorkers = new List<Unit>();
+
+                foreach (var worker in workers)
+                {
+                    if (worker.GetDistance(unit) <= workerHelpDistance)
+                    {
+                        attackWorkers.Add(worker);
+                    }
+                }
+
+                controller.Attack(attackWorkers, targetPos);
+            }
+        }
+
+        // Ask for help if being attack.
+        virtual
+            public void NeedHelpAction(Unit unit)
+        {
+            var enemyAttackers = controller.GetPotentialAttackers(unit);
+
+            if (enemyAttackers.Count > 0)
+            {
+                SummonHelp(unit, enemyAttackers[0]);
+                Logger.Info("{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
+            }
+        }
+}
 }

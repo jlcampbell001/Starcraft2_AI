@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg
 {
     class RoachActions : ZergActions
     {
-        public RoachActions(ControllerDefault controller) : base(controller)
+        public RoachActions(ZergController controller) : base(controller)
         {
             unitType = Units.ROACH;
             burrowedUnitType = Units.ROACH_BURROWED;

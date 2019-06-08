@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg
 {
     class RavagerActions : ZergActions
     {
-        public RavagerActions(ControllerDefault controller) : base(controller)
+        public RavagerActions(ZergController controller) : base(controller)
         {
             unitType = Units.RAVAGER;
             burrowedUnitType = Units.RAVAGER_BURROWED;

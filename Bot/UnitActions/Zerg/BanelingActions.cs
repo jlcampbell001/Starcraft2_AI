@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg
 {
     class BanelingActions : ZergActions
     {
-        public BanelingActions(ControllerDefault controller) : base(controller)
+        public BanelingActions(ZergController controller) : base(controller)
         {
             unitType = Units.BANELING;
             burrowedUnitType = Units.BANELING_BURROWED;

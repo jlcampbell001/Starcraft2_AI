@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg
 {
     class HydraliskActions : ZergActions
     {
-        public HydraliskActions(ControllerDefault controller) : base(controller)
+        public HydraliskActions(ZergController controller) : base(controller)
         {
             unitType = Units.HYDRALISK;
             burrowedUnitType = Units.HYDRALISK_BURROWED;

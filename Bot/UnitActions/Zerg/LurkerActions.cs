@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg
 {
     class LurkerActions : ZergActions
     {
-        public LurkerActions(ControllerDefault controller) : base(controller)
+        public LurkerActions(ZergController controller) : base(controller)
         {
             unitType = Units.LURKER;
             burrowedUnitType = Units.LURKER_BURROWED;

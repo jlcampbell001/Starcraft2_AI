@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg
 {
     class QueenActions : ZergActions
     {
-        public QueenActions(ControllerDefault controller) : base(controller)
+        public QueenActions(ZergController controller) : base(controller)
         {
             unitType = Units.QUEEN;
             burrowedUnitType = Units.QUEEN_BURROWED;

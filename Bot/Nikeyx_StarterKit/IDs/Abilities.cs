@@ -30,6 +30,14 @@ namespace Bot
         public static int UNBURROW_HYDRALISK = 1384;
         public static int BURROW_LURKER = 2108;
         public static int UNBURROW_LURKER = 2110;
+        public static int BURROW_INFESTOR = 1444;
+        public static int UNBURROW_INFESTOR = 1446;
+        public static int BURROW_SWARM_HOST = 2014;
+        public static int UNBURROW_SWARM_HOST = 2016;
+        public static int BURROW_ULTRALISK = 1512;
+        public static int UNBURROW_ULTRALISK = 1514;
+        public static int BURROW_INFESTED_TERRAN = 1394;
+        public static int UNBURROW_INFESTED_TERRAN = 1396;
 
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;

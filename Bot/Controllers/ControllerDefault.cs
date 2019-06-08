@@ -434,6 +434,25 @@ namespace Bot
             return targetingUnits;
         }
 
+        // Get a list of units that maybe attacking the passed unit.
+        // This is done by getting the attackers that the target is in sight of.
+        public List<Unit> GetPotentialAttackers(Unit target)
+        {
+            var enemyArmy = GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy);
+
+            List<Unit> enemies = new List<Unit>();
+
+            foreach(var enemy in enemyArmy)
+            {
+                if (enemy.GetDistance(target) <= enemy.sight)
+                {
+                    enemies.Add(enemy);
+                }
+            }
+
+            return enemies;
+        }
+
         // Get all the units that are gathering from the target tag from a passed unit list.
         public List<Unit> GetUnitsGatheringTag(List<Unit> units, ulong tag)
         {

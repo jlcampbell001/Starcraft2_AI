@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg
 {
     class DroneActions : ZergActions
     {
-        public DroneActions(ControllerDefault controller) : base(controller)
+        public DroneActions(ZergController controller) : base(controller)
         {
             unitType = Units.DRONE;
             burrowedUnitType = Units.DRONE_BURROWED;

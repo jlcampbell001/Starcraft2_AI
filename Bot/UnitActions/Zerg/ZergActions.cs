@@ -8,17 +8,31 @@ namespace Bot.UnitActions.Zerg
 {
     class ZergActions : UnitActions
     {
+        protected new ZergController controller;
+
         protected uint burrowedUnitType = 0;
 
         // Upgrades
-        private int burrowUpgrade = Abilities.BURROW;
+        protected int burrowUpgrade = Abilities.BURROW;
 
         // Abilities
         protected int burrow = 0;
         protected int unburrow = 0;
 
-        public ZergActions(ControllerDefault controller) : base(controller)
+        public ZergActions(ZergController controller) : base(controller)
         {
+            this.controller = controller ?? throw new ArgumentNullException(nameof(controller));
+        }
+
+        override
+            public void SetupUnitActionsList(ref UnitActionsList unitActionsList)
+        {
+            unitActionsList.addUnitAction(this, unitType);
+
+            if (burrowedUnitType != 0)
+            {
+                unitActionsList.addUnitAction(this, burrowedUnitType);
+            }
         }
 
         // Checks to see if the passed unit is of the burrowed unit type that is action controller will deal with.
