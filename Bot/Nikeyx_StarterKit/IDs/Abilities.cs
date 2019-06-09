@@ -39,6 +39,12 @@ namespace Bot
         public static int BURROW_INFESTED_TERRAN = 1394;
         public static int UNBURROW_INFESTED_TERRAN = 1396;
 
+        public static int RESEARCH_PNEUMATIZED_CARAPACE = 1223;
+        public static int PNEUMATIZED_CARAPACE = 62;
+
+        public static int HATCHERY_UNIT_RALLY = 211;
+        public static int HATCHERY_WORKER_RALLY = 212;
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;

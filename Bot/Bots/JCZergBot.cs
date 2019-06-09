@@ -38,7 +38,6 @@ namespace Bot
 
         private int gameMin = -1;
         private ulong nextWaitFrame = 0;
-        private bool burrowedUnits = false;
 
         private uint saveForUnitType = 0;
         private int saveForUpgrade = 0;
@@ -277,7 +276,7 @@ namespace Bot
                     }
                     else
                     {
-                        UnitActions();
+                        ArmyActions();
                     }
                 }
             }
@@ -381,7 +380,7 @@ namespace Bot
         }
 
         // Try and preform actions intelligently.
-        private void UnitActions()
+        private void ArmyActions()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
             var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, onlyVisible: true);
@@ -527,12 +526,14 @@ namespace Bot
             var structures = controller.GetUnits(Units.Structures);
 
             var saveFor = true;
+            var doNotUseResouces = false;
             uint saveUnit = 0;
             int saveUpgrade = 0;
 
             if (saveForMinerals != 0 || saveForVespene != 0)
             {
                 saveFor = false;
+                doNotUseResouces = true;
             }
 
             foreach (var structure in structures)
@@ -543,7 +544,7 @@ namespace Bot
                 {
                     if (randomActions)
                     {
-                        structureActions.PreformRandomActions(structure, ref saveUnit, ref saveUpgrade, saveFor);
+                        structureActions.PreformRandomActions(structure, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
                     }
                     else
                     {
@@ -553,6 +554,7 @@ namespace Bot
                     if (saveUnit != 0 || saveUpgrade != 0)
                     {
                         saveFor = false;
+                        doNotUseResouces = true;
                     }
                 }
             }
@@ -629,7 +631,7 @@ namespace Bot
          **********/
 
         // Research the burrow upgrade.
-        private void ResearchBurrow()
+        private void Research(int researchID)
         {
             var resourceCenters = controller.GetUnits(Units.ResourceCenters);
 
@@ -641,13 +643,21 @@ namespace Bot
 
                     if (rescourceCenterActions != null)
                     {
-                        var result = rescourceCenterActions.ResearchBurrow(resourceCenter);
+                        var result = UnitActions.UnitActions.ResearchResult.Success;
 
-                        if (result == ZergRescourceCenterActions.ResearchBurrowResult.Success
-                            || result == ZergRescourceCenterActions.ResearchBurrowResult.IsResearching
-                            || result == ZergRescourceCenterActions.ResearchBurrowResult.AlreadyHas
-                            || result == ZergRescourceCenterActions.ResearchBurrowResult.CanNotAfford
-                            || result == ZergRescourceCenterActions.ResearchBurrowResult.NoGasGysersStructures)
+                        if (researchID == Abilities.RESEARCH_BURROW)
+                        {
+                            result = rescourceCenterActions.ResearchBurrow(resourceCenter);
+                        } else if (researchID == Abilities.RESEARCH_PNEUMATIZED_CARAPACE)
+                        {
+                            result = rescourceCenterActions.ResearchPneumatizedCarapace(resourceCenter);
+                        }
+                        
+                        if (result == UnitActions.UnitActions.ResearchResult.Success
+                            || result == UnitActions.UnitActions.ResearchResult.IsResearching
+                            || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
+                            || result == UnitActions.UnitActions.ResearchResult.CanNotAfford
+                            || result == UnitActions.UnitActions.ResearchResult.NoGasGysersStructures)
                         {
                             break;
                         }
@@ -667,18 +677,11 @@ namespace Bot
 
             if (!Units.CanBurrowedUnits.Contains(unit.unitType)) return;
 
-            burrowedUnits = true;
-
             ZergActions unitActions = (ZergActions)unitActionsList.GetUnitAction(unit.unitType);
 
             if (unitActions != null)
             {
                 unitActions.Burrow(unit);
-            }
-            else
-            {
-                burrowedUnits = false;
-                //Logger.Info("Burrow not found: {0}, {1}", unit.name, unit.unitType);
             }
         }
 
@@ -923,13 +926,11 @@ namespace Bot
                     BuildUnit(saveForUnitType, saveFor: false);
                 }
             }
-            else
-            {
-                if (saveForUpgrade == Abilities.RESEARCH_BURROW)
+            else if (saveForUpgrade != 0)
                 {
-                    ResearchBurrow();
+                    Research(saveForUpgrade);
                 }
-            }
+
             SetSaveResouces();
         }
 

@@ -15,6 +15,8 @@ namespace Bot.UnitActions
 
         protected double workerHelpDistance = 12.0;
 
+        public enum ResearchResult { Success, NotUnitType, AlreadyHas, IsResearching, CanNotAfford, UnitBusy, NoGasGysersStructures };
+
         public UnitActions(ControllerDefault controller)
         {
             this.controller = controller ?? throw new ArgumentNullException(nameof(controller));
@@ -60,7 +62,7 @@ namespace Bot.UnitActions
         // Command random actions.
         // This is meant to be overridden.
         virtual
-            public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false)
+            public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
         {
 
         }
