@@ -13,6 +13,13 @@ namespace Bot.UnitActions.Zerg
             unitType = Units.HIVE;
         }
 
+        // Try an preform intelligent actions for the unit.
+        override
+            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+        {
+
+        }
+
         // Pick a random action to preform.
         override
         public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)

@@ -54,7 +54,7 @@ namespace Bot.UnitActions
         // Try and command actions intelligently.
         // This is meant to be overridden.
         virtual
-            public void PreformIntellignetActions(Unit unit)
+            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
         {
 
         }

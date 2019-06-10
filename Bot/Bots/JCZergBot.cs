@@ -8,7 +8,7 @@ namespace Bot
 {
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = true;
+        private readonly bool totalRandom = false;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -160,7 +160,7 @@ namespace Bot
                     CreateSavedFor();
                 }
             }
-            else
+            else if (saveForMinerals != 0 || saveForVespene != 0)
             {
                 // There are no workers to gather.
                 var workers = controller.GetUnits(Units.Workers);
@@ -170,6 +170,17 @@ namespace Bot
                     SetSaveResouces();
 
                     BuildUnit(Units.DRONE);
+                }
+
+                // The base is under attack so stop saving and make units.
+                var structures = controller.GetUnits(Units.Structures);
+                var attackingEnemies = controller.GetPotentialAttackers(structures);
+                if (attackingEnemies.Count > 0)
+                {
+                    Logger.Info("Base under attack.  Stop saving resources.");
+                    SetSaveResouces();
+
+                    BuildUnit(Units.ZERGLING);
                 }
 
                 // Make sure there is enough minerals to gather.
@@ -248,7 +259,7 @@ namespace Bot
                             BuildUnitsRandom();
                             break;
                         case 3:
-                            UnitActionsRandom();
+                            ArmyActionsRandom();
                             break;
                         case 4:
                             PreformStuctureActions(randomActions: true);
@@ -265,6 +276,10 @@ namespace Bot
                     if (randAction < 10)
                     {
                         nextWaitFrame = nextWaitFrame + controller.SecsToFrames(WAIT_IN_SECONDS * random.Next(1, 10));
+                    }
+                    else if (randAction < 20)
+                    {
+                        PreformStuctureActions();
                     }
                     else if (randAction < 70)
                     {
@@ -304,11 +319,6 @@ namespace Bot
             {
                 //Logger.Info("Build EX");
                 BuildExtractor();
-            }
-            else
-            {
-                //Logger.Info("Build UL");
-                UpgradeToLair();
             }
 
             if (controller.GetTotalCount(Units.HYDRALISK_DEN, inConstruction: true) < MAX_HYDRALISK_DENS)
@@ -523,7 +533,7 @@ namespace Bot
         // Preform structure actions.
         private void PreformStuctureActions(bool randomActions = false)
         {
-            var structures = controller.GetUnits(Units.Structures);
+            var structures = controller.GetUnits(Units.Structures, onlyCompleted: true);
 
             var saveFor = true;
             var doNotUseResouces = false;
@@ -548,7 +558,7 @@ namespace Bot
                     }
                     else
                     {
-                        structureActions.PreformIntellignetActions(structure);
+                        structureActions.PreformIntelligentActions(structure, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
                     }
 
                     if (saveUnit != 0 || saveUpgrade != 0)
@@ -858,7 +868,12 @@ namespace Bot
         // Not sending in any data to the method will reset it to not saving for a unit and upgrade.
         private void SetSaveResouces(uint unitType = 0, int upgradeId = 0, int minerals = 0, int vespene = 0)
         {
+            // Reset all the variables in case this is a reset call.
             saveForName = "";
+            saveForMinerals = 0;
+            saveForVespene = 0;
+            saveForUnitType = 0;
+            saveForUpgrade = 0;
 
             // Do not try and save for vespene is no one is gathering it.
             if (vespene > 0)
@@ -1053,7 +1068,7 @@ namespace Bot
         }
 
         // Randomly preform actions.
-        private void UnitActionsRandom()
+        private void ArmyActionsRandom()
         {
             var randAction = random.Next(6);
             var army = controller.GetUnits(Units.ArmyUnits);

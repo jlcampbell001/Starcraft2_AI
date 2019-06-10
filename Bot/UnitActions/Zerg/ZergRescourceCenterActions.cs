@@ -24,6 +24,14 @@ namespace Bot.UnitActions.Zerg
         protected List<ulong> unitRallySet = new List<ulong>();
         protected List<ulong> workerRallySet = new List<ulong>();
 
+        // Usually there is only 1 queen for each resource center.
+        // This is a random chance to get more.
+        // Note: If the queens wander out of sight of a resource center then it will try and birth another queen.
+        public int chanceOfExtraQueens = 2;
+
+        public int researchBurrowChance = 30;
+        public int researchPneumatizedCarapaceChance = 40;
+
         public enum BirthQueenResult { Success, NotUnitType, UnitBusy, CanNotConstruct };
 
         public ZergRescourceCenterActions(ZergController controller) : base(controller)
@@ -203,6 +211,29 @@ namespace Bot.UnitActions.Zerg
                     Logger.Info("Set {0} worker rally point @ {1}, {2}", unit.name, rallySpot.X, rallySpot.Y);
                 }
             }
+        }
+
+        // Get the closest queen that can see the resource center.
+        protected Unit GetNearestQueen(Unit unit)
+        {
+            var queens = controller.GetUnits(queen);
+
+            Unit nearestQueen = null;
+
+            if (queens.Count > 0)
+            {
+                var queenSight = queens[0].sight;
+
+                UnitsDistanceFromList queenDistance = new UnitsDistanceFromList(unit.position);
+                queenDistance.AddUnits(queens);
+
+                if (queenDistance.toUnits[0].distance <= queenSight)
+                {
+                    nearestQueen = queenDistance.toUnits[0].unit;
+                }
+            }
+
+            return nearestQueen;
         }
     }
 }

@@ -32,13 +32,62 @@ namespace Bot.UnitActions.Zerg
             return LairResult.Success;
         }
 
+        // Try an preform intelligent actions for the unit.
+        override
+            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+        {
+            // Ask for help if being attack.
+            NeedHelpAction(unit);
+
+            // Set the rally points.
+            SetUnitRally(unit);
+            SetWorkerRally(unit);
+
+            if (!doNotUseResources)
+            {
+                // If there is no queen near by create one.
+                if (random.Next(100) < chanceOfExtraQueens || GetNearestQueen(unit) == null)
+                {
+                    var queenResult = BirthQueen(unit);
+                    if (saveFor && queenResult == BirthQueenResult.CanNotConstruct)
+                    {
+                        saveUnit = queen;
+                    }
+                }
+                else if (random.Next(100) < researchBurrowChance)
+                {
+                    var burrowResult = ResearchBurrow(unit);
+                    if (saveFor && burrowResult == ResearchResult.CanNotAfford)
+                    {
+                        saveUpgrade = researchBurrow;
+                    }
+                }
+                else if (random.Next(100) < researchPneumatizedCarapaceChance)
+                {
+                    var pneumatizedCarapaceResult = ResearchPneumatizedCarapace(unit);
+                    if (saveFor && pneumatizedCarapaceResult == ResearchResult.CanNotAfford)
+                    {
+                        saveUpgrade = researchPneumatizedCarapace;
+                    }
+                }
+                else
+                {
+                    var lairResult = UpgradeToLair(unit);
+                    if (saveFor && lairResult == LairResult.CanNotConstruct)
+                    {
+                        saveUnit = lair;
+                    }
+                }
+            }
+        }
+
         // Pick a random action to preform.
         override
         public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
         {
             // Ask for help if being attack.
             NeedHelpAction(unit);
-            
+
             var randomAction = random.Next(6);
 
             switch (randomAction)
