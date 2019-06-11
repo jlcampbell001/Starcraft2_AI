@@ -358,7 +358,6 @@ namespace Bot
             RAVAGER_BURROWED
         };
 
-
         public static readonly HashSet<uint> Zerg = new HashSet<uint> {
             INFESTED_TERRAN,
             BANELING_COCOON,
@@ -426,7 +425,6 @@ namespace Bot
             RAVAGER,
             RAVAGER_BURROWED
         };
-
 
         public static readonly HashSet<uint> Terran = new HashSet<uint> {
             HELLBAT,
@@ -521,7 +519,6 @@ namespace Bot
             ARCHON,
             PROTOSS_VESPENE_GEYSER
         };
-
 
         public static readonly HashSet<uint> Structures = new HashSet<uint> {
             ARMORY,
@@ -696,6 +693,90 @@ namespace Bot
             RAVAGER_BURROWED
         };
 
+        public static readonly HashSet<uint> AllUnits = new HashSet<uint>
+        {
+            HELLBAT,
+            LIBERATOR,
+            WIDOW_MINE,
+            WIDOW_MINE_BURROWED,
+            CYCLONE,
+            MULE,
+            POINT_DEFENSE_DRONE,
+            AUTO_TURRET,
+            SIEGE_TANK_SIEGED,
+            SIEGE_TANK,
+            VIKING_ASSAULT,
+            VIKING_FIGHTER,
+            SCV,
+            MARINE,
+            REAPER,
+            GHOST,
+            MARAUDER,
+            THOR,
+            HELLION,
+            MEDIVAC,
+            BANSHEE,
+            RAVEN,
+            BATTLECRUISER,
+            INFESTED_TERRAN,
+            BANELING,
+            CHANGELING,
+            CHANGELING_ZEALOT,
+            CHANGELING_MARINE_SHIELD,
+            CHANGELING_MARINE,
+            CHANGELING_ZERGLING_WINGS,
+            CHANGELING_ZERGLING,
+            DRONE,
+            ZERGLING,
+            OVERLORD,
+            HYDRALISK,
+            MUTALISK,
+            ULTRALISK,
+            ROACH,
+            INFESTOR,
+            CORRUPTOR,
+            BROOD_LORD,
+            BANELING_BURROWED,
+            DRONE_BURROWED,
+            HYDRALISK_BURROWED,
+            ROACH_BURROWED,
+            ZERGLING_BURROWED,
+            INFESTED_TERRAN_BURROWED,
+            QUEEN_BURROWED,
+            QUEEN,
+            INFESTOR_BURROWED,
+            OVERLORD_COCOON,
+            OVERSEER,
+            ULTRALISK_BURROWED,
+            BROODLING_ESCORT,
+            LARVA,
+            LURKER,
+            LURKER_BURROWED,
+            VIPER,
+            SWARM_HOST,
+            SWARM_HOST_BURROWED,
+            RAVAGER,
+            RAVAGER_BURROWED,
+            ADEPT,
+            COLOSSUS,
+            MOTHERSHIP,
+            ZEALOT,
+            STALKER,
+            HIGH_TEMPLAR,
+            DARK_TEMPLAR,
+            SENTRY,
+            PHOENIX,
+            CARRIER,
+            VOID_RAY,
+            WARP_PRISM,
+            OBSERVER,
+            IMMORTAL,
+            PROBE,
+            INTERCEPTOR,
+            WARP_PRISM_PHASING,
+            ARCHON
+        };
+
         public static readonly HashSet<uint> ResourceCenters = new HashSet<uint> {
             COMMAND_CENTER,
             COMMAND_CENTER_FLYING,
@@ -735,7 +816,7 @@ namespace Bot
             REFINERY
         };
 
-        public static readonly HashSet<uint> resources = new HashSet<uint> {
+        public static readonly HashSet<uint> Resources = new HashSet<uint> {
             RICH_MINERAL_FIELD,
             RICH_MINERAL_FIELD_750,
             MINERAL_FIELD,

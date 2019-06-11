@@ -8,7 +8,7 @@ namespace Bot
 {
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = false;
+        private readonly bool totalRandom = true;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -16,7 +16,7 @@ namespace Bot
         private const int BUILD_OVERLORD_RANGE = 2;
         private const int DRONE_PER_RC = 19;
         private const int DRONE_MIN = 10;
-        private const int DRONE_MAX = 100;
+        private const int DRONE_MAX = 50;
         private const int ZERGLINGS_PER_HYDRALISK = 4;
         private const int ZERGLINGS_PER_MUTALISKS = 3;
 
@@ -28,9 +28,10 @@ namespace Bot
         private const int SPINE_PER_RC = 10;
         private const int SPORE_PER_RC = 10;
         private const int EXPAND_BASE_INTERVAL_MINS = 5;
+        private const int CHANCE_BUILD_MACRO_HATCHERY = 10;
 
         private const int ATTACK_ARMY_PER_MIN = 5;
-        private const int ATTACK_ARMY_MAX = 50;
+        private const int ATTACK_ARMY_MAX = 40;
 
         private const int MIN_VESPENE = 50;
 
@@ -245,7 +246,7 @@ namespace Bot
                 // This is for a bot that randomly dose all its actions.
                 if (totalRandom)
                 {
-                    var randAction = random.Next(5);
+                    var randAction = random.Next(6);
 
                     switch (randAction)
                     {
@@ -264,6 +265,9 @@ namespace Bot
                         case 4:
                             PreformStuctureActions(randomActions: true);
                             break;
+                        case 5:
+                            PreformUnitActions(randomActions: true);
+                            break;
                     }
 
                 }
@@ -279,7 +283,14 @@ namespace Bot
                     }
                     else if (randAction < 20)
                     {
-                        PreformStuctureActions();
+                        if (random.Next(100) < 50)
+                        {
+                            PreformStuctureActions();
+                        }
+                        else
+                        {
+                            PreformUnitActions();
+                        }
                     }
                     else if (randAction < 70)
                     {
@@ -336,6 +347,10 @@ namespace Bot
             if (gameMin >= expandBaseMinute)
             {
                 BuildExpansionBase();
+            }
+            else if (random.Next(100) < CHANCE_BUILD_MACRO_HATCHERY)
+            {
+                BuildMacroHatchery();
             }
 
             var randDef = random.Next(100);
@@ -530,6 +545,43 @@ namespace Bot
             }
         }
 
+        // Build a macro hatchery near another resource center.
+        private void BuildMacroHatchery()
+        {
+            if (controller.CanConstruct(Units.HATCHERY))
+            {
+                var resouceCenters = controller.GetUnits(Units.ResourceCenters);
+
+                foreach (var resourceCenter in resouceCenters)
+                {
+                    var sight = (int)resourceCenter.sight;
+                    var buildHatchery = false;
+
+                    UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(resourceCenter.position);
+                    unitsDistanceFromList.AddUnits(resouceCenters);
+
+                    if (unitsDistanceFromList.toUnits.Count > 1)
+                    {
+                        if (unitsDistanceFromList.toUnits[1].distance > sight)
+                        {
+                            buildHatchery = true;
+                        }
+                    }
+                    else
+                    {
+                        buildHatchery = true;
+                    }
+
+                    if (buildHatchery)
+                    {
+                        controller.Construct(Units.HATCHERY, resourceCenter.position, sight);
+                        Logger.Info("Building macro hatchery.");
+                        break;
+                    }
+                }
+            }
+        }
+
         // Preform structure actions.
         private void PreformStuctureActions(bool randomActions = false)
         {
@@ -627,12 +679,61 @@ namespace Bot
                     var result = rescourceCenterActions.BirthQueen(resourceCenter);
 
                     if (result == ZergRescourceCenterActions.BirthQueenResult.CanNotConstruct
-                        ||result == ZergRescourceCenterActions.BirthQueenResult.Success
+                        || result == ZergRescourceCenterActions.BirthQueenResult.Success
                         || result == ZergRescourceCenterActions.BirthQueenResult.NotUnitType)
                     {
                         break;
                     }
                 }
+            }
+        }
+
+        // Preform unit actions.
+        private void PreformUnitActions(bool randomActions = false)
+        {
+            var allUnits = controller.GetUnits(Units.AllUnits, onlyCompleted: true);
+
+            var saveFor = true;
+            var doNotUseResouces = false;
+            uint saveUnit = 0;
+            int saveUpgrade = 0;
+
+            if (saveForMinerals != 0 || saveForVespene != 0)
+            {
+                saveFor = false;
+                doNotUseResouces = true;
+            }
+
+            foreach (var unit in allUnits)
+            {
+                var unitActions = unitActionsList.GetUnitAction(unit.unitType);
+
+                if (unitActions != null)
+                {
+                    if (randomActions)
+                    {
+                        unitActions.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
+                    }
+                    else
+                    {
+                        unitActions.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
+                    }
+
+                    if (saveUnit != 0 || saveUpgrade != 0)
+                    {
+                        saveFor = false;
+                        doNotUseResouces = true;
+                    }
+                }
+            }
+
+            if (saveUnit != 0)
+            {
+                SaveResourcesForUnit(saveUnit);
+            }
+            else if (saveUpgrade != 0)
+            {
+                SaveResourcesForUpgrade(saveUpgrade);
             }
         }
 
@@ -658,11 +759,12 @@ namespace Bot
                         if (researchID == Abilities.RESEARCH_BURROW)
                         {
                             result = rescourceCenterActions.ResearchBurrow(resourceCenter);
-                        } else if (researchID == Abilities.RESEARCH_PNEUMATIZED_CARAPACE)
+                        }
+                        else if (researchID == Abilities.RESEARCH_PNEUMATIZED_CARAPACE)
                         {
                             result = rescourceCenterActions.ResearchPneumatizedCarapace(resourceCenter);
                         }
-                        
+
                         if (result == UnitActions.UnitActions.ResearchResult.Success
                             || result == UnitActions.UnitActions.ResearchResult.IsResearching
                             || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
@@ -942,9 +1044,9 @@ namespace Bot
                 }
             }
             else if (saveForUpgrade != 0)
-                {
-                    Research(saveForUpgrade);
-                }
+            {
+                Research(saveForUpgrade);
+            }
 
             SetSaveResouces();
         }
@@ -961,7 +1063,7 @@ namespace Bot
                 return;
             }
 
-            var randBuilding = random.Next(16);
+            var randBuilding = random.Next(17);
 
             switch (randBuilding)
             {
@@ -1015,6 +1117,9 @@ namespace Bot
                     break;
                 case 15:
                     BuildExpansionBase();
+                    break;
+                case 16:
+                    BuildMacroHatchery();
                     break;
             }
         }

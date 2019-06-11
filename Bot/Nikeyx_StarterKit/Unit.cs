@@ -151,5 +151,14 @@ namespace Bot
             ControllerDefault.AddAction(action);
         }
 
+        public void Attack(Unit unit, Vector3 target)
+        {
+            var action = ControllerDefault.CreateRawUnitCommand(Abilities.ATTACK);
+            action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
+            action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = target.X;
+            action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
+            action.ActionRaw.UnitCommand.UnitTags.Add(unit.tag);
+            ControllerDefault.AddAction(action);
+        }
     }
 }

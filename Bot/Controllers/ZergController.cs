@@ -152,6 +152,7 @@
             return ret;
         }
 
+        // Build an expansion base.
         public void BuildExpansion()
         {
             BuildExpansion(Units.HATCHERY);

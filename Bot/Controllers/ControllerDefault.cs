@@ -132,7 +132,7 @@ namespace Bot
             // Add the players start location as an expansion position in case their base there gets destroyed.
             expansionPositions = new LocationsDistanceFromList(playerStartLocation);
 
-            var resources = GetUnits(Units.resources, alliance: Alliance.Neutral);
+            var resources = GetUnits(Units.Resources, alliance: Alliance.Neutral);
             var resourceCenters = GetUnits(Units.ResourceCenters);
 
             // Get a list of resources that a near each other.
@@ -1129,7 +1129,7 @@ namespace Bot
         // Pass in the recourse center to build.
         public void BuildExpansion(uint unitType)
         {
-            var resources = GetUnits(Units.resources, alliance: Alliance.Neutral, hasVespene: true);
+            var resources = GetUnits(Units.Resources, alliance: Alliance.Neutral, hasVespene: true);
 
             var resourceCenters = GetUnits(Units.ResourceCenters);
 

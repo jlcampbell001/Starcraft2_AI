@@ -121,7 +121,7 @@ namespace Bot.UnitActions.Zerg
 
             var unitSight = (int)unit.sight;
 
-            var resources = controller.GetUnits(Units.resources, alliance: Alliance.Neutral);
+            var resources = controller.GetUnits(Units.Resources, alliance: Alliance.Neutral);
 
             LocationsDistanceFromList resourceDistance = new LocationsDistanceFromList(unit.position);
             resourceDistance.AddLocation(resources);
@@ -185,7 +185,7 @@ namespace Bot.UnitActions.Zerg
 
             var unitSight = (int)unit.sight;
 
-            var resources = controller.GetUnits(Units.resources, alliance: Alliance.Neutral);
+            var resources = controller.GetUnits(Units.Resources, alliance: Alliance.Neutral);
 
             LocationsDistanceFromList resourceDistance = new LocationsDistanceFromList(unit.position);
             resourceDistance.AddLocation(resources);
