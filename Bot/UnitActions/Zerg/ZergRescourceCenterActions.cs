@@ -108,7 +108,7 @@ namespace Bot.UnitActions.Zerg
 
             if (enemyAttackers.Count > 0)
             {
-                SummonHelp(unit, enemyAttackers[0], idleArmyOnly: false, includeNearByWorkers: true);
+                SummonHelp(unit, enemyAttackers[0], idleArmyOnly: false);
                 Logger.Info("{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
             }
         }
@@ -222,15 +222,7 @@ namespace Bot.UnitActions.Zerg
 
             if (queens.Count > 0)
             {
-                var queenSight = queens[0].sight;
-
-                UnitsDistanceFromList queenDistance = new UnitsDistanceFromList(unit.position);
-                queenDistance.AddUnits(queens);
-
-                if (queenDistance.toUnits[0].distance <= queenSight)
-                {
-                    nearestQueen = queenDistance.toUnits[0].unit;
-                }
+                nearestQueen = controller.GetClosestUnit(unit, queens, queens[0].sight);
             }
 
             return nearestQueen;

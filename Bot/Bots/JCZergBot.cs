@@ -8,7 +8,7 @@ namespace Bot
 {
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = true;
+        private readonly bool totalRandom = false;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -64,6 +64,7 @@ namespace Bot
         private SwarmHostActions swarmHostAction;
         private UltraliskActions ultraliskAction;
         private InfestedTerranActions infestedTerranAction;
+        private LarvaActions larvaActions;
 
         private HatcheryActions hatcheryAction;
         private LairActions lairActions;
@@ -84,6 +85,7 @@ namespace Bot
             swarmHostAction = new SwarmHostActions(controller);
             ultraliskAction = new UltraliskActions(controller);
             infestedTerranAction = new InfestedTerranActions(controller);
+            larvaActions = new LarvaActions(controller);
 
             hatcheryAction = new HatcheryActions(controller);
             lairActions = new LairActions(controller);
@@ -102,6 +104,7 @@ namespace Bot
             swarmHostAction.SetupUnitActionsList(ref unitActionsList);
             ultraliskAction.SetupUnitActionsList(ref unitActionsList);
             infestedTerranAction.SetupUnitActionsList(ref unitActionsList);
+            larvaActions.SetupUnitActionsList(ref unitActionsList);
 
             hatcheryAction.SetupUnitActionsList(ref unitActionsList);
             lairActions.SetupUnitActionsList(ref unitActionsList);
@@ -187,7 +190,7 @@ namespace Bot
                 // Make sure there is enough minerals to gather.
                 if (saveForMinerals > 0)
                 {
-                    var mineralFields = controller.GetUnits(Units.MineralFields, alliance: Alliance.Neutral, onlyVisible: true);
+                    var mineralFields = controller.GetUnits(Units.MineralFields, alliance: Alliance.Neutral, displayType: DisplayType.Visible);
                     var totalMineralsLeft = 0;
 
                     //Logger.Info("Visible mineral fields = {0}", mineralFields.Count);
@@ -325,7 +328,7 @@ namespace Bot
             }
 
             // Note: Need to figure a better way to decide when to create extractors.
-            var gasGeysers = controller.GetUnits(Units.GasGeysersAvail, alliance: Alliance.Neutral, onlyVisible: true, hasVespene: true);
+            var gasGeysers = controller.GetUnits(Units.GasGeysersAvail, alliance: Alliance.Neutral, displayType: DisplayType.Visible, hasVespene: true);
             if (controller.vespene < MIN_VESPENE && gasGeysers.Count > 0)
             {
                 //Logger.Info("Build EX");
@@ -408,9 +411,9 @@ namespace Bot
         private void ArmyActions()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
-            var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, onlyVisible: true);
-            var enemyBuildings = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, onlyVisible: true);
-            var resourceCenters = controller.GetUnits(Units.ResourceCenters);
+            var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
+            var enemyBuildings = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
+            enemyBuildings.AddRange(controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, displayType: DisplayType.Snapshot));
 
             var canNotSeeRCArmy = controller.GetUnitsNoInSightOfRC(army);
 
@@ -843,10 +846,29 @@ namespace Bot
         // If there are known enemy structures send any idle units to attack it.
         private void AttackEnemyStructure()
         {
-            var enemyStructures = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, onlyVisible: true);
+            // Get visible enemy structures first.
+            var enemyStructures = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
+            List<Unit> army = new List<Unit>();
+
+            if (enemyStructures.Count == 0)
+            {
+                // Get snapshot enemy structures second if there are no visible ones.
+                army = controller.GetUnits(Units.ArmyUnits);
+
+                if (army.Count > random.Next(ATTACK_ARMY_PER_MIN, ATTACK_ARMY_MAX))
+                {                
+                    enemyStructures = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, displayType: DisplayType.Snapshot);
+                }
+            }
+
             if (enemyStructures.Count > 0)
             {
-                var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
+                if (army.Count == 0)
+                {
+                    army = controller.GetUnits(Units.ArmyUnits);
+                }
+
+                army = controller.GetIdleUnits(army);
                 if (army.Count > 0)
                 {
                     UnburrowIdleUnits();
@@ -859,7 +881,7 @@ namespace Bot
         // If there are known enemy units send any idle units to attack it.
         private void AttackEnemyUnits()
         {
-            var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, onlyVisible: true);
+            var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
             if (enemyArmy.Count > 0)
             {
                 var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));

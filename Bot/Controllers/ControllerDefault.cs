@@ -332,7 +332,8 @@ namespace Bot
         }
 
         // Get a list of units based on a list of unit types.
-        public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false, bool onlyVisible = false, bool hasVespene = false)
+        public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false, 
+            DisplayType displayType = DisplayType.Unset, bool hasVespene = false)
         {
             // Ideally this should be cached in the future and cleared at each new frame.
             var units = new List<Unit>();
@@ -342,7 +343,7 @@ namespace Bot
                     if (onlyCompleted && unit.BuildProgress < 1)
                         continue;
 
-                    if (onlyVisible && (unit.DisplayType != DisplayType.Visible))
+                    if (displayType != DisplayType.Unset && (unit.DisplayType != displayType))
                         continue;
 
                     if (hasVespene && Units.GasGeysers.Contains(unit.UnitType) && (unit.VespeneContents < 1))
@@ -354,7 +355,8 @@ namespace Bot
         }
 
         // Get a list of units based on a single unit type.
-        public List<Unit> GetUnits(uint unitType, Alliance alliance = Alliance.Self, bool onlyCompleted = false, bool onlyVisible = false, bool hasVespene = false)
+        public List<Unit> GetUnits(uint unitType, Alliance alliance = Alliance.Self, bool onlyCompleted = false,
+            DisplayType displayType = DisplayType.Unset, bool hasVespene = false)
         {
             // Ideally this should be cached in the future and cleared at each new frame.
             var units = new List<Unit>();
@@ -364,8 +366,9 @@ namespace Bot
                     if (onlyCompleted && unit.BuildProgress < 1)
                         continue;
 
-                    if (onlyVisible && (unit.DisplayType != DisplayType.Visible))
+                    if (displayType != DisplayType.Unset && (unit.DisplayType != displayType))
                         continue;
+
                     if (hasVespene && (unit.VespeneContents < 1))
                         continue;
                     units.Add(new Unit(unit));
@@ -685,6 +688,50 @@ namespace Bot
             return resourceCenters.Count;
         }
 
+        // Get the closest unit to the target unit from the passed unit list.
+        public Unit GetClosestUnit(Unit target, List<Unit> units, double withInDistance = 0)
+        {
+            Unit closestUnit = null;
+
+            if (units.Count > 0)
+            {
+                UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(target.position);
+                unitsDistanceFromList.AddUnits(units);
+
+                var firstUnit = unitsDistanceFromList.toUnits[0];
+
+                if (withInDistance > 0)
+                {
+                    if (firstUnit.distance <= withInDistance)
+                    {
+                        closestUnit = firstUnit.unit;
+                    }
+                }
+                else
+                {
+                    closestUnit = firstUnit.unit;
+                }
+            }
+
+            return closestUnit;
+        }
+
+        // Get the closest unit to the target unit from the passed hashset.
+        public Unit GetClosestUnit(Unit target, HashSet<uint> unitTypes, double withInDistance = 0)
+        {
+            var units = GetUnits(unitTypes);
+
+            return GetClosestUnit(target, units, withInDistance);
+        }
+
+        // Get the closest unit to the target unit from the passed unit type.
+        public Unit GetClosestUnit(Unit target, uint unitType, double withInDistance = 0)
+        {
+            var units = GetUnits(unitType);
+
+            return GetClosestUnit(target, units, withInDistance);
+        }
+
         /**********
          * Abilities
          **********/
@@ -835,7 +882,7 @@ namespace Bot
             var resourceRange = 12;
             var gasBuildings = GetUnits(Units.GasGeysersStructures, onlyCompleted: true, hasVespene: true);
             var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
-            var mineralFields = GetUnits(Units.MineralFields, onlyVisible: true, alliance: Alliance.Neutral);
+            var mineralFields = GetUnits(Units.MineralFields, displayType: DisplayType.Visible, alliance: Alliance.Neutral);
             var workers = GetUnits(Units.Workers);
 
             // Get a list of idle workers.
@@ -1002,7 +1049,7 @@ namespace Bot
                 }
             }
             // Trying to find a valid construction spot
-            var mineralFields = GetUnits(Units.MineralFields, onlyVisible: true, alliance: Alliance.Neutral);
+            var mineralFields = GetUnits(Units.MineralFields, displayType: DisplayType.Visible, alliance: Alliance.Neutral);
             Vector3 constructionSpot;
 
             var i = 0;
@@ -1073,7 +1120,7 @@ namespace Bot
             }
 
             // Trying to find a valid construction gas geyser.
-            var gasGeysers = GetUnits(Units.GasGeysersAvail, onlyVisible: true, alliance: Alliance.Neutral);
+            var gasGeysers = GetUnits(Units.GasGeysersAvail, displayType: DisplayType.Visible, alliance: Alliance.Neutral);
             foreach (var gasGeyser in gasGeysers)
             {
                 //Logger.Info("Gas Geyser Position = {0}", gasGeyser.position);

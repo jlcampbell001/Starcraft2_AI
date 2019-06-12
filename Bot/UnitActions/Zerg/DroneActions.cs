@@ -25,8 +25,13 @@ namespace Bot.UnitActions.Zerg
 
         public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
         {
+            if (!IsUnitType(unit) && !IsBurrowedUnitType(unit)) return;
+
             // Attack any enemy workers in sight.
             AttackEnemyWorkers(unit);
+
+            // Do not go to far in attacking an enemy.
+            ReturnToBase(unit);
 
             // If a drone may be under attack ask for help.
             NeedHelpAction(unit);
@@ -34,8 +39,13 @@ namespace Bot.UnitActions.Zerg
 
         public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
         {
+            if (!IsUnitType(unit) && !IsBurrowedUnitType(unit)) return;
+
             // Attack any enemy workers in sight.
             AttackEnemyWorkers(unit);
+
+            // Do not go to far in attacking an enemy.
+            ReturnToBase(unit);
 
             // If a drone may be under attack ask for help.
             NeedHelpAction(unit);
@@ -58,21 +68,40 @@ namespace Bot.UnitActions.Zerg
         // If an enemy worker can be seen attack it.
         private void AttackEnemyWorkers(Unit unit)
         {
-            var enemyWorkers = controller.GetUnits(Units.Workers, alliance: Alliance.Enemy, onlyVisible: true);
+            if (!IsUnitType(unit)) return;
 
-            if (enemyWorkers.Count > 0)
-            {
-                UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(unit.position);
-                unitsDistanceFromList.AddUnits(enemyWorkers);
+            if (IsBusy(unit) && !Abilities.GatherMinerals.Contains((int)unit.order.AbilityId)) return;
 
-                var enemyWorker = unitsDistanceFromList.toUnits[0];
-                if (enemyWorker.distance <= unit.sight)
+            var enemyWorkers = controller.GetUnits(Units.Workers, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
+
+            var enemyWorker = controller.GetClosestUnit(unit, enemyWorkers, unit.sight);
+                if (enemyWorker != null)
                 {
-                    unit.Attack(unit, enemyWorker.unit.position);
-                    Logger.Info("Drone {0} is attacking {1}.", unit.tag, enemyWorker.unit.name);
+                    unit.Attack(unit, enemyWorker.position);
+                    Logger.Info("Drone {0} is attacking {1}.", unit.tag, enemyWorker.name);
+                }
+        }
+
+        // If followed an enemy worker to far return to base.
+        private void ReturnToBase(Unit unit)
+        {
+            if (!IsUnitType(unit)) return;
+
+            if (unit.order.AbilityId == Abilities.ATTACK)
+            {
+                var resourceCenters = controller.GetUnits(Units.ResourceCenters);
+
+                if (resourceCenters.Count > 0)
+                {
+                    var resourceCenter = controller.GetClosestUnit(unit, resourceCenters, unit.sight * 3);
+
+                    if (resourceCenter == null)
+                    {
+                        resourceCenter = controller.GetClosestUnit(unit, resourceCenters);
+                        unit.Move(resourceCenter.position);
+                    }
                 }
             }
         }
-
     }
 }

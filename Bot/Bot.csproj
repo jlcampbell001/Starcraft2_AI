@@ -82,6 +82,7 @@
     <Compile Include="UnitActions\Zerg\InfestedTerranActions.cs" />
     <Compile Include="UnitActions\Zerg\InfestorActions.cs" />
     <Compile Include="UnitActions\Zerg\LairActions.cs" />
+    <Compile Include="UnitActions\Zerg\LarvaActions.cs" />
     <Compile Include="UnitActions\Zerg\LurkerActions.cs" />
     <Compile Include="UnitActions\Zerg\QueenActions.cs" />
     <Compile Include="UnitActions\Zerg\RavagerActions.cs" />
