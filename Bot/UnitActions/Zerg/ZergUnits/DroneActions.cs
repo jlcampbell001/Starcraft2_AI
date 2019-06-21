@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Bot.Utilities;
 using SC2APIProtocol;
 
-namespace Bot.UnitActions.Zerg
+namespace Bot.UnitActions.Zerg.ZergUnits
 {
     //Note: The drones morph into building ability is being handled by the bot and controller instead.
     class DroneActions : ZergActions
@@ -23,7 +23,8 @@ namespace Bot.UnitActions.Zerg
             unburrow = Abilities.UNBURROW_DRONE;
         }
 
-        public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+        public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
+            bool saveFor = false, bool doNotUseResources = false)
         {
             if (!IsUnitType(unit) && !IsBurrowedUnitType(unit)) return;
 
@@ -37,7 +38,8 @@ namespace Bot.UnitActions.Zerg
             NeedHelpAction(unit);
         }
 
-        public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+        public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
+            bool saveFor = false, bool doNotUseResources = false)
         {
             if (!IsUnitType(unit) && !IsBurrowedUnitType(unit)) return;
 
@@ -56,7 +58,8 @@ namespace Bot.UnitActions.Zerg
                 {
                     Unburrow(unit);
                 }
-            } else
+            }
+            else
             {
                 if (!IsBusy(unit) && random.Next(100) < BURROW_CHANCE)
                 {
@@ -75,11 +78,11 @@ namespace Bot.UnitActions.Zerg
             var enemyWorkers = controller.GetUnits(Units.Workers, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
 
             var enemyWorker = controller.GetClosestUnit(unit, enemyWorkers, unit.sight);
-                if (enemyWorker != null)
-                {
-                    unit.Attack(unit, enemyWorker.position);
-                    Logger.Info("Drone {0} is attacking {1}.", unit.tag, enemyWorker.name);
-                }
+            if (enemyWorker != null)
+            {
+                unit.Attack(unit, enemyWorker.position);
+                Logger.Info("Drone {0} is attacking {1}.", unit.tag, enemyWorker.name);
+            }
         }
 
         // If followed an enemy worker to far return to base.

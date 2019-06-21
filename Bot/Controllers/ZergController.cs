@@ -34,6 +34,22 @@
                 // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
+            // For some reason the mineral cost for overseer includes the overlord cost but this is already paid for so we need to take it out.
+            if (unitType == Units.OVERSEER)
+            {
+                var overlordData = gameData.Units[(int)Units.OVERLORD];
+                unitMinerals = unitMinerals - (int)overlordData.MineralCost;
+                // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
+            }
+
+            // The overlord transport cost comes out as a new overlord cost but should be 25 for both types instead.
+            if (unitType == Units.OVERLORD_TRANSPORT)
+            {
+                unitMinerals = 25;
+                unitVespene = 25;
+                // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
+            }
+
             //Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             return (minerals >= unitMinerals) && (vespene >= unitVespene);
         }
@@ -46,73 +62,61 @@
             // Do we spawning pools for the unit? 
             if (Units.NeedSpawningPool.Contains(unitType))
             {
-                var spawningPools = GetUnits(Units.SPAWNING_POOL, onlyCompleted: true);
-                if (spawningPools.Count == 0) return false;
+                if (!HasUnits(Units.SPAWNING_POOL)) return false;
             }
 
             // Do we lairs or hives for the unit? 
             if (Units.NeedLairOrHive.Contains(unitType))
             {
-                var lairs = GetUnits(Units.LAIR, onlyCompleted: true);
-                var hives = GetUnits(Units.HIVE, onlyCompleted: true);
-                if (lairs.Count == 0 && hives.Count == 0) return false;
+                if (!HasUnits(Units.LairsAndHives)) return false;
             }
 
             // Do we lairs only for the unit? 
             if (Units.NeedLair.Contains(unitType))
             {
-                var lairs = GetUnits(Units.LAIR, onlyCompleted: true);
-                if (lairs.Count == 0) return false;
+                if (!HasUnits(Units.LAIR)) return false;
             }
 
             // Do we hive only for the unit? 
             if (Units.NeedHive.Contains(unitType))
             {
-                var hives = GetUnits(Units.HIVE, onlyCompleted: true);
-                if (hives.Count == 0) return false;
+                if (!HasUnits(Units.HIVE)) return false;
             }
 
             // Do we hydralisk dens for the unit? 
             if (Units.NeedHydraliskDen.Contains(unitType))
             {
-                var hydraliskDens = GetUnits(Units.HYDRALISK_DEN, onlyCompleted: true);
-                if (hydraliskDens.Count == 0) return false;
+                if (!HasUnits(Units.HYDRALISK_DEN)) return false;
             }
 
             // Do we roach warren for the unit? 
             if (Units.NeedRoachWarren.Contains(unitType))
             {
-                var roachWarrens = GetUnits(Units.ROACH_WARREN, onlyCompleted: true);
-                if (roachWarrens.Count == 0) return false;
+                if (!HasUnits(Units.ROACH_WARREN)) return false;
             }
 
             // Do we a spire or greater spire for the unit? 
             if (Units.NeedSpireOrGreaterSpire.Contains(unitType))
             {
-                var spires = GetUnits(Units.SPIRE, onlyCompleted: true);
-                var greaterSpires = GetUnits(Units.GREATER_SPIRE, onlyCompleted: true);
-                if (spires.Count == 0 && greaterSpires.Count == 0) return false;
+                if (!HasUnits(Units.Spires)) return false;
             }
 
             // Do we an infestation pit for the unit? 
             if (Units.NeedInfestationPit.Contains(unitType))
             {
-                var infestationPits = GetUnits(Units.INFESTATION_PIT, onlyCompleted: true);
-                if (infestationPits.Count == 0) return false;
+                if (!HasUnits(Units.INFESTATION_PIT)) return false;
             }
 
             // Do we a lurker den for the unit? 
             if (Units.NeedLurkerDen.Contains(unitType))
             {
-                var lurkerDens = GetUnits(Units.LURKER_DEN, onlyCompleted: true);
-                if (lurkerDens.Count == 0) return false;
+                if (!HasUnits(Units.LURKER_DEN)) return false;
             }
 
             // Do we an ultralisk cavern for the unit? 
             if (Units.NeedUltraliskCavern.Contains(unitType))
             {
-                var ultraliskCaverns = GetUnits(Units.ULTRALISK_CAVERN, onlyCompleted: true);
-                if (ultraliskCaverns.Count == 0) return false;
+                if (!HasUnits(Units.ULTRALISK_CAVERN)) return false;
             }
 
 
@@ -122,12 +126,11 @@
                 if (!ignoreResourceSupply)
                 {
                     //we need worker for every structure
-                    if (GetUnits(Units.Workers).Count == 0) return false;
+                    if (!HasUnits(Units.Workers)) return false;
                 }
 
                 //we need an RC for any structure
-                var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
-                if (resourceCenters.Count == 0) return false;
+                if (!HasUnits(Units.ResourceCenters)) return false;
             }
             else
             // Preform these check if it is a unit.

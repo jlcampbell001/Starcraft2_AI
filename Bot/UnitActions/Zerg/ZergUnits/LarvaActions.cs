@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bot.UnitActions.Zerg
+namespace Bot.UnitActions.Zerg.ZergUnits
 {
     // This is not handling the unit morphs.  Morphs are handled in the bot.
     class LarvaActions : ZergActions
@@ -20,18 +20,20 @@ namespace Bot.UnitActions.Zerg
             unitType = Units.LARVA;
         }
 
-        public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+        public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
+            bool saveFor = false, bool doNotUseResources = false)
         {
             if (!IsUnitType(unit)) return;
 
             NotNearResourceCenterActions(unit);
         }
 
-        public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+        public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
+            bool saveFor = false, bool doNotUseResources = false)
         {
             if (!IsUnitType(unit)) return;
 
-            NotNearResourceCenterActions(unit); 
+            NotNearResourceCenterActions(unit);
         }
 
         // If a larva is not near a resource center then the creep will most likely be gone soon and it will die so morph in to something.

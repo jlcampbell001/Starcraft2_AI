@@ -117,6 +117,7 @@ namespace Bot
         public static uint DRONE = 104;
         public static uint ZERGLING = 105;
         public static uint OVERLORD = 106;
+        public static uint OVERLORD_TRANSPORT = 893;
         public static uint HYDRALISK = 107;
         public static uint MUTALISK = 108;
         public static uint ULTRALISK = 109;
@@ -293,6 +294,7 @@ namespace Bot
             DRONE,
             ZERGLING,
             OVERLORD,
+            OVERLORD_TRANSPORT,
             HYDRALISK,
             MUTALISK,
             ULTRALISK,
@@ -389,6 +391,7 @@ namespace Bot
             DRONE,
             ZERGLING,
             OVERLORD,
+            OVERLORD_TRANSPORT,
             HYDRALISK,
             MUTALISK,
             ULTRALISK,
@@ -729,6 +732,7 @@ namespace Bot
             DRONE,
             ZERGLING,
             OVERLORD,
+            OVERLORD_TRANSPORT,
             HYDRALISK,
             MUTALISK,
             ULTRALISK,
@@ -953,7 +957,9 @@ namespace Bot
             HYDRALISK_DEN,
             SPIRE,
             NYDUS_NETWORK,
-            INFESTATION_PIT
+            INFESTATION_PIT,
+            OVERSEER,
+            OVERLORD_TRANSPORT
         };
 
         public static readonly HashSet<uint> NeedLair = new HashSet<uint>
@@ -1053,6 +1059,23 @@ namespace Bot
             RAVAGER,
             LURKER,
             SWARM_HOST
+        };
+
+        public static readonly HashSet<uint> OverLordsAndOverseers = new HashSet<uint> {
+            OVERLORD,
+            OVERLORD_TRANSPORT,
+            OVERSEER
+        };
+
+        public static readonly HashSet<uint> LairsAndHives = new HashSet<uint> {
+            LAIR,
+            HIVE
+        };
+         
+        public static readonly HashSet<uint> Spires = new HashSet<uint>
+        {
+            SPIRE,
+            GREATER_SPIRE
         };
     }
 }

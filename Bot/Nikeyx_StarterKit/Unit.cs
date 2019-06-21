@@ -28,6 +28,7 @@ namespace Bot
         public float sight;
         public ulong target;
         public bool isBurrowed;
+        public bool isSelected;
 
         public Unit(SC2APIProtocol.Unit unit)
         {
@@ -47,6 +48,7 @@ namespace Bot
             this.orders = unit.Orders;
             this.isVisible = (unit.DisplayType == DisplayType.Visible);
             this.isBurrowed = unit.IsBurrowed;
+            this.isSelected = unit.IsSelected;
 
             this.supply = (int)unitTypeData.FoodRequired;
 

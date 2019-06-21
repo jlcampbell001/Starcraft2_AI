@@ -55,7 +55,8 @@ namespace Bot.UnitActions
         // Try and command actions intelligently.
         // This is meant to be overridden.
         virtual
-            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
+            bool doNotUseResources = false)
         {
 
         }
@@ -63,7 +64,8 @@ namespace Bot.UnitActions
         // Command random actions.
         // This is meant to be overridden.
         virtual
-            public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+            public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
+            bool doNotUseResources = false)
         {
 
         }

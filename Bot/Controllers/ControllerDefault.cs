@@ -732,6 +732,22 @@ namespace Bot
             return GetClosestUnit(target, units, withInDistance);
         }
 
+        // Check and see if the bot has any of the passed completed units.
+        public bool HasUnits(uint unitType)
+        {
+            var foundUnits = GetUnits(unitType, onlyCompleted: true);
+
+            return (foundUnits.Count > 0);
+        }
+
+        // Check and see if the bot has any of the passed completed units.
+        public bool HasUnits(HashSet<uint> unitTypes)
+        {
+            var foundUnits = GetUnits(unitTypes, onlyCompleted: true);
+
+            return (foundUnits.Count > 0);
+        }
+
         /**********
          * Abilities
          **********/
@@ -763,6 +779,7 @@ namespace Bot
         }
 
         // Check and see if we have the resources for the passed upgrade and also return the resources costs.
+        virtual
         public bool CanAffordUpgrade(int abilityID, ref int mineralCost, ref int vespeneCost)
         {
             var canAfford = false;
@@ -1064,8 +1081,10 @@ namespace Bot
                     return;
                 }
 
-                constructionSpot = new Vector3(startingSpot.X + random.Next(-buildRangeRadius, buildRangeRadius + 1),
-                    startingSpot.Y + random.Next(-buildRangeRadius, buildRangeRadius + 1), 0);
+                //constructionSpot = new Vector3(startingSpot.X + random.Next(-buildRangeRadius, buildRangeRadius + 1),
+                //startingSpot.Y + random.Next(-buildRangeRadius, buildRangeRadius + 1), 0);
+
+                constructionSpot = GetRandomLocation(startingSpot, -buildRangeRadius, buildRangeRadius, -buildRangeRadius, buildRangeRadius);
 
                 // Avoid building in the mineral line.
                 // Note:  Need to re-work this as it still happens and I need it for gas structures.
@@ -1195,7 +1214,7 @@ namespace Bot
 
                 if (!CanPlace(unitType, expansionPosition.location)) continue;
 
-                var overlords = GetUnits(Units.OVERLORD);
+                var overlords = GetUnits(Units.OverLordsAndOverseers);
 
                 overlords[0].Move(expansionPosition.location);
 
@@ -1234,7 +1253,17 @@ namespace Bot
             }
         }
 
-        public bool isGatheringVespene(int minWorkersGathering = 1)
+        // Write to the log if the passed unit is currently selected.
+        public void LogIfSelectedUnit(Unit unit, string line, params object[] parameters)
+        {
+            if (unit != null && unit.isSelected)
+            {
+                Logger.Info(line, parameters);
+            }
+        }
+
+        // Check and see if a unit is gathering vespene.
+        public bool IsGatheringVespene(int minWorkersGathering = 1)
         {
             var gasBuildings = GetUnits(Units.GasGeysersStructures);
             var totalWorkersAssigned = 0;
@@ -1244,6 +1273,21 @@ namespace Bot
             }
 
             return (totalWorkersAssigned >= minWorkersGathering);
+        }
+
+        // Get a random spot around a starting position.
+        // Note: Need some error checking to make sure the min are lower then the maxes.
+        public Vector3 GetRandomLocation(Vector3 startingLocation, int xMinRange = 0, int xMaxRange = 0, int yMinRange = 0, int yMaxRange = 0)
+        {
+            var randomLocation = new Vector3(startingLocation.X + random.Next(xMinRange, xMaxRange + 1),
+                    startingLocation.Y + random.Next(yMinRange, yMaxRange + 1), 0);
+
+            return randomLocation;
+        }
+
+        public List<Action> GetActions()
+        {
+            return actions;
         }
     }
 }

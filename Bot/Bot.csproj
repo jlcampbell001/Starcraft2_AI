@@ -11,6 +11,21 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -74,24 +89,27 @@
     <Compile Include="UnitActions\UnitActionListItem.cs" />
     <Compile Include="UnitActions\UnitActions.cs" />
     <Compile Include="UnitActions\UnitActionsList.cs" />
-    <Compile Include="UnitActions\Zerg\BanelingActions.cs" />
-    <Compile Include="UnitActions\Zerg\DroneActions.cs" />
-    <Compile Include="UnitActions\Zerg\HatcheryActions.cs" />
-    <Compile Include="UnitActions\Zerg\HiveActions.cs" />
-    <Compile Include="UnitActions\Zerg\HydraliskActions.cs" />
-    <Compile Include="UnitActions\Zerg\InfestedTerranActions.cs" />
-    <Compile Include="UnitActions\Zerg\InfestorActions.cs" />
-    <Compile Include="UnitActions\Zerg\LairActions.cs" />
-    <Compile Include="UnitActions\Zerg\LarvaActions.cs" />
-    <Compile Include="UnitActions\Zerg\LurkerActions.cs" />
-    <Compile Include="UnitActions\Zerg\QueenActions.cs" />
-    <Compile Include="UnitActions\Zerg\RavagerActions.cs" />
-    <Compile Include="UnitActions\Zerg\RoachActions.cs" />
-    <Compile Include="UnitActions\Zerg\SwarmHostActions.cs" />
-    <Compile Include="UnitActions\Zerg\UltraliskActions.cs" />
     <Compile Include="UnitActions\Zerg\ZergActions.cs" />
-    <Compile Include="UnitActions\Zerg\ZerglingActions.cs" />
-    <Compile Include="UnitActions\Zerg\ZergRescourceCenterActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergStructures\ZergResourceCenters\HatcheryActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergStructures\ZergResourceCenters\HiveActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergStructures\ZergResourceCenters\LairActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergStructures\ZergResourceCenters\ZergRescourceCenterActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\BanelingActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\DroneActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\HydraliskActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\InfestedTerranActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\InfestorActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\LarvaActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\LurkerActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\OverlordsAndOverseers\OverlordActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\OverlordsAndOverseers\OverlordTransportActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\OverlordsAndOverseers\OverseerActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\QueenActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\RavagerActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\RoachActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\SwarmHostActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\UltraliskActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergUnits\ZerglingActions.cs" />
     <Compile Include="Utilities\LocationDistance.cs" />
     <Compile Include="Utilities\ResourceCluster.cs" />
     <Compile Include="Utilities\UnitDistance.cs" />
@@ -100,6 +118,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Notes\ZergUnitCosts.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

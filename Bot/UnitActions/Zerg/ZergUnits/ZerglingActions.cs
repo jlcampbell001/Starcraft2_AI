@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bot.UnitActions.Zerg
+namespace Bot.UnitActions.Zerg.ZergUnits
 {
     class ZerglingActions : ZergActions
     {

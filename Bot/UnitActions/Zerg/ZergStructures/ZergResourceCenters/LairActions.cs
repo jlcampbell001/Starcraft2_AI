@@ -4,25 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bot.UnitActions.Zerg
+namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 {
-    class HiveActions : ZergRescourceCenterActions
+    class LairActions : ZergRescourceCenterActions
     {
-        public HiveActions(ZergController controller) : base(controller)
+        public LairActions(ZergController controller) : base(controller)
         {
-            unitType = Units.HIVE;
-        }
-
-        // Try an preform intelligent actions for the unit.
-        override
-            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
-        {
-
+            unitType = Units.LAIR;
         }
 
         // Pick a random action to preform.
         override
-        public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, bool saveFor = false, bool doNotUseResources = false)
+        public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
+            bool saveFor = false, bool doNotUseResources = false)
         {
             // Ask for help if being attack.
             NeedHelpAction(unit);
@@ -33,6 +27,7 @@ namespace Bot.UnitActions.Zerg
             {
                 case 0:
                     if (doNotUseResources) return;
+
                     /*
                     var laiResult = UpgradeToLair(unit);
                     if (saveFor && laiResult == LairResult.CanNotConstruct)

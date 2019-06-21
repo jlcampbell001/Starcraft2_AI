@@ -1,4 +1,5 @@
-﻿using Bot.Utilities;
+﻿using Bot.UnitActions.Zerg;
+using Bot.Utilities;
 using SC2APIProtocol;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bot.UnitActions.Zerg
+namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 {
     class ZergRescourceCenterActions : ZergActions
     {
@@ -55,7 +56,6 @@ namespace Bot.UnitActions.Zerg
             if (!IsUnitType(unit)) return ResearchResult.NotUnitType;
 
             if (controller.HasUpgrade(upgradeID)) return ResearchResult.AlreadyHas;
-
 
             if (controller.IsResearchingUpgrade(researchID, Units.ResourceCenters)) return ResearchResult.IsResearching;
 
@@ -159,8 +159,7 @@ namespace Bot.UnitActions.Zerg
                 }
             }
 
-            var rallySpot = new Vector3(unit.position.X + random.Next(xMin, xMax + 1),
-                     unit.position.Y + random.Next(yMin, yMax + 1), 0);
+            var rallySpot = controller.GetRandomLocation(unit.position, xMin, xMax, yMin, yMax);
 
             var constructAction = ControllerDefault.CreateRawUnitCommand(unitRally);
             constructAction.ActionRaw.UnitCommand.UnitTags.Add(unit.tag);
@@ -189,7 +188,7 @@ namespace Bot.UnitActions.Zerg
 
             LocationsDistanceFromList resourceDistance = new LocationsDistanceFromList(unit.position);
             resourceDistance.AddLocation(resources);
-            
+
             if (resourceDistance.toLocations.Count > 0)
             {
                 if (resourceDistance.toLocations[0].distance <= unitSight)

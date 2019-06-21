@@ -1,5 +1,8 @@
 ﻿using Bot.UnitActions;
 using Bot.UnitActions.Zerg;
+using Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters;
+using Bot.UnitActions.Zerg.ZergUnits;
+using Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers;
 using Bot.Utilities;
 using SC2APIProtocol;
 using System.Collections.Generic;
@@ -8,7 +11,7 @@ namespace Bot
 {
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = false;
+        private readonly bool totalRandom = true;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -65,6 +68,9 @@ namespace Bot
         private UltraliskActions ultraliskAction;
         private InfestedTerranActions infestedTerranAction;
         private LarvaActions larvaActions;
+        private OverlordActions overlordActions;
+        private OverlordTransportActions overlordTransportActions;
+        private OverseerActions overseerActions;
 
         private HatcheryActions hatcheryAction;
         private LairActions lairActions;
@@ -86,6 +92,9 @@ namespace Bot
             ultraliskAction = new UltraliskActions(controller);
             infestedTerranAction = new InfestedTerranActions(controller);
             larvaActions = new LarvaActions(controller);
+            overlordActions = new OverlordActions(controller);
+            overlordTransportActions = new OverlordTransportActions(controller);
+            overseerActions = new OverseerActions(controller);
 
             hatcheryAction = new HatcheryActions(controller);
             lairActions = new LairActions(controller);
@@ -105,6 +114,9 @@ namespace Bot
             ultraliskAction.SetupUnitActionsList(ref unitActionsList);
             infestedTerranAction.SetupUnitActionsList(ref unitActionsList);
             larvaActions.SetupUnitActionsList(ref unitActionsList);
+            overlordActions.SetupUnitActionsList(ref unitActionsList);
+            overlordTransportActions.SetupUnitActionsList(ref unitActionsList);
+            overseerActions.SetupUnitActionsList(ref unitActionsList);
 
             hatcheryAction.SetupUnitActionsList(ref unitActionsList);
             lairActions.SetupUnitActionsList(ref unitActionsList);
@@ -167,8 +179,7 @@ namespace Bot
             else if (saveForMinerals != 0 || saveForVespene != 0)
             {
                 // There are no workers to gather.
-                var workers = controller.GetUnits(Units.Workers);
-                if (workers.Count == 0)
+                if (!controller.HasUnits(Units.Workers))
                 {
                     Logger.Info("No workers to gather resources to save for {0}.", saveForName);
                     SetSaveResouces();
@@ -246,10 +257,24 @@ namespace Bot
                     BuildExpansionBase();
                 }
 
+                // Call the units commands every 15 frames
+                if (controller.frame % 15 == 0)
+                {
+                    //Logger.Info("Unit Frame: {0}", controller.frame);
+                    PreformUnitActions(randomActions: totalRandom);
+                }
+
+                // Call the structure commands every 20
+                if (controller.frame % 20 == 0)
+                {
+                    //Logger.Info("Structure Frame: {0}", controller.frame);
+                    PreformStuctureActions(randomActions: totalRandom);
+                }
+
                 // This is for a bot that randomly dose all its actions.
                 if (totalRandom)
                 {
-                    var randAction = random.Next(6);
+                    var randAction = random.Next(4);
 
                     switch (randAction)
                     {
@@ -265,12 +290,6 @@ namespace Bot
                         case 3:
                             ArmyActionsRandom();
                             break;
-                        case 4:
-                            PreformStuctureActions(randomActions: true);
-                            break;
-                        case 5:
-                            PreformUnitActions(randomActions: true);
-                            break;
                     }
 
                 }
@@ -283,17 +302,6 @@ namespace Bot
                     if (randAction < 10)
                     {
                         nextWaitFrame = nextWaitFrame + controller.SecsToFrames(WAIT_IN_SECONDS * random.Next(1, 10));
-                    }
-                    else if (randAction < 20)
-                    {
-                        if (random.Next(100) < 50)
-                        {
-                            PreformStuctureActions();
-                        }
-                        else
-                        {
-                            PreformUnitActions();
-                        }
                     }
                     else if (randAction < 70)
                     {
@@ -592,6 +600,7 @@ namespace Bot
 
             var saveFor = true;
             var doNotUseResouces = false;
+            var ignoreSaveRandomRoll = false;
             uint saveUnit = 0;
             int saveUpgrade = 0;
 
@@ -609,11 +618,11 @@ namespace Bot
                 {
                     if (randomActions)
                     {
-                        structureActions.PreformRandomActions(structure, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
+                        structureActions.PreformRandomActions(structure, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResouces);
                     }
                     else
                     {
-                        structureActions.PreformIntelligentActions(structure, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
+                        structureActions.PreformIntelligentActions(structure, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResouces);
                     }
 
                     if (saveUnit != 0 || saveUpgrade != 0)
@@ -626,7 +635,7 @@ namespace Bot
 
             if (saveUnit != 0)
             {
-                SaveResourcesForUnit(saveUnit);
+                SaveResourcesForUnit(saveUnit, ignoreSaveRandomRoll);
             }
             else if (saveUpgrade != 0)
             {
@@ -691,6 +700,51 @@ namespace Bot
             }
         }
 
+        // Morph an overlord to an overseer.
+        private void MorphToOverseer()
+        {
+            var overlords = controller.GetUnits(Units.OVERLORD);
+            foreach (var overlord in overlords)
+            {
+                OverlordActions overlordActions = (OverlordActions)unitActionsList.GetUnitAction(overlord.unitType);
+
+                if (overlordActions != null)
+                {
+                    var result = overlordActions.MorphToOverseer(overlord);
+
+                    if (result == OverlordActions.OverseerResult.CanNotConstruct
+                        || result == OverlordActions.OverseerResult.Success
+                        || result == OverlordActions.OverseerResult.NotUnitType
+                        || result == OverlordActions.OverseerResult.CanNotAfford)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Morph an overlord to an transport overlord.
+        private void MorphToTransportOverlord()
+        {
+            var overlords = controller.GetUnits(Units.OVERLORD);
+            foreach (var overlord in overlords)
+            {
+                OverlordActions overlordActions = (OverlordActions)unitActionsList.GetUnitAction(overlord.unitType);
+
+                if (overlordActions != null)
+                {
+                    var result = overlordActions.MorphToOverlordTransport(overlord);
+
+                    if (result == OverlordActions.MorphToTransportResult.CanNotConstruct
+                        || result == OverlordActions.MorphToTransportResult.Success
+                        || result == OverlordActions.MorphToTransportResult.NotUnitType
+                        || result == OverlordActions.MorphToTransportResult.CanNotAfford)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
         // Preform unit actions.
         private void PreformUnitActions(bool randomActions = false)
         {
@@ -698,6 +752,7 @@ namespace Bot
 
             var saveFor = true;
             var doNotUseResouces = false;
+            var ignoreSaveRandomRoll = false;
             uint saveUnit = 0;
             int saveUpgrade = 0;
 
@@ -715,11 +770,11 @@ namespace Bot
                 {
                     if (randomActions)
                     {
-                        unitActions.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
+                        unitActions.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResouces);
                     }
                     else
                     {
-                        unitActions.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, saveFor, doNotUseResouces);
+                        unitActions.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResouces);
                     }
 
                     if (saveUnit != 0 || saveUpgrade != 0)
@@ -732,7 +787,7 @@ namespace Bot
 
             if (saveUnit != 0)
             {
-                SaveResourcesForUnit(saveUnit);
+                SaveResourcesForUnit(saveUnit, ignoreRandomRoll: ignoreSaveRandomRoll);
             }
             else if (saveUpgrade != 0)
             {
@@ -749,33 +804,30 @@ namespace Bot
         {
             var resourceCenters = controller.GetUnits(Units.ResourceCenters);
 
-            if (resourceCenters.Count > 0)
+            foreach (var resourceCenter in resourceCenters)
             {
-                foreach (var resourceCenter in resourceCenters)
+                ZergRescourceCenterActions rescourceCenterActions = (ZergRescourceCenterActions)unitActionsList.GetUnitAction(resourceCenter.unitType);
+
+                if (rescourceCenterActions != null)
                 {
-                    ZergRescourceCenterActions rescourceCenterActions = (ZergRescourceCenterActions)unitActionsList.GetUnitAction(resourceCenter.unitType);
+                    var result = UnitActions.UnitActions.ResearchResult.Success;
 
-                    if (rescourceCenterActions != null)
+                    if (researchID == Abilities.RESEARCH_BURROW)
                     {
-                        var result = UnitActions.UnitActions.ResearchResult.Success;
+                        result = rescourceCenterActions.ResearchBurrow(resourceCenter);
+                    }
+                    else if (researchID == Abilities.RESEARCH_PNEUMATIZED_CARAPACE)
+                    {
+                        result = rescourceCenterActions.ResearchPneumatizedCarapace(resourceCenter);
+                    }
 
-                        if (researchID == Abilities.RESEARCH_BURROW)
-                        {
-                            result = rescourceCenterActions.ResearchBurrow(resourceCenter);
-                        }
-                        else if (researchID == Abilities.RESEARCH_PNEUMATIZED_CARAPACE)
-                        {
-                            result = rescourceCenterActions.ResearchPneumatizedCarapace(resourceCenter);
-                        }
-
-                        if (result == UnitActions.UnitActions.ResearchResult.Success
-                            || result == UnitActions.UnitActions.ResearchResult.IsResearching
-                            || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
-                            || result == UnitActions.UnitActions.ResearchResult.CanNotAfford
-                            || result == UnitActions.UnitActions.ResearchResult.NoGasGysersStructures)
-                        {
-                            break;
-                        }
+                    if (result == UnitActions.UnitActions.ResearchResult.Success
+                        || result == UnitActions.UnitActions.ResearchResult.IsResearching
+                        || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
+                        || result == UnitActions.UnitActions.ResearchResult.CanNotAfford
+                        || result == UnitActions.UnitActions.ResearchResult.NoGasGysersStructures)
+                    {
+                        break;
                     }
                 }
             }
@@ -856,7 +908,7 @@ namespace Bot
                 army = controller.GetUnits(Units.ArmyUnits);
 
                 if (army.Count > random.Next(ATTACK_ARMY_PER_MIN, ATTACK_ARMY_MAX))
-                {                
+                {
                     enemyStructures = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, displayType: DisplayType.Snapshot);
                 }
             }
@@ -944,9 +996,15 @@ namespace Bot
          **********/
 
         // Save resources for the passed unit type.
-        private void SaveResourcesForUnit(uint unitType = 0)
+        private void SaveResourcesForUnit(uint unitType = 0, bool ignoreRandomRoll = false)
         {
             var rollToSaveFor = random.Next(100);
+
+            if (ignoreRandomRoll)
+            {
+                rollToSaveFor = 0;
+            }
+
             var showNotFoundMessage = false;
 
             var saveUnitType = unitType;
@@ -1002,7 +1060,7 @@ namespace Bot
             // Do not try and save for vespene is no one is gathering it.
             if (vespene > 0)
             {
-                if (!controller.isGatheringVespene()) return;
+                if (!controller.IsGatheringVespene()) return;
             }
 
             if (unitType != 0)
@@ -1053,6 +1111,14 @@ namespace Bot
                 else if (saveForUnitType == Units.EXPANSION_BASE)
                 {
                     BuildExpansionBase(saveFor: false);
+                }
+                else if (saveForUnitType == Units.OVERSEER)
+                {
+                    MorphToOverseer();
+                }
+                else if (saveForUnitType == Units.OVERLORD_TRANSPORT)
+                {
+                    MorphToTransportOverlord();
                 }
                 else if (Units.Structures.Contains(saveForUnitType))
                 {

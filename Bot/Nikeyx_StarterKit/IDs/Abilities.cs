@@ -45,6 +45,12 @@ namespace Bot
         public static int HATCHERY_UNIT_RALLY = 211;
         public static int HATCHERY_WORKER_RALLY = 212;
 
+        public static int GENERATE_CREEP_ON = 1692;
+        public static int GENERATE_CREEP_OFF = 1693;
+
+        public static int MUTATE_VENTRAL_SACS = 1224;
+        public static int MORPH_OVERLORD_TRANSPORT = 2708;
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;
