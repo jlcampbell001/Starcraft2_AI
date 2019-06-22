@@ -52,19 +52,37 @@ namespace Bot.UnitActions
             return false;
         }
 
-        // Try and command actions intelligently.
-        // This is meant to be overridden.
-        virtual
-            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
+        // ********************************************************************************
+        /// <summary>
+        /// Try and command actions intelligently.
+        /// This is meant to be overridden.
+        /// </summary>
+        /// <param name="unit">The unit to preform the action.</param>
+        /// <param name="saveUnit">Setting to return a value to save resources for a unit.</param>
+        /// <param name="saveUpgrade">Setting to return a value to save resources for an upgrade.</param>
+        /// <param name="ignoreSaveRandomRoll"> Setting to return to turn off the random chance when deciding to save resources.</param>
+        /// <param name="saveFor">If set true it will setup the save resource information.</param>
+        /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
+        // ********************************************************************************
+        public virtual void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
             bool doNotUseResources = false)
         {
 
         }
 
-        // Command random actions.
-        // This is meant to be overridden.
-        virtual
-            public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
+        // ********************************************************************************
+        /// <summary>
+        /// Command random actions.
+        /// This is meant to be overridden.
+        /// </summary>
+        /// <param name="unit">The unit to preform the action.</param>
+        /// <param name="saveUnit">Setting to return a value to save resources for a unit.</param>
+        /// <param name="saveUpgrade">Setting to return a value to save resources for an upgrade.</param>
+        /// <param name="ignoreSaveRandomRoll"> Setting to return to turn off the random chance when deciding to save resources.</param>
+        /// <param name="saveFor">If set true it will setup the save resource information.</param>
+        /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
+        // ********************************************************************************
+        public virtual void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
             bool doNotUseResources = false)
         {
 

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 {
-    class ZergRescourceCenterActions : ZergActions
+    class ZergRescourceCenterActions : ZergStructureActions
     {
         protected int researchBurrow = Abilities.RESEARCH_BURROW;
 
@@ -37,6 +37,16 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 
         public ZergRescourceCenterActions(ZergController controller) : base(controller)
         {
+        }
+
+        public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
+        {
+            base.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
+        }
+
+        public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
+        {
+            base.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
         }
 
         // Check and see if the unit is busy.

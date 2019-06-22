@@ -29,6 +29,9 @@ namespace Bot
         public ulong target;
         public bool isBurrowed;
         public bool isSelected;
+        public RepeatedField<PassengerUnit> passangers;
+        public int cargoMax;
+        public int cargoUsed;
 
         public Unit(SC2APIProtocol.Unit unit)
         {
@@ -56,6 +59,10 @@ namespace Bot
             this.minerals = unit.MineralContents;
             this.sight = this.unitTypeData.SightRange;
             this.target = unit.EngagedTargetTag;
+
+            this.passangers = unit.Passengers;
+            this.cargoMax = unit.CargoSpaceMax;
+            this.cargoUsed = unit.CargoSpaceTaken;
         }
 
         // Return the distance between two units (X,Y,Z).
@@ -86,7 +93,7 @@ namespace Bot
         }
 
         // Use an ability.
-        public void UseAbility(int abilityID, bool toggleAutoCast = false)
+        public void UseAbility(int abilityID, bool toggleAutoCast = false, Unit targetUnit = null, Vector3 targetPosition = new Vector3())
         {
             if (orders.Count > 0) return;
             Action action = null;
@@ -100,6 +107,18 @@ namespace Bot
             {
                 action = ControllerDefault.CreateRawUnitCommand(abilityID);
                 action.ActionRaw.UnitCommand.UnitTags.Add(tag);
+            }
+
+            if (targetUnit != null)
+            {
+                action.ActionRaw.UnitCommand.TargetUnitTag = targetUnit.tag;
+            }
+
+            if (targetPosition != Vector3.Zero)
+            {
+                action.ActionRaw.UnitCommand.TargetWorldSpacePos = new Point2D();
+                action.ActionRaw.UnitCommand.TargetWorldSpacePos.X = targetPosition.X;
+                action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = targetPosition.Y;
             }
 
             ControllerDefault.AddAction(action);

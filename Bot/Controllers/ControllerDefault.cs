@@ -331,6 +331,28 @@ namespace Bot
             return unitName;
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Get the unit that has the passed tag.
+        /// </summary>
+        /// <param name="tag">The tag of th unit to look for.</param>
+        /// <returns>The unit if found or null if not found.</returns>
+        // ********************************************************************************
+        public Unit GetUnitByTag(ulong tag)
+        {
+            Unit foundUnit = null;
+
+            foreach(var unit in obs.Observation.RawData.Units)
+            {
+                if (unit.Tag == tag)
+                {
+                    foundUnit = new Unit(unit);
+                }
+            }
+
+            return foundUnit;
+        }
+
         // Get a list of units based on a list of unit types.
         public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false, 
             DisplayType displayType = DisplayType.Unset, bool hasVespene = false)

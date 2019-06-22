@@ -1,5 +1,6 @@
 ﻿using Bot.UnitActions;
 using Bot.UnitActions.Zerg;
+using Bot.UnitActions.Zerg.ZergStructures;
 using Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters;
 using Bot.UnitActions.Zerg.ZergUnits;
 using Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers;
@@ -75,6 +76,20 @@ namespace Bot
         private HatcheryActions hatcheryAction;
         private LairActions lairActions;
         private HiveActions hiveActions;
+        private BanelingNestActions banelingNestActions;
+        private EvolutionChamberActions evolutionChamberActions;
+        private ExtractorActions extractorActions;
+        private GreaterSpireActions greaterSpireActions;
+        private HydraliskDenActions hydraliskDenActions;
+        private InfestationPitActions infestationPitActions;
+        private LurkerDenActions lurkerDenActions;
+        private NydusNetworkActions nydusNetworkActions;
+        private RoachWarrenActions roachWarrenActions;
+        private SpawningPoolActions spawningPoolActions;
+        private SpireActions spireActions;
+        private SpineCrawlerActions spineCrawlerActions;
+        private SporeCrawlerActions sporeCrawlerActions;
+        private UltraliskCavernActions ultraliskCavernActions;
 
         public JCZergBot()
         {
@@ -99,6 +114,20 @@ namespace Bot
             hatcheryAction = new HatcheryActions(controller);
             lairActions = new LairActions(controller);
             hiveActions = new HiveActions(controller);
+            banelingNestActions = new BanelingNestActions(controller);
+            evolutionChamberActions = new EvolutionChamberActions(controller);
+            extractorActions = new ExtractorActions(controller);
+            greaterSpireActions = new GreaterSpireActions(controller);
+            hydraliskDenActions = new HydraliskDenActions(controller);
+            infestationPitActions = new InfestationPitActions(controller);
+            lurkerDenActions = new LurkerDenActions(controller);
+            nydusNetworkActions = new NydusNetworkActions(controller);
+            roachWarrenActions = new RoachWarrenActions(controller);
+            spawningPoolActions = new SpawningPoolActions(controller);
+            spineCrawlerActions = new SpineCrawlerActions(controller);
+            spireActions = new SpireActions(controller);
+            sporeCrawlerActions = new SporeCrawlerActions(controller);
+            ultraliskCavernActions = new UltraliskCavernActions(controller);
 
             // Add to the unit action list
             droneAction.SetupUnitActionsList(ref unitActionsList);
@@ -121,6 +150,20 @@ namespace Bot
             hatcheryAction.SetupUnitActionsList(ref unitActionsList);
             lairActions.SetupUnitActionsList(ref unitActionsList);
             hiveActions.SetupUnitActionsList(ref unitActionsList);
+            banelingNestActions.SetupUnitActionsList(ref unitActionsList);
+            evolutionChamberActions.SetupUnitActionsList(ref unitActionsList);
+            extractorActions.SetupUnitActionsList(ref unitActionsList);
+            greaterSpireActions.SetupUnitActionsList(ref unitActionsList);
+            hydraliskDenActions.SetupUnitActionsList(ref unitActionsList);
+            infestationPitActions.SetupUnitActionsList(ref unitActionsList);
+            lurkerDenActions.SetupUnitActionsList(ref unitActionsList);
+            nydusNetworkActions.SetupUnitActionsList(ref unitActionsList);
+            roachWarrenActions.SetupUnitActionsList(ref unitActionsList);
+            spawningPoolActions.SetupUnitActionsList(ref unitActionsList);
+            spineCrawlerActions.SetupUnitActionsList(ref unitActionsList);
+            spireActions.SetupUnitActionsList(ref unitActionsList);
+            sporeCrawlerActions.SetupUnitActionsList(ref unitActionsList);
+            ultraliskCavernActions.SetupUnitActionsList(ref unitActionsList);
 
             /*
             foreach(var actionItem in unitActionsList.unitActionListItems)

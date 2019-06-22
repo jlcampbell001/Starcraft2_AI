@@ -33,12 +33,10 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
         }
 
         // Try an preform intelligent actions for the unit.
-        override
-            public void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
-                bool saveFor = false, bool doNotUseResources = false)
+        public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
+            bool saveFor = false, bool doNotUseResources = false)
         {
-            // Ask for help if being attack.
-            NeedHelpAction(unit);
+            base.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
 
             // Set the rally points.
             SetUnitRally(unit);
@@ -83,12 +81,10 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
         }
 
         // Pick a random action to preform.
-        override
-        public void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
+        public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,
             bool saveFor = false, bool doNotUseResources = false)
         {
-            // Ask for help if being attack.
-            NeedHelpAction(unit);
+            base.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
 
             var randomAction = random.Next(6);
 

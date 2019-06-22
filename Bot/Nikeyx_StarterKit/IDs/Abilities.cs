@@ -51,6 +51,10 @@ namespace Bot
         public static int MUTATE_VENTRAL_SACS = 1224;
         public static int MORPH_OVERLORD_TRANSPORT = 2708;
 
+        public static int LOAD_OVERLORD = 1406;
+        public static int UNLOADAll_OVERLORD = 1408;
+        public static int UNLOADUNIT_OVERLORD = 1409;
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;
@@ -80,7 +84,6 @@ namespace Bot
         public static int TRANSFORM_TO_HELLION = 1978;
         public static int UNLOAD_BUNKER = 408;
         public static int SALVAGE_BUNKER = 32;
-
 
         public static int LARVA_TRAIN_ZERGLING = 1343;
         public static int BIRTH_QUEEN = 1632;

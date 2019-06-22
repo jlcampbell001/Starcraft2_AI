@@ -17,7 +17,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
         protected int morphToTransport = Abilities.MORPH_OVERLORD_TRANSPORT;
         protected uint overlordTransport = Units.OVERLORD_TRANSPORT;
 
-        public enum OverseerResult { Success, NotUnitType, UnitBusy, CanNotConstruct, CanNotAfford };
+        public enum OverseerResult { Success, NotUnitType, UnitBusy, CanNotConstruct, CanNotAfford, HasCargo };
         public enum MorphToTransportResult { Success, NotUnitType, UnitBusy, CanNotConstruct, CanNotAfford };
 
         public OverlordActions(ZergController controller) : base(controller)
@@ -112,13 +112,15 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             if (IsBusy(unit)) return OverseerResult.UnitBusy;
 
+            if (unit.cargoUsed != 0) return OverseerResult.HasCargo;
+
             if (!controller.CanConstruct(overseer, ignoreResourceSupply: true)) return OverseerResult.CanNotConstruct;
 
             if (!controller.CanAfford(overseer)) return OverseerResult.CanNotAfford;
 
             unit.Train(overseer);
 
-            Logger.Info("Overlord morphing to overseer @ {0} / {1}.", unit.position.X, unit.position.Y);
+            Logger.Info("Overlord {2} morphing to overseer @ {0} / {1}.", unit.position.X, unit.position.Y, unit.tag);
 
             return OverseerResult.Success;
         }
@@ -155,6 +157,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             return true;
         }
 
+        // Morph to an overlord transport.
         public MorphToTransportResult MorphToOverlordTransport(Unit unit)
         {
             if (!IsUnitType(unit)) return MorphToTransportResult.NotUnitType;
@@ -167,7 +170,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             unit.UseAbility(morphToTransport);
 
-            Logger.Info("Overlord morphing to transport @ {0} / {1}.", unit.position.X, unit.position.Y);
+            Logger.Info("Overlord {2} morphing to transport @ {0} / {1}.", unit.position.X, unit.position.Y, unit.tag);
 
             return MorphToTransportResult.Success;
         }
