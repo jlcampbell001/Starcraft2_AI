@@ -1,10 +1,22 @@
 ﻿namespace Bot
 {
+    // --------------------------------------------------------------------------------
+    /// <summary>
+    /// The controller for the Zerg.
+    /// </summary>
+    // --------------------------------------------------------------------------------
     class ZergController : ControllerDefault
     {
-        // Check and see if we can afford to make the passed structure or unit and return the costs be reference.
-        override
-        public bool CanAfford(uint unitType, ref int unitMinerals, ref int unitVespene)
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if we can afford to make the passed structure or unit and return the costs be reference.
+        /// </summary>
+        /// <param name="unitType">The unit type to check.</param>
+        /// <param name="unitMinerals">The mineral cost for the unit.</param>
+        /// <param name="unitVespene">The vespene cost for the unit.</param>
+        /// <returns>True if they have the resources for the unit.</returns>
+        // ********************************************************************************
+        public override bool CanAfford(uint unitType, ref int unitMinerals, ref int unitVespene)
         {
             var unitData = gameData.Units[(int)unitType];
             unitMinerals = (int)unitData.MineralCost;
@@ -54,8 +66,15 @@
             return (minerals >= unitMinerals) && (vespene >= unitVespene);
         }
 
-        // Check and see if we can construct a structure or unit.
-        // Can tell this function to only check if we have the ability to construct the unit and not check the resources or supply.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if we can construct a structure or unit. <para/>
+        /// Can tell this function to only check if we have the ability to construct the unit and not check the resources or supply.
+        /// </summary>
+        /// <param name="unitType">The unit type to look up.</param>
+        /// <param name="ignoreResourceSupply">If true it will not check the resources or supplies.</param>
+        /// <returns>True if the unit can be constructed.</returns>
+        // ********************************************************************************
         public bool CanConstruct(uint unitType, bool ignoreResourceSupply = false)
         {
             // Check if we have the structures to build the unit.
@@ -155,7 +174,11 @@
             return ret;
         }
 
-        // Build an expansion base.
+        // ********************************************************************************
+        /// <summary>
+        /// Build an expansion base.
+        /// </summary>
+        // ********************************************************************************
         public void BuildExpansion()
         {
             BuildExpansion(Units.HATCHERY);

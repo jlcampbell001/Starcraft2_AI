@@ -7,17 +7,36 @@ using System.Threading.Tasks;
 
 namespace Bot.Utilities
 {
+    // --------------------------------------------------------------------------------
+    /// <summary>
+    /// A list of units in order of closest to furthest from a location.
+    /// </summary>
+    // --------------------------------------------------------------------------------
     class UnitsDistanceFromList
     {
-       public Vector3 fromLocation;
+        public Vector3 fromLocation;
 
-       public List<UnitDistance> toUnits = new List<UnitDistance>();
+        public List<UnitDistance> toUnits = new List<UnitDistance>();
 
+        // ********************************************************************************
+        /// <summary>
+        /// Create a units distance from list for the passed from location.
+        /// </summary>
+        /// <param name="fromLocation">The from location to work with.</param>
+        /// <returns>A new units distance from list object.</returns>
+        // ********************************************************************************
         public UnitsDistanceFromList(Vector3 fromLocation)
         {
             this.fromLocation = fromLocation;
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Get the distance a unit is from a location.
+        /// </summary>
+        /// <param name="unit">The unit to look up.</param>
+        /// <returns>The distance the unit is from the location.</returns>
+        // ********************************************************************************
         private Double getDistanceforUnit(Unit unit)
         {
             var distance = 0.0;
@@ -28,6 +47,12 @@ namespace Bot.Utilities
             }
             return distance;
         }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Update all the distances the units are from the location.
+        /// </summary>
+        // ********************************************************************************
         public void UpdateDistances()
         {
             foreach (var toUnit in toUnits)
@@ -38,6 +63,13 @@ namespace Bot.Utilities
             toUnits.Sort();
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Add a unit to the list.
+        /// </summary>
+        /// <param name="unit">The unit to add.</param>
+        /// <param name="sortAfter">If true sort the list after the add.</param>
+        // ********************************************************************************
         public void AddUnit(Unit unit, bool sortAfter = true)
         {
             var toUnit = new UnitDistance();
@@ -52,9 +84,15 @@ namespace Bot.Utilities
             }
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// A list of units to add.
+        /// </summary>
+        /// <param name="units">A list of units.</param>
+        // ********************************************************************************
         public void AddUnits(List<Unit> units)
         {
-            foreach(var unit in units)
+            foreach (var unit in units)
             {
                 AddUnit(unit, sortAfter: false);
             }
@@ -65,11 +103,16 @@ namespace Bot.Utilities
             }
         }
 
-        override
-            public string ToString()
+        // ********************************************************************************
+        /// <summary>
+        /// The string version.
+        /// </summary>
+        /// <returns>A string version.</returns>
+        // ********************************************************************************
+        public override string ToString()
         {
             var result = "From Location = " + fromLocation + " {" + Environment.NewLine;
-            foreach(var toUnit in toUnits)
+            foreach (var toUnit in toUnits)
             {
                 result = result + toUnit + "; " + Environment.NewLine;
             }

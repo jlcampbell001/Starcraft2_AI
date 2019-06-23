@@ -8,6 +8,11 @@ using Action = SC2APIProtocol.Action;
 
 namespace Bot
 {
+    // --------------------------------------------------------------------------------
+    /// <summary>
+    /// The default for controllers to be based on.
+    /// </summary>
+    // --------------------------------------------------------------------------------
     class ControllerDefault
     {
         private readonly int frameDelay = 0; //too fast? increase this to e.g. 20
@@ -40,19 +45,34 @@ namespace Bot
          * Frames
          **********/
 
-        // Converts the passed seconds to frames.
+        // ********************************************************************************
+        /// <summary>
+        /// Converts the passed seconds to frames.
+        /// </summary>
+        /// <param name="seconds">The seconds to convert.</param>
+        /// <returns>The number of frames.</returns>
+        // ********************************************************************************
         public ulong SecsToFrames(int seconds)
         {
             return (ulong)(FRAMES_PER_SECOND * seconds);
         }
 
-        // Close the frame.
+        // ********************************************************************************
+        /// <summary>
+        /// Close the frame.
+        /// </summary>
+        /// <returns>The list of actions for the frame.</returns>
+        // ********************************************************************************
         public List<Action> CloseFrame()
         {
             return actions;
         }
 
-        // Open the frame.
+        // ********************************************************************************
+        /// <summary>
+        /// Open the frame.
+        /// </summary>
+        // ********************************************************************************
         public void OpenFrame()
         {
             if (gameInfo == null || gameData == null || obs == null)
@@ -96,6 +116,7 @@ namespace Bot
                             enemyLocations.Add(enemyLocation);
                     }
 
+                    // Get the possible base expansions positions.
                     SetExpansionPositions();
                 }
             }
@@ -104,18 +125,22 @@ namespace Bot
                 Thread.Sleep(frameDelay);
         }
 
-        // Figure out the best place for base expansion points.
-        // Note: This is really a rework of pysc2 version.
-        //       Need to deal with geysers.
+        // ********************************************************************************
+        /// <summary>
+        /// Figure out the best place for base expansion points.
+        /// </summary>
+        /// <remarks>
+        /// Note: This is really a rework of pysc2 version.
+        /// </remarks>
+        // ********************************************************************************
         private void SetExpansionPositions()
         {
             Logger.Info("Setting up expansion points...Please wait.");
 
-            uint baseResourceCenter = 0;
-
             // Figure out the bot race's base resource center for later.
             var botRace = getBotRace();
 
+            uint baseResourceCenter;
             if (botRace == Race.Terran)
             {
                 baseResourceCenter = Units.COMMAND_CENTER;
@@ -200,7 +225,7 @@ namespace Bot
 
                 foreach (var resource in resourceCluster.resources)
                 {
-                    // Set up the minimum distance you can build to a resouce.
+                    // Set up the minimum distance you can build to a resource.
                     var minDistance = 6.0;
                     if (Units.GasGeysers.Contains(resource.unitType))
                     {
@@ -296,7 +321,12 @@ namespace Bot
          * Player
          **********/
 
-        // Get the race the bots is setup to use in game.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the race the bots is setup to use in game.
+        /// </summary>
+        /// <returns>The race of the bot.</returns>
+        // ********************************************************************************
         public Race getBotRace()
         {
             var botRace = Race.NoRace;
@@ -314,7 +344,13 @@ namespace Bot
          * Unit
          **********/
 
-        // Get the unit name for the passed unit type.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the unit name for the passed unit type.
+        /// </summary>
+        /// <param name="unitType">The unit type to look up.</param>
+        /// <returns>The unit name.</returns>
+        // ********************************************************************************
         public static string GetUnitName(uint unitType)
         {
             var unitName = "";
@@ -353,7 +389,17 @@ namespace Bot
             return foundUnit;
         }
 
-        // Get a list of units based on a list of unit types.
+        // ********************************************************************************
+        /// <summary>
+        /// Get a list of units based on a list of unit types.
+        /// </summary>
+        /// <param name="hashset">The hashset to search against.</param>
+        /// <param name="alliance">The alliance the units are with.</param>
+        /// <param name="onlyCompleted">Only units that have be completely built.</param>
+        /// <param name="displayType">The visibly the units can be seen in.</param>
+        /// <param name="hasVespene">Gas geysers that contain vespene.</param>
+        /// <returns>The list of units.</returns>
+        // ********************************************************************************
         public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false, 
             DisplayType displayType = DisplayType.Unset, bool hasVespene = false)
         {
@@ -376,7 +422,17 @@ namespace Bot
             return units;
         }
 
-        // Get a list of units based on a single unit type.
+        // ********************************************************************************
+        /// <summary>
+        /// Get a list of units based on a single unit type.
+        /// </summary>
+        /// <param name="unitType">The unit type to look for.</param>
+        /// <param name="alliance">The alliance the units are with.</param>
+        /// <param name="onlyCompleted">Only units that have be completely built.</param>
+        /// <param name="displayType">The visibly the units can be seen in.</param>
+        /// <param name="hasVespene">Gas geysers that contain vespene.</param>
+        /// <returns>The list of units.</returns>
+        // ********************************************************************************
         public List<Unit> GetUnits(uint unitType, Alliance alliance = Alliance.Self, bool onlyCompleted = false,
             DisplayType displayType = DisplayType.Unset, bool hasVespene = false)
         {
@@ -398,7 +454,13 @@ namespace Bot
             return units;
         }
 
-        // Get a list of idle units from the passed list of units.
+        // ********************************************************************************
+        /// <summary>
+        /// Get a list of idle units from the passed list of units.
+        /// </summary>
+        /// <param name="units">The list of units to search against.</param>
+        /// <returns>A list of idle units.</returns>
+        // ********************************************************************************
         public List<Unit> GetIdleUnits(List<Unit> units)
         {
             var idleUnits = new List<Unit>();
@@ -412,7 +474,13 @@ namespace Bot
             return idleUnits;
         }
 
-        // Get all the units that can not see a resource center from the passed unit list.
+        // ********************************************************************************
+        /// <summary>
+        /// Get all the units that can not see a resource center from the passed unit list.
+        /// </summary>
+        /// <param name="units">The list of units to search against.</param>
+        /// <returns>A list of units that can not see the resource center.</returns>
+        // ********************************************************************************
         public List<Unit> GetUnitsNoInSightOfRC(List<Unit> units)
         {
             var canNotSeeUnits = new List<Unit>();
@@ -428,7 +496,13 @@ namespace Bot
             return canNotSeeUnits;
         }
 
-        // Get all the units that have vespene from the passed unit list.
+        // ********************************************************************************
+        /// <summary>
+        /// Get all the units that have vespene from the passed unit list.
+        /// </summary>
+        /// <param name="units">The list of units to search against.</param>
+        /// <returns>The list of units with vespene.</returns>
+        // ********************************************************************************
         public List<Unit> GetUnitsWithVespene(List<Unit> units)
         {
             var withVespeneUnits = new List<Unit>();
@@ -443,7 +517,14 @@ namespace Bot
             return withVespeneUnits;
         }
 
-        // Get all the units that a targeting a certain unit from a passed unit list.
+        // ********************************************************************************
+        /// <summary>
+        /// Get all the units that a targeting a certain unit from a passed unit list.
+        /// </summary>
+        /// <param name="units">The list of units search against.</param>
+        /// <param name="tag">The target tag.</param>
+        /// <returns>The list of units targeting the tag.</returns>
+        // ********************************************************************************
         public List<Unit> GetUnitsTargetingTag(List<Unit> units, ulong tag)
         {
             var targetingUnits = new List<Unit>();
@@ -459,8 +540,14 @@ namespace Bot
             return targetingUnits;
         }
 
-        // Get a list of units that maybe attacking the passed unit.
-        // This is done by getting the attackers that the target is in sight of.
+        // ********************************************************************************
+        /// <summary>
+        /// Get a list of units that maybe attacking the passed unit. <para/>
+        /// This is done by getting the attackers that the target is in sight of.
+        /// </summary>
+        /// <param name="target">The unit that might be a target.</param>
+        /// <returns>A list of enemy units.</returns>
+        // ********************************************************************************
         public List<Unit> GetPotentialAttackers(Unit target)
         {
             var enemyArmy = GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy);
@@ -478,8 +565,14 @@ namespace Bot
             return enemies;
         }
 
-        // Get a list of units that maybe attacking the passed unit list.
-        // This is done by getting the attackers that the target is in sight of.
+        // ********************************************************************************
+        /// <summary>
+        /// Get a list of units that maybe attacking the passed unit list. <para/>
+        /// This is done by getting the attackers that the target is in sight of.
+        /// </summary>
+        /// <param name="targets">A list of target units.</param>
+        /// <returns>A list of enemy units.</returns>
+        // ********************************************************************************
         public List<Unit> GetPotentialAttackers(List<Unit> targets)
         {
             List<Unit> enemies = new List<Unit>();
@@ -497,7 +590,14 @@ namespace Bot
             return enemies;
         }
 
-        // Get all the units that are gathering from the target tag from a passed unit list.
+        // ********************************************************************************
+        /// <summary>
+        /// Get all the units that are gathering from the target tag from a passed unit list.
+        /// </summary>
+        /// <param name="units">A list of units to search.</param>
+        /// <param name="tag">The target tag to look for.</param>
+        /// <returns>A list of units found.</returns>
+        // ********************************************************************************
         public List<Unit> GetUnitsGatheringTag(List<Unit> units, ulong tag)
         {
             var targetingUnits = new List<Unit>();
@@ -520,13 +620,29 @@ namespace Bot
             return targetingUnits;
         }
 
-        // Check if the passed unit is in range of the target position based on the provided distance.
+        // ********************************************************************************
+        /// <summary>
+        /// Check if the passed unit is in range of the target position based on the provided distance.
+        /// </summary>
+        /// <param name="targetPosition">The target position.</param>
+        /// <param name="units">A list of units to search.</param>
+        /// <param name="maxDistance">The farthest distance the unit can be.</param>
+        /// <returns>True if the unit is within range.</returns>
+        // ********************************************************************************
         public bool IsInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
         {
             return (GetFirstInRange(targetPosition, units, maxDistance) != null);
         }
 
-        // Get the first unit that is in range of the target position based on the provided distance.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the first unit that is in range of the target position based on the provided distance.
+        /// </summary>
+        /// <param name="targetPosition">The target position.</param>
+        /// <param name="units">A list of units to search.</param>
+        /// <param name="maxDistance">The farthest distance the unit can be.</param>
+        /// <returns>The first unit found or null if none are found.</returns>
+        // ********************************************************************************
         public Unit GetFirstInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
         {
             // Squared distance is faster to calculate.
@@ -539,8 +655,17 @@ namespace Bot
             return null;
         }
 
-        // Get the next unit that is in range of the target position based on the provided distance.
-        // Needs to know the last unit that was found other wise it will return the first unit it can find.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the next unit that is in range of the target position based on the provided distance. <para/>
+        /// Needs to know the last unit that was found other wise it will return the first unit it can find.
+        /// </summary>
+        /// <param name="targetPosition">The target position.</param>
+        /// <param name="units">A list of units to search.</param>
+        /// <param name="maxDistance">The farthest distance the unit can be.</param>
+        /// <param name="lastFound">The last unit that was found.</param>
+        /// <returns>The next unit found or null if none was found.</returns>
+        // ********************************************************************************
         public Unit GetNextInRange(Vector3 targetPosition, List<Unit> units, float maxDistance, Unit lastFound = null)
         {
             // Squared distance is faster to calculate.
@@ -566,7 +691,12 @@ namespace Bot
             return null;
         }
 
-        // Get a worker that is either doing nothing or just gathering minerals.
+        // ********************************************************************************
+        /// <summary>
+        /// Get a worker that is either doing nothing or just gathering minerals.
+        /// </summary>
+        /// <returns>The worker unit found or null if none was found.</returns>
+        // ********************************************************************************
         public Unit GetAvailableWorker()
         {
             var workers = GetUnits(Units.Workers);
@@ -589,9 +719,16 @@ namespace Bot
             return null;
         }
 
-        // Check if the player can afford the unit and return by reference the cost.
-        virtual
-        public bool CanAfford(uint unitType, ref int unitMinerals, ref int unitVespene)
+        // ********************************************************************************
+        /// <summary>
+        /// Check if the player can afford the unit and return by reference the cost.
+        /// </summary>
+        /// <param name="unitType">The unit type to look up.</param>
+        /// <param name="unitMinerals">The minerals required for the unit.</param>
+        /// <param name="unitVespene">The vespene required for the unit.</param>
+        /// <returns>True if the bot has enough resources for the unit.</returns>
+        // ********************************************************************************
+        public virtual bool CanAfford(uint unitType, ref int unitMinerals, ref int unitVespene)
         {
             var unitData = gameData.Units[(int)unitType];
             unitMinerals = (int)unitData.MineralCost;
@@ -599,16 +736,28 @@ namespace Bot
             return (minerals >= unitMinerals) && (vespene >= unitVespene);
         }
 
-        // Check if the player can afford the unit.
-        virtual
-        public bool CanAfford(uint unitType)
+        // ********************************************************************************
+        /// <summary>
+        /// Check if the player can afford the unit.
+        /// </summary>
+        /// <param name="unitType">The unit type to look up.</param>
+        /// <returns>True if the bot has enough resources for the unit.</returns>
+        // ********************************************************************************
+        public virtual bool CanAfford(uint unitType)
         {
             var mineralCost = 0;
             var vespeneCost = 0;
             return CanAfford(unitType, ref mineralCost, ref vespeneCost);
         }
 
-        // Check and see if the unit can be placed in the target position.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if the unit can be placed in the target position.
+        /// </summary>
+        /// <param name="unitType">The unit type that is going to be placed.</param>
+        /// <param name="targetPos">The target position to check.</param>
+        /// <returns>True if the unit can be placed in the target position.</returns>
+        // ********************************************************************************
         public bool CanPlace(uint unitType, Vector3 targetPos)
         {
             //Note: this is a blocking call! Use it sparingly, or you will slow down your execution significantly!
@@ -631,7 +780,14 @@ namespace Bot
             return false;
         }
 
-        // Get the total number of units in game for a passed unit type.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the total number of units in game for a passed unit type.
+        /// </summary>
+        /// <param name="unitType">The unit type to count.</param>
+        /// <param name="inConstruction">Add units that are being built.</param>
+        /// <returns>The total units found.</returns>
+        // ********************************************************************************
         public int GetTotalCount(uint unitType, bool inConstruction = false)
         {
             var pendingCount = GetPendingCount(unitType, inConstruction);
@@ -639,7 +795,14 @@ namespace Bot
             return pendingCount + constructionCount;
         }
 
-        // Get the total number of units in game for a passed list of unit type.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the total number of units in game for a passed list of unit type.
+        /// </summary>
+        /// <param name="unitType">A hashset of unit types to look up.</param>
+        /// <param name="inConstruction">Add units that are being built.</param>
+        /// <returns>The total units found.</returns>
+        // ********************************************************************************
         public int GetTotalCount(HashSet<uint> unitType, bool inConstruction = false)
         {
             var pendingCount = GetPendingCount(unitType, inConstruction);
@@ -647,7 +810,14 @@ namespace Bot
             return pendingCount + constructionCount;
         }
 
-        // Get the total number of units pending in game for a passed unit type.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the total number of units pending in game for a passed unit type.
+        /// </summary>
+        /// <param name="unitType">The unit type to look for.</param>
+        /// <param name="inConstruction">Only units that are being built.</param>
+        /// <returns>The total units found.</returns>
+        // ********************************************************************************
         public int GetPendingCount(uint unitType, bool inConstruction = true)
         {
             var workers = GetUnits(Units.Workers);
@@ -673,7 +843,14 @@ namespace Bot
             return counter;
         }
 
-        // Get the total number of units pending in game for a passed list of unit type.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the total number of units pending in game for a passed list of unit type.
+        /// </summary>
+        /// <param name="unitTypes">A hashset of unit types to look for.</param>
+        /// <param name="inConstruction">Only units that are being built.</param>
+        /// <returns>The total units found.</returns>
+        // ********************************************************************************
         public int GetPendingCount(HashSet<uint> unitTypes, bool inConstruction = true)
         {
             var workers = GetUnits(Units.Workers);
@@ -703,7 +880,12 @@ namespace Bot
             return counter;
         }
 
-        // Get the total resource centers.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the total resource centers.
+        /// </summary>
+        /// <returns>The total resource centers found.</returns>
+        // ********************************************************************************
         public int GetTotalRCs()
         {
             var resourceCenters = GetUnits(Units.ResourceCenters, onlyCompleted: true);
@@ -801,7 +983,13 @@ namespace Bot
             return GetClosestUnit(target, units, withInDistance, isNotBurrowed);
         }
 
-        // Check and see if the bot has any of the passed completed units.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if the bot has any of the passed completed units.
+        /// </summary>
+        /// <param name="unitType">The unit type to look up.</param>
+        /// <returns>True if units are found.</returns>
+        // ********************************************************************************
         public bool HasUnits(uint unitType)
         {
             var foundUnits = GetUnits(unitType, onlyCompleted: true);
@@ -809,7 +997,13 @@ namespace Bot
             return (foundUnits.Count > 0);
         }
 
-        // Check and see if the bot has any of the passed completed units.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if the bot has any of the passed completed units.
+        /// </summary>
+        /// <param name="unitTypes">A hashset of unit types to look for.</param>
+        /// <returns>True if units are found.</returns>
+        // ********************************************************************************
         public bool HasUnits(HashSet<uint> unitTypes)
         {
             var foundUnits = GetUnits(unitTypes, onlyCompleted: true);
@@ -817,11 +1011,36 @@ namespace Bot
             return (foundUnits.Count > 0);
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if a unit is gathering vespene.
+        /// </summary>
+        /// <param name="minWorkersGathering"> The minimum number of units need to be gathering vespene.</param>
+        /// <returns>True if the number of workers gathering vespene is matched.</returns>
+        // ********************************************************************************
+        public bool IsGatheringVespene(int minWorkersGathering = 1)
+        {
+            var gasBuildings = GetUnits(Units.GasGeysersStructures);
+            var totalWorkersAssigned = 0;
+            foreach (var gasBuilding in gasBuildings)
+            {
+                totalWorkersAssigned = totalWorkersAssigned + gasBuilding.assignedWorkers;
+            }
+
+            return (totalWorkersAssigned >= minWorkersGathering);
+        }
+
         /**********
          * Abilities
          **********/
 
-        // Get the ability name for the passed ability id.
+        // ********************************************************************************
+        /// <summary>
+        /// Get the ability name for the passed ability id.
+        /// </summary>
+        /// <param name="abilityID">The ability ID to look for.</param>
+        /// <returns>The name of the ability.</returns>
+        // ********************************************************************************
         public static string GetAbilityName(int abilityID)
         {
             var abilityName = "";
@@ -830,7 +1049,14 @@ namespace Bot
             return abilityName;
         }
 
-        // Checks to see if the passed unit is ordered to preform an ability.
+        // ********************************************************************************
+        /// <summary>
+        /// Checks to see if the passed unit is ordered to preform an ability.
+        /// </summary>
+        /// <param name="unit">The unit to check.</param>
+        /// <param name="abilityID">The ability to check for.</param>
+        /// <returns>True if the unit is ordered to do the ability.</returns>
+        // ********************************************************************************
         public bool IsOrderedTo(Unit unit, int abilityID)
         {
             var isOrderedTo = false;
@@ -847,9 +1073,16 @@ namespace Bot
             return isOrderedTo;
         }
 
-        // Check and see if we have the resources for the passed upgrade and also return the resources costs.
-        virtual
-        public bool CanAffordUpgrade(int abilityID, ref int mineralCost, ref int vespeneCost)
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if we have the resources for the passed upgrade and also return the resources costs.
+        /// </summary>
+        /// <param name="abilityID">The upgrade id.</param>
+        /// <param name="mineralCost">The mineral cost for the upgrade.</param>
+        /// <param name="vespeneCost">The vespene cost for the upgrade.</param>
+        /// <returns>True if they can afford the upgrade.</returns>
+        // ********************************************************************************
+        public virtual bool CanAffordUpgrade(int abilityID, ref int mineralCost, ref int vespeneCost)
         {
             var canAfford = false;
 
@@ -871,7 +1104,13 @@ namespace Bot
             return canAfford;
         }
 
-        // Check and see if we have the resources for the passed upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if we have the resources for the passed upgrade.
+        /// </summary>
+        /// <param name="abilityID">The upgrade id.</param>
+        /// <returns>True if they can afford the upgrade.</returns>
+        // ********************************************************************************
         public bool CanAffordUpgrade(int abilityID)
         {
             var mineralCost = 0;
@@ -880,7 +1119,13 @@ namespace Bot
             return CanAffordUpgrade(abilityID, ref mineralCost, ref vespenCost);
         }
 
-        // Check and see if the upgrade has been researched.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if the upgrade has been researched.
+        /// </summary>
+        /// <param name="abilityID">The upgrade id.</param>
+        /// <returns>True if the upgrade has already been researched.</returns>
+        // ********************************************************************************
         public bool HasUpgrade(int abilityID)
         {
             var hasAbility = false;
@@ -891,7 +1136,14 @@ namespace Bot
             return hasAbility;
         }
 
-        // Check and see if any of the passed units are researching an upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if any of the passed units are researching an upgrade.
+        /// </summary>
+        /// <param name="abilityID">The upgrade id.</param>
+        /// <param name="units">The list of units to search.</param>
+        /// <returns>True if a unit is researching the upgrade.</returns>
+        // ********************************************************************************
         public bool IsResearchingUpgrade(int abilityID, List<Unit> units)
         {
             var isResearching = false;
@@ -907,7 +1159,14 @@ namespace Bot
             return isResearching;
         }
 
-        // Check and see if any of the passed unit types are researching an upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if any of the passed unit types are researching an upgrade.
+        /// </summary>
+        /// <param name="abilityID">The upgrade id.</param>
+        /// <param name="unitTypes">A hashset of unit types to search.</param>
+        /// <returns>True if a unit is researching the upgrade.</returns>
+        // ********************************************************************************
         public bool IsResearchingUpgrade(int abilityID, HashSet<uint> unitTypes)
         {
             var units = GetUnits(unitTypes);
@@ -915,7 +1174,14 @@ namespace Bot
             return IsResearchingUpgrade(abilityID, units);
         }
 
-        // Check and see if any of the passed unit type are researching an upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if any of the passed unit type are researching an upgrade.
+        /// </summary>
+        /// <param name="abilityID">The upgrade id.</param>
+        /// <param name="unitType">A unit type to search.</param>
+        /// <returns>True if a unit is researching the upgrade.</returns>
+        // ********************************************************************************
         public bool IsResearchingUpgrade(int abilityID, uint unitType)
         {
             var units = GetUnits(unitType);
@@ -923,7 +1189,13 @@ namespace Bot
             return IsResearchingUpgrade(abilityID, units);
         }
 
-        // Check and see if any unit type is researching an upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if any unit type is researching an upgrade.
+        /// </summary>
+        /// <param name="abilityID">The upgrade id.</param>
+        /// <returns>True if a unit is researching the upgrade.</returns>
+        // ********************************************************************************
         public bool IsResearchingUpgrade(int abilityID)
         {
             var units = GetUnits(Units.All);
@@ -936,7 +1208,13 @@ namespace Bot
          * Actions
          **********/
 
-        // Create a raw unit command action for the passed ability.
+        // ********************************************************************************
+        /// <summary>
+        /// Create a raw unit command action for the passed ability.
+        /// </summary>
+        /// <param name="ability">The ability to create a command for.</param>
+        /// <returns>The created action.</returns>
+        // ********************************************************************************
         public static Action CreateRawUnitCommand(int ability)
         {
             var action = new Action();
@@ -946,7 +1224,13 @@ namespace Bot
             return action;
         }
 
-        // Create a toggle auto cast action for the passed ability.
+        // ********************************************************************************
+        /// <summary>
+        /// Create a toggle auto cast action for the passed ability.
+        /// </summary>
+        /// <param name="ability">The ability to auto cast.</param>
+        /// <returns>The auto cast action for the ability.</returns>
+        // ********************************************************************************
         public static Action CreateToggleAutoCast(int ability)
         {
             var action = new Action();
@@ -956,13 +1240,22 @@ namespace Bot
             return action;
         }
 
-        // Add an action to the action list.
+        // ********************************************************************************
+        /// <summary>
+        /// Add an action to the action list.
+        /// </summary>
+        /// <param name="action">The actions to add.</param>
+        // ********************************************************************************
         public static void AddAction(Action action)
         {
             actions.Add(action);
         }
 
-        // Distribute the workers as needed.
+        // ********************************************************************************
+        /// <summary>
+        /// Distribute the workers as needed.
+        /// </summary>
+        // ********************************************************************************
         public void DistributeWorkers()
         {
             var resourceRange = 12;
@@ -1096,8 +1389,15 @@ namespace Bot
             }
         }
 
-        // Construct a structure based on a location not a target.
-        // It is possible to pass the starting position.
+        // ********************************************************************************
+        /// <summary>
+        /// Construct a structure based on a location not a target. <para/>
+        /// It is possible to pass the starting position.
+        /// </summary>
+        /// <param name="unitType">The unit type to construct.</param>
+        /// <param name="startingLocation">If passed a staring location to construct near.</param>
+        /// <param name="buildRangeRadius">The build range radius to work within.</param>
+        // ********************************************************************************
         public void Construct(uint unitType, Vector3 startingLocation, int buildRangeRadius = BUILD_RANGE_RADIUS)
         {
             Vector3 startingSpot;
@@ -1188,14 +1488,27 @@ namespace Bot
             Logger.Info("Constructing: {0} @ {1} / {2}", GetUnitName(unitType), constructionSpot.X, constructionSpot.Y);
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Construct a structure based on a location not a target.
+        /// </summary>
+        /// <param name="unitType">The unit type to construct.</param>
+        // ********************************************************************************
         public void Construct(uint unitType)
         {
             Construct(unitType, Vector3.Zero);
         }
 
-        // Construct a structure on a gas geyser.
-        // This is needed because to can not use the gas geyser location but need to target the gas geyser to build on it.
-        // Note: This is similar to construct so see its notes for possible changes.
+        // ********************************************************************************
+        /// <summary>
+        /// Construct a structure on a gas geyser. <para/>
+        /// This is needed because to can not use the gas geyser location but need to target the gas geyser to build on it.
+        /// </summary>
+        /// <remarks>
+        /// Note: This is similar to construct so see its notes for possible changes.
+        /// </remarks>
+        /// <param name="unitType">The unit type to build.</param>
+        // ********************************************************************************
         public void ConstructOnGasGeyser(uint unitType)
         {
             // Gas buildings need to build on the target tag for the geyser not its position like other builds do.
@@ -1260,8 +1573,13 @@ namespace Bot
             return;
         }
 
-        // Build an expansion at the next available mineral field.
-        // Pass in the recourse center to build.
+        // ********************************************************************************
+        /// <summary>
+        /// Build an expansion at the next available mineral field. <para/>
+        /// Pass in the recourse center to build.
+        /// </summary>
+        /// <param name="unitType">The unit type to build at the expansion spot.</param>
+        // ********************************************************************************
         public void BuildExpansion(uint unitType)
         {
             var resources = GetUnits(Units.Resources, alliance: Alliance.Neutral, hasVespene: true);
@@ -1296,7 +1614,13 @@ namespace Bot
             }
         }
 
-        // Tell the passed units to attack at target location.
+        // ********************************************************************************
+        /// <summary>
+        /// Tell the passed units to attack at target location.
+        /// </summary>
+        /// <param name="units">A list of units to attack with.</param>
+        /// <param name="target">The target position to attack.</param>
+        // ********************************************************************************
         public void Attack(List<Unit> units, Vector3 target)
         {
             var action = CreateRawUnitCommand(Abilities.ATTACK);
@@ -1312,7 +1636,11 @@ namespace Bot
          * Utilities
          ***********/
 
-        // Pause the game.
+        // ********************************************************************************
+        /// <summary>
+        /// Pause the game.
+        /// </summary>
+        // ********************************************************************************
         public void Pause()
         {
             Console.WriteLine("Press enter key to continue...");
@@ -1322,7 +1650,14 @@ namespace Bot
             }
         }
 
-        // Write to the log if the passed unit is currently selected.
+        // ********************************************************************************
+        /// <summary>
+        /// Write to the log if the passed unit is currently selected.
+        /// </summary>
+        /// <param name="unit">The unit to check.</param>
+        /// <param name="line">The line to write in the log.</param>
+        /// <param name="parameters">Additional parameters for the log.</param>
+        // ********************************************************************************
         public void LogIfSelectedUnit(Unit unit, string line, params object[] parameters)
         {
             if (unit != null && unit.isSelected)
@@ -1331,21 +1666,20 @@ namespace Bot
             }
         }
 
-        // Check and see if a unit is gathering vespene.
-        public bool IsGatheringVespene(int minWorkersGathering = 1)
-        {
-            var gasBuildings = GetUnits(Units.GasGeysersStructures);
-            var totalWorkersAssigned = 0;
-            foreach (var gasBuilding in gasBuildings)
-            {
-                totalWorkersAssigned = totalWorkersAssigned + gasBuilding.assignedWorkers;
-            }
-
-            return (totalWorkersAssigned >= minWorkersGathering);
-        }
-
-        // Get a random spot around a starting position.
-        // Note: Need some error checking to make sure the min are lower then the maxes.
+        // ********************************************************************************
+        /// <summary>
+        /// Get a random spot around a starting position.
+        /// </summary>
+        /// <remarks>
+        /// Note: Need some error checking to make sure the min are lower then the maxes.
+        /// </remarks>
+        /// <param name="startingLocation">The starting location to work with.</param>
+        /// <param name="xMinRange">Minimum X range.</param>
+        /// <param name="xMaxRange">Maximum X range.</param>
+        /// <param name="yMinRange">Minimum Y range.</param>
+        /// <param name="yMaxRange">Maximum Y range.</param>
+        /// <returns>A random position around the start location with in the ranges.</returns>
+        // ********************************************************************************
         public Vector3 GetRandomLocation(Vector3 startingLocation, int xMinRange = 0, int xMaxRange = 0, int yMinRange = 0, int yMaxRange = 0)
         {
             var randomLocation = new Vector3(startingLocation.X + random.Next(xMinRange, xMaxRange + 1),
@@ -1354,6 +1688,12 @@ namespace Bot
             return randomLocation;
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// A list of actions for the frame.
+        /// </summary>
+        /// <returns>A list of actions.</returns>
+        // ********************************************************************************
         public List<Action> GetActions()
         {
             return actions;

@@ -10,9 +10,14 @@ using System.Collections.Generic;
 
 namespace Bot
 {
+    // --------------------------------------------------------------------------------
+    /// <summary>
+    /// A Zerg bot.
+    /// </summary>
+    // --------------------------------------------------------------------------------
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = false;
+        private readonly bool totalRandom = true;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -176,6 +181,12 @@ namespace Bot
             */
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// The work to be done on a frame.
+        /// </summary>
+        /// <returns>A list of actions.</returns>
+        // ********************************************************************************
         public IEnumerable<Action> OnFrame()
         {
             controller.OpenFrame();
@@ -364,7 +375,11 @@ namespace Bot
             return controller.CloseFrame();
         }
 
-        // Try and create buildings intelligently.
+        // ********************************************************************************
+        /// <summary>
+        /// Try and create buildings intelligently.
+        /// </summary>
+        // ********************************************************************************
         private void BuildBuildings()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -425,7 +440,11 @@ namespace Bot
             }
         }
 
-        // Try and create units intelligently.
+        // ********************************************************************************
+        /// <summary>
+        /// Try and create units intelligently.
+        /// </summary>
+        // ********************************************************************************
         private void BuildUnits()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -458,7 +477,11 @@ namespace Bot
             }
         }
 
-        // Try and preform actions intelligently.
+        // ********************************************************************************
+        /// <summary>
+        /// Try and preform actions intelligently.
+        /// </summary>
+        // ********************************************************************************
         private void ArmyActions()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
@@ -494,7 +517,13 @@ namespace Bot
          * BUILDINGS
          **********/
 
-        // Basic code to create a building.
+        // ********************************************************************************
+        /// <summary>
+        /// Basic code to create a building.
+        /// </summary>
+        /// <param name="unitType">The unit type to build.</param>
+        /// <param name="saveFor">If true and the unit type can not be built resources will be saved to build it.</param>
+        // ********************************************************************************
         private void BuildBuilding(uint unitType, bool saveFor = true)
         {
             // Do not construct buildings if there are less then a certain amount of drones.
@@ -519,7 +548,12 @@ namespace Bot
             }
         }
 
-        // Build an extractor.
+        // ********************************************************************************
+        /// <summary>
+        /// Build an extractor.
+        /// </summary>
+        /// <param name="saveFor">If true and the extractor can not be built resources will be saved to build it.</param>
+        // ********************************************************************************
         private void BuildExtractor(bool saveFor = true)
         {
             if (controller.CanConstruct(Units.EXTRACTOR))
@@ -532,7 +566,11 @@ namespace Bot
             }
         }
 
-        // Upgrade a hatchery to a lair.
+        // ********************************************************************************
+        /// <summary>
+        /// Upgrade a hatchery to a lair.
+        /// </summary>
+        // ********************************************************************************
         private void UpgradeToLair()
         {
             var hatcheries = controller.GetUnits(Units.HATCHERY, onlyCompleted: true);
@@ -552,7 +590,12 @@ namespace Bot
         }
 
 
-        // Upgrade a lair to a hive.
+        // ********************************************************************************
+        /// <summary>
+        /// Upgrade a lair to a hive.
+        /// </summary>
+        /// <param name="saveFor">If true and the upgrade can not be built resources will be saved to build it.</param>
+        // ********************************************************************************
         private void UpgradeToHive(bool saveFor = true)
         {
             var lairs = controller.GetUnits(Units.LAIR, onlyCompleted: true);
@@ -582,7 +625,12 @@ namespace Bot
         }
 
 
-        // Try an build an expansion base at the next closest spot to some resources.
+        // ********************************************************************************
+        /// <summary>
+        /// Try an build an expansion base at the next closest spot to some resources.
+        /// </summary>
+        /// <param name="saveFor">If true and the expansion base can not be built resources will be saved to build it.</param>
+        // ********************************************************************************
         private void BuildExpansionBase(bool saveFor = true)
         {
             if (controller.CanConstruct(Units.HATCHERY))
@@ -599,7 +647,11 @@ namespace Bot
             }
         }
 
-        // Build a macro hatchery near another resource center.
+        // ********************************************************************************
+        /// <summary>
+        /// Build a macro hatchery near another resource center.
+        /// </summary>
+        // ********************************************************************************
         private void BuildMacroHatchery()
         {
             if (controller.CanConstruct(Units.HATCHERY))
@@ -636,7 +688,12 @@ namespace Bot
             }
         }
 
-        // Preform structure actions.
+        // ********************************************************************************
+        /// <summary>
+        /// Preform structure actions.
+        /// </summary>
+        /// <param name="randomActions">If true call the unit actions random function.</param>
+        // ********************************************************************************
         private void PreformStuctureActions(bool randomActions = false)
         {
             var structures = controller.GetUnits(Units.Structures, onlyCompleted: true);
@@ -690,7 +747,13 @@ namespace Bot
          * UNITS
          **********/
 
-        // Basic code to build a unit that requires a larva.
+        // ********************************************************************************
+        /// <summary>
+        /// Basic code to build a unit that requires a larva.
+        /// </summary>
+        /// <param name="unitType">The unit type to build.</param>
+        /// <param name="saveFor">If true and the unit type can not be built resources will be saved to build it.</param>
+        // ********************************************************************************
         private void BuildUnit(uint unitType, bool saveFor = true)
         {
             if (controller.CanConstruct(unitType))
@@ -711,8 +774,13 @@ namespace Bot
 
         }
 
-        // Code to build an overlord.
-        // Since you can not have more then 200 supply do not create more overlords at that point.
+        // ********************************************************************************
+        /// <summary>
+        /// Code to build an overlord. <para/>
+        /// Since you can not have more then 200 supply do not create more overlords at that point.
+        /// </summary>
+        /// <param name="saveFor">If true and the overlord can not be built resources will be saved to build it.</param>
+        // ********************************************************************************
         private void BuildOverlord(bool saveFor = true)
         {
             if (controller.maxSupply < 200)
@@ -721,7 +789,11 @@ namespace Bot
             }
         }
 
-        // Create a queen.
+        // ********************************************************************************
+        /// <summary>
+        /// Create a queen.
+        /// </summary>
+        // ********************************************************************************
         private void BirthQueen()
         {
             var resourceCenters = controller.GetUnits(Units.ResourceCenters, onlyCompleted: true);
@@ -743,7 +815,11 @@ namespace Bot
             }
         }
 
-        // Morph an overlord to an overseer.
+        // ********************************************************************************
+        /// <summary>
+        /// Morph an overlord to an overseer.
+        /// </summary>
+        // ********************************************************************************
         private void MorphToOverseer()
         {
             var overlords = controller.GetUnits(Units.OVERLORD);
@@ -766,7 +842,11 @@ namespace Bot
             }
         }
 
-        // Morph an overlord to an transport overlord.
+        // ********************************************************************************
+        /// <summary>
+        /// Morph an overlord to an transport overlord.
+        /// </summary>
+        // ********************************************************************************
         private void MorphToTransportOverlord()
         {
             var overlords = controller.GetUnits(Units.OVERLORD);
@@ -788,7 +868,13 @@ namespace Bot
                 }
             }
         }
-        // Preform unit actions.
+
+        // ********************************************************************************
+        /// <summary>
+        /// Preform unit actions.
+        /// </summary>
+        /// <param name="randomActions">If true call the unit actions random method.</param>
+        // ********************************************************************************
         private void PreformUnitActions(bool randomActions = false)
         {
             var allUnits = controller.GetUnits(Units.AllUnits, onlyCompleted: true);
@@ -842,7 +928,12 @@ namespace Bot
          * Research
          **********/
 
-        // Research the burrow upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Research an upgrade.
+        /// </summary>
+        /// <param name="researchID">The upgrade id to research.</param>
+        // ********************************************************************************
         private void Research(int researchID)
         {
             var resourceCenters = controller.GetUnits(Units.ResourceCenters);
@@ -880,7 +971,12 @@ namespace Bot
          * Abilities
          **********/
 
-        // Burrow the passed unit if able.
+        // ********************************************************************************
+        /// <summary>
+        /// Burrow the passed unit if able.
+        /// </summary>
+        /// <param name="unit">The unit to burrow.</param>
+        // ********************************************************************************
         private void BurrowUnit(Unit unit)
         {
             if (!controller.HasUpgrade(Abilities.BURROW)) return;
@@ -895,7 +991,13 @@ namespace Bot
             }
         }
 
-        // Burrow the passed unit if able.
+        // ********************************************************************************
+        /// <summary>
+        /// Burrow the passed unit if able.
+        /// </summary>
+        /// <param name="unit">The unit to unburrow.</param>
+        /// <param name="setAutoCastOn">Set the auto cast on.</param>
+        // ********************************************************************************
         private void UnburrowUnit(Unit unit, bool setAutoCastOn = false)
         {
             if (!controller.HasUpgrade(Abilities.BURROW)) return;
@@ -921,7 +1023,11 @@ namespace Bot
          * ACTIONS
          **********/
 
-        // If there are idle units in the army send them to attack the enemy base at its starting location.
+        // ********************************************************************************
+        /// <summary>
+        /// If there are idle units in the army send them to attack the enemy base at its starting location.
+        /// </summary>
+        // ********************************************************************************
         private void AttackEnemyBase()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
@@ -938,7 +1044,11 @@ namespace Bot
             }
         }
 
-        // If there are known enemy structures send any idle units to attack it.
+        // ********************************************************************************
+        /// <summary>
+        /// If there are known enemy structures send any idle units to attack it.
+        /// </summary>
+        // ********************************************************************************
         private void AttackEnemyStructure()
         {
             // Get visible enemy structures first.
@@ -973,7 +1083,11 @@ namespace Bot
             }
         }
 
-        // If there are known enemy units send any idle units to attack it.
+        // ********************************************************************************
+        /// <summary>
+        /// If there are known enemy units send any idle units to attack it.
+        /// </summary>
+        // ********************************************************************************
         private void AttackEnemyUnits()
         {
             var enemyArmy = controller.GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
@@ -990,7 +1104,11 @@ namespace Bot
             }
         }
 
-        // Burrow idle units.
+        // ********************************************************************************
+        /// <summary>
+        /// Burrow idle units.
+        /// </summary>
+        // ********************************************************************************
         private void BurrowIdleUnits()
         {
             if (!controller.HasUpgrade(Abilities.BURROW)) return;
@@ -1006,7 +1124,11 @@ namespace Bot
             }
         }
 
-        // Unburrow idle units.
+        // ********************************************************************************
+        /// <summary>
+        /// Unburrow idle units.
+        /// </summary>
+        // ********************************************************************************
         private void UnburrowIdleUnits()
         {
             if (!controller.HasUpgrade(Abilities.BURROW)) return;
@@ -1022,8 +1144,14 @@ namespace Bot
             }
         }
 
-        // Recall idle units back to a resource center.
-        // Note: Maybe I should change it to be the closest resource center.
+        // ********************************************************************************
+        /// <summary>
+        /// Recall idle units back to a resource center.
+        /// </summary>
+        /// <remarks>
+        /// Note: Maybe I should change it to be the closest resource center.
+        /// </remarks>
+        // ********************************************************************************
         private void RecallIdleUnits()
         {
             var army = controller.GetIdleUnits(controller.GetUnits(Units.ArmyUnits));
@@ -1038,7 +1166,13 @@ namespace Bot
          * UTILITIES
          **********/
 
-        // Save resources for the passed unit type.
+        // ********************************************************************************
+        /// <summary>
+        /// Save resources for the passed unit type.
+        /// </summary>
+        /// <param name="unitType">The unit type to save resources for.</param>
+        /// <param name="ignoreRandomRoll">If true ignore the random roll and just save the resources.</param>
+        // ********************************************************************************
         private void SaveResourcesForUnit(uint unitType = 0, bool ignoreRandomRoll = false)
         {
             var rollToSaveFor = random.Next(100);
@@ -1079,7 +1213,13 @@ namespace Bot
                 SetSaveResouces(unitType, upgradeId: 0, mineralCost, vespeneCost);
             }
         }
-        // Save resources for the passed upgrade.
+
+        // ********************************************************************************
+        /// <summary>
+        /// Save resources for the passed upgrade.
+        /// </summary>
+        /// <param name="saveUpgradeId">The upgrade id.</param>
+        // ********************************************************************************
         private void SaveResourcesForUpgrade(int saveUpgradeId = 0)
         {
             var mineralCost = 0;
@@ -1089,8 +1229,16 @@ namespace Bot
             SetSaveResouces(unitType: 0, saveUpgradeId, mineralCost, vespeneCost);
         }
 
-        // Set the resources that need to be saved to for a unit type or upgrade.
-        // Not sending in any data to the method will reset it to not saving for a unit and upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Set the resources that need to be saved to for a unit type or upgrade. <para/>
+        /// Not sending in any data to the method will reset it to not saving for a unit and upgrade.
+        /// </summary>
+        /// <param name="unitType">The unit type to save for.</param>
+        /// <param name="upgradeId">The upgrade to save for.</param>
+        /// <param name="minerals">The minerals to save.</param>
+        /// <param name="vespene">The vespene to save.</param>
+        // ********************************************************************************
         private void SetSaveResouces(uint unitType = 0, int upgradeId = 0, int minerals = 0, int vespene = 0)
         {
             // Reset all the variables in case this is a reset call.
@@ -1126,7 +1274,11 @@ namespace Bot
             }
         }
 
-        //  Create a unit that resources were saved for.
+        // ********************************************************************************
+        /// <summary>
+        /// Create a unit that resources were saved for.
+        /// </summary>
+        // ********************************************************************************
         private void CreateSavedFor()
         {
             if (saveForUnitType != 0)
@@ -1186,7 +1338,11 @@ namespace Bot
          * Total Random Functions
          **********/
 
-        // Randomly build building.
+        // ********************************************************************************
+        /// <summary>
+        /// Randomly build building.
+        /// </summary>
+        // ********************************************************************************
         private void BuildBuildingsRandom()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -1255,7 +1411,11 @@ namespace Bot
             }
         }
 
-        // Randomly build units.
+        // ********************************************************************************
+        /// <summary>
+        /// Randomly build units.
+        /// </summary>
+        // ********************************************************************************
         private void BuildUnitsRandom()
         {
             if (controller.minerals < saveForMinerals || controller.vespene < saveForVespene)
@@ -1303,7 +1463,11 @@ namespace Bot
             }
         }
 
-        // Randomly preform actions.
+        // ********************************************************************************
+        /// <summary>
+        /// Randomly preform actions.
+        /// </summary>
+        // ********************************************************************************
         private void ArmyActionsRandom()
         {
             var randAction = random.Next(6);
