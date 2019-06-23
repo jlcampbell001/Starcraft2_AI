@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +17,8 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
         protected int loadTransport = Abilities.LOAD_OVERLORD;
         protected int unloadTransportAll = Abilities.UNLOADAll_OVERLORD;
         protected int unloadTransportOneUnit = Abilities.UNLOADUNIT_OVERLORD;
+
+        public int chanceToLoadUnload = 30;
 
         public OverlordTransportActions(ZergController controller) : base(controller)
         {
@@ -38,11 +41,82 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
         {
             if (!IsUnitType(unit)) return;
 
+            var preformingAction = false;
+
             // If under attack ask for help.
-            NeedHelpAction(unit);
+            NeedHelpAction(unit, ref preformingAction);
+
+            if (!preformingAction)
+            {
+                var buildOverseer = false;
+
+                // If there are no overseers morph into one.
+                if (!doNotUseResources)
+                {
+                    var overseerCount = controller.GetTotalCount(Units.OVERSEER);
+
+                    if (overseerCount == 0)
+                    {
+                        buildOverseer = true;
+                    }
+                }
+
+                if (buildOverseer)
+                {
+                    var overseerResult = MorphToOverseer(unit);
+                    if (saveFor && overseerResult == OverseerResult.CanNotAfford)
+                    {
+                        saveUnit = overseer;
+                        ignoreSaveRandomRoll = true;
+                    }
+                }
+                else
+                {
+                    var loading = false;
+                    var unloading = false;
+
+                    if (unit.cargoUsed == unit.cargoMax)
+                    {
+                        unloading = true;
+                    } else if (random.Next(100) < chanceToLoadUnload)
+                    {
+                        var tempCalculation = ((decimal)unit.cargoUsed / (decimal)unit.cargoMax * 100m);
+                        var cargoBaseChance = (int)(tempCalculation);
+                        if (unit.cargoUsed !=0 && random.Next(100) < Math.Min(50, cargoBaseChance))
+                        {
+                            unloading = true;
+                        } else
+                        {
+                            loading = true;
+                        }
+                    }
+
+                    if (loading)
+                    {
+                        preformingAction = LoadTransport(unit);
+                    } else if (unloading)
+                    {
+                        var possibleLocations = controller.expansionPositions.toLocations;
+                        var position = possibleLocations[random.Next(possibleLocations.Count())].location;
+                        preformingAction = UnloadTransport(unit, targetPosition: position);
+                    }
+                    // Lets try and generate creep or stop generating.
+                    else if (random.Next(100) < 50)
+                    {
+                        preformingAction = GenerateCreep(unit);
+                    }
+                    else
+                    {
+                        GenerateCreepStop(unit);
+                    }
+                }
+            }
 
             // Move the overlord around.
-            MoveAroundResourceCenter(unit);
+            if (!preformingAction)
+            {
+                MoveAroundResourceCenter(unit);
+            }
         }
 
         // ********************************************************************************
@@ -61,42 +135,40 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
         {
             if (!IsUnitType(unit)) return;
 
-            // If under attack ask for help.
-            NeedHelpAction(unit);
-
             var preformingAction = false;
 
-            if (unit.isSelected)
+            // If under attack ask for help.
+            NeedHelpAction(unit, ref preformingAction);
+
+            if (!preformingAction)
             {
-                var a = 1;
-            }
+                var randomAction = random.Next(5);
 
-            var randomAction = random.Next(5);
+                switch (randomAction)
+                {
+                    case 0:
+                        if (doNotUseResources) return;
 
-            switch (randomAction)
-            {
-                case 0:
-                    if (doNotUseResources) return;
-
-                    var overseerResult = MorphToOverseer(unit);
-                    if (saveFor && overseerResult == OverseerResult.CanNotAfford)
-                    {
-                        saveUnit = overseer;
-                        ignoreSaveRandomRoll = true;
-                    }
-                    break;
-                case 1:
-                    preformingAction = GenerateCreep(unit);
-                    break;
-                case 2:
-                    GenerateCreepStop(unit);
-                    break;
-                case 3:
-                    preformingAction = LoadTransport(unit);
-                    break;
-                case 4:
-                    preformingAction = UnloadTransport(unit);
-                    break;
+                        var overseerResult = MorphToOverseer(unit);
+                        if (saveFor && overseerResult == OverseerResult.CanNotAfford)
+                        {
+                            saveUnit = overseer;
+                            ignoreSaveRandomRoll = true;
+                        }
+                        break;
+                    case 1:
+                        preformingAction = GenerateCreep(unit);
+                        break;
+                    case 2:
+                        GenerateCreepStop(unit);
+                        break;
+                    case 3:
+                        preformingAction = LoadTransport(unit);
+                        break;
+                    case 4:
+                        preformingAction = UnloadTransport(unit);
+                        break;
+                }
             }
 
             // Move the overlord around.
@@ -124,7 +196,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             if (unit.cargoUsed == unit.cargoMax) return false;
 
             // Get the closest unit and load it.
-            var armyUnit = controller.GetClosestUnit(unit, Units.ArmyUnits);
+            var armyUnit = controller.GetClosestUnit(unit, Units.ArmyUnits, isNotBurrowed: true);
 
             if (armyUnit == null) return false;
 
@@ -142,9 +214,10 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
         /// </summary>
         /// <param name="unit">The overlord transport to unload from.</param>
         /// <param name="unloadAll">Unload all the passengers if set true.</param>
+        /// <param name="targetPosition">Can pass a position to unload to otherwise it will unload at there the overlord is.</param>
         /// <returns>Returns true if it will be unload passengers.</returns>
         // ********************************************************************************
-        public bool UnloadTransport(Unit unit, bool unloadAll = true)
+        public bool UnloadTransport(Unit unit, bool unloadAll = true, Vector3 targetPosition = new Vector3())
         {
             if (!IsUnitType(unit)) return false;
 
@@ -154,9 +227,14 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             var unloadingPassengers = false;
 
+            if (targetPosition == Vector3.Zero)
+            {
+                targetPosition = unit.position;
+            }
+
             if (unloadAll)
             {
-                unit.UseAbility(unloadTransportAll, targetPosition: unit.position);
+                unit.UseAbility(unloadTransportAll, targetPosition: targetPosition);
 
                 controller.LogIfSelectedUnit(unit, "OverLoad {0} unloading all units @ {1} / {2} ", unit.tag, unit.position.X, unit.position.Y);
 
@@ -181,5 +259,26 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             return unloadingPassengers;
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Summons help if under attack and if has units in transport unloads them.
+        /// </summary>
+        /// <param name="unit">overlord transport under attack</param>
+        /// <param name="preformAction">If unloading units set the preformAction to true.</param>
+        /// <returns>true if under attack</returns>
+        // ********************************************************************************
+        public bool NeedHelpAction(Unit unit, ref bool preformAction)
+        {
+            if (!IsUnitType(unit)) return false;
+
+            var underAttack = base.NeedHelpAction(unit);
+
+            if (underAttack && unit.cargoUsed != 0)
+            {
+                preformAction = UnloadTransport(unit);
+            }
+
+            return underAttack;
+        }
     }
 }

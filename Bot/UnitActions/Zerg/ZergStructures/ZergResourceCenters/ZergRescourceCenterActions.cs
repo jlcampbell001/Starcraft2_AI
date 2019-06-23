@@ -110,17 +110,27 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             return BirthQueenResult.Success;
         }
 
-        // Ask for help if being attack.
-        override
-            public void NeedHelpAction(Unit unit)
+       
+            // ********************************************************************************
+            /// <summary>
+            /// Summons all army units if under attack.
+            /// </summary>
+            /// <param name="unit"> The unit under attack.</param>
+            /// <returns>true if under attack.</returns>
+            // ********************************************************************************
+            public override bool NeedHelpAction(Unit unit)
         {
             var enemyAttackers = controller.GetPotentialAttackers(unit);
+            var underAttack = false;
 
             if (enemyAttackers.Count > 0)
             {
                 SummonHelp(unit, enemyAttackers[0], idleArmyOnly: false);
                 Logger.Info("{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
+                underAttack = true;
             }
+
+            return underAttack;
         }
 
         // Set a unit rally point opposite the resources near by if any.

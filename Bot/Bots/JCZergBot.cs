@@ -12,7 +12,7 @@ namespace Bot
 {
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = true;
+        private readonly bool totalRandom = false;
 
         private const int WAIT_IN_SECONDS = 1;
 

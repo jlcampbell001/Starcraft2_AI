@@ -124,17 +124,27 @@ namespace Bot.UnitActions
             }
         }
 
-        // Ask for help if being attack.
-        virtual
-            public void NeedHelpAction(Unit unit)
+            // ********************************************************************************
+            /// <summary>
+            /// Summons help from idle army if under attack. <para/>
+            /// It is really actually just reacting to enemy units in sight, not actually being attacked.
+            /// </summary>
+            /// <param name="unit">The unit that will need help.</param>
+            /// <returns>true if under attack.</returns>
+            // ********************************************************************************
+            public virtual bool NeedHelpAction(Unit unit)
         {
             var enemyAttackers = controller.GetPotentialAttackers(unit);
+            var underAttack = false;
 
             if (enemyAttackers.Count > 0)
             {
                 SummonHelp(unit, enemyAttackers[0]);
                 Logger.Info("{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
+                underAttack = true;
             }
+
+            return underAttack;
         }
 }
 }

@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 {
+    // --------------------------------------------------------------------------------
+    /// <summary>
+    /// Object that can control the actions of overlord units.
+    /// </summary>
+    // --------------------------------------------------------------------------------
     class OverlordActions : ZergActions
     {
         protected uint overseer = Units.OVERSEER;
@@ -25,6 +30,17 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             unitType = Units.OVERLORD;
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Preform an Intelligent actions for the unit.
+        /// </summary>
+        /// <param name="unit">The overlord unit.</param>
+        /// <param name="saveUnit">Setting to return a value to save resources for a unit.</param>
+        /// <param name="saveUpgrade">Setting to return a value to save resources for an upgrade.</param>
+        /// <param name="ignoreSaveRandomRoll"> Setting to return to turn off the random chance when deciding to save resources.</param>
+        /// <param name="saveFor">If set true it will setup the save resource information.</param>
+        /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
+        // ********************************************************************************
         public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false,
             bool doNotUseResources = false)
         {
@@ -33,19 +49,93 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             // If under attack ask for help.
             NeedHelpAction(unit);
 
+            var preformingAction = false;
+
+            // Create an overseer if there is no overseers.
+            if (!doNotUseResources)
+            {
+                var overseerCount = controller.GetTotalCount(Units.OVERSEER);
+                var transportCount = controller.GetTotalCount(Units.OVERLORD_TRANSPORT);
+
+                var buildOverseer = false;
+                var buildTransport = false;
+
+                if (overseerCount == 0)
+                {
+                    buildOverseer = true;
+                }
+                else if (transportCount == 0)
+                {
+                    buildTransport = true;
+                }
+                else if (random.Next(100) < 50)
+                {
+                    buildOverseer = true;
+                }
+                else
+                {
+                    buildTransport = true;
+                }
+
+                if (buildOverseer)
+                {
+                    var overseerResult = MorphToOverseer(unit);
+                    if (saveFor && overseerResult == OverseerResult.CanNotAfford)
+                    {
+                        saveUnit = overseer;
+                        ignoreSaveRandomRoll = true;
+                    }
+                }
+                else if (buildTransport)
+                {
+                    var mutateResult = MorphToOverlordTransport(unit);
+                    if (saveFor && mutateResult == MorphToTransportResult.CanNotAfford)
+                    {
+                        saveUnit = overlordTransport;
+                        ignoreSaveRandomRoll = true;
+                    }
+                }
+                else
+                {
+                    // Lets try and generate creep or stop generating.
+                    if (random.Next(100) < 50)
+                    {
+                        preformingAction = GenerateCreep(unit);
+                    }
+                    else
+                    {
+                        GenerateCreepStop(unit);
+                    }
+                }
+            }
+
             // Move the overlord around.
-            MoveAroundResourceCenter(unit);
+            if (!preformingAction)
+            {
+                MoveAroundResourceCenter(unit);
+            }
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Preform a random action for the passed unit.
+        /// </summary>
+        /// <param name="unit">The overlord unit.</param>
+        /// <param name="saveUnit">Setting to return a value to save resources for a unit.</param>
+        /// <param name="saveUpgrade">Setting to return a value to save resources for an upgrade.</param>
+        /// <param name="ignoreSaveRandomRoll"> Setting to return to turn off the random chance when deciding to save resources.</param>
+        /// <param name="saveFor">If set true it will setup the save resource information.</param>
+        /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
+        // ********************************************************************************        
         public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false,
-            bool doNotUseResources = false)
+        bool doNotUseResources = false)
         {
             if (!IsUnitType(unit)) return;
 
             // If under attack ask for help.
             NeedHelpAction(unit);
 
-            var generatingCreep = false;
+            var preformingAction = false;
 
             var randomAction = random.Next(4);
 
@@ -62,7 +152,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
                     }
                     break;
                 case 1:
-                    generatingCreep = GenerateCreep(unit);
+                    preformingAction = GenerateCreep(unit);
                     break;
                 case 2:
                     GenerateCreepStop(unit);
@@ -80,13 +170,18 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             }
 
             // Move the overlord around.
-            if (!generatingCreep)
+            if (!preformingAction)
             {
                 MoveAroundResourceCenter(unit);
             }
         }
 
-        // Move randomly around a resource center.
+        // ********************************************************************************
+        /// <summary>
+        /// Move randomly around a resource center.
+        /// </summary>
+        /// <param name="unit"> The overlord to move.</param>
+        // ********************************************************************************
         public void MoveAroundResourceCenter(Unit unit)
         {
             if (!IsUnitType(unit)) return;
@@ -105,7 +200,13 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             }
         }
 
-        // Morph to an overseer.
+        // ********************************************************************************
+        /// <summary>
+        /// Morph to an overseer.
+        /// </summary>
+        /// <param name="unit">The overlord to morph.</param>
+        /// <returns>An OverseerResult.</returns>
+        // ********************************************************************************
         public OverseerResult MorphToOverseer(Unit unit)
         {
             if (!IsUnitType(unit)) return OverseerResult.NotUnitType;
@@ -125,8 +226,14 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             return OverseerResult.Success;
         }
 
-        // Start generating creep.
-        // Note: Need to figure out a way to tell if the unit is generating creep.  It is not in the list of orders while they are doing that.
+        // ********************************************************************************
+        /// <summary>
+        /// Start generating creep. <para />
+        /// Note: Need to figure out a way to tell if the unit is generating creep.  It is not in the list of orders while they are doing that.
+        /// </summary>
+        /// <param name="unit">The overlord to generate creep.</param>
+        /// <returns>True if generating creep.</returns>
+        // ********************************************************************************
         public bool GenerateCreep(Unit unit)
         {
             if (!IsUnitType(unit)) return false;
@@ -141,8 +248,14 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             return true;
         }
 
-        // Stop generating creep.
-        // Note: Need to figure out a way to tell if the unit is generating creep.  It is not in the list of orders while they are doing that.
+        // ********************************************************************************
+        /// <summary>
+        /// Stop generating creep. <para />
+        /// Note: Need to figure out a way to tell if the unit is generating creep.  It is not in the list of orders while they are doing that.
+        /// </summary>
+        /// <param name="unit">The overlord to stop generate creep.</param>
+        /// <returns>True if stopping.</returns>
+        // ********************************************************************************
         public bool GenerateCreepStop(Unit unit)
         {
             if (!IsUnitType(unit)) return false;
@@ -157,7 +270,13 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
             return true;
         }
 
-        // Morph to an overlord transport.
+        // ********************************************************************************
+        /// <summary>
+        /// Morph to an overlord transport.
+        /// </summary>
+        /// <param name="unit">The overlord to morph.</param>
+        /// <returns>MorphToTransportResult</returns>
+        // ********************************************************************************
         public MorphToTransportResult MorphToOverlordTransport(Unit unit)
         {
             if (!IsUnitType(unit)) return MorphToTransportResult.NotUnitType;

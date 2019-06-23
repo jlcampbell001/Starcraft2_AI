@@ -710,8 +710,17 @@ namespace Bot
             return resourceCenters.Count;
         }
 
-        // Get the closest unit to the target unit from the passed unit list.
-        public Unit GetClosestUnit(Unit target, List<Unit> units, double withInDistance = 0)
+        // ********************************************************************************
+        /// <summary>
+        /// Get the closest unit to the target unit from the passed unit list.
+        /// </summary>
+        /// <param name="target"> The unit to check distances to.</param>
+        /// <param name="units">List of units to check for.</param>
+        /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
+        /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <returns>The closest unit of null if none is found.</returns>
+        // ********************************************************************************
+        public Unit GetClosestUnit(Unit target, List<Unit> units, double withInDistance = 0, bool isNotBurrowed = false)
         {
             Unit closestUnit = null;
 
@@ -720,38 +729,76 @@ namespace Bot
                 UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(target.position);
                 unitsDistanceFromList.AddUnits(units);
 
-                var firstUnit = unitsDistanceFromList.toUnits[0];
+                foreach (var unit in unitsDistanceFromList.toUnits)
+                {
+                    var foundUnit = false;
 
-                if (withInDistance > 0)
-                {
-                    if (firstUnit.distance <= withInDistance)
+                    if (withInDistance > 0)
                     {
-                        closestUnit = firstUnit.unit;
+                        if (unit.distance <= withInDistance)
+                        {
+                            foundUnit = true;
+                        }
+                        else
+                        {
+                            // No units are withing range.
+                            break;
+                        }
                     }
-                }
-                else
-                {
-                    closestUnit = firstUnit.unit;
+                    else
+                    {
+                        foundUnit = true;
+                    }
+
+                    if (foundUnit && isNotBurrowed && unit.unit.isBurrowed)
+                    {
+                        foundUnit = false;
+                    }
+
+                    // Found the closest unit get out.
+                    if (foundUnit)
+                    {
+                        closestUnit = unit.unit;
+                        break;
+                    }
                 }
             }
 
             return closestUnit;
         }
 
-        // Get the closest unit to the target unit from the passed hashset.
-        public Unit GetClosestUnit(Unit target, HashSet<uint> unitTypes, double withInDistance = 0)
+        // ********************************************************************************
+        /// <summary>
+        /// Get the closest unit to the target unit from the passed hashset.
+        /// </summary>
+        /// <param name="target">The unit to check distances to.</param>
+        /// <param name="unitTypes">The unit hashset to check for.</param>
+        /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
+        /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <returns>The closest unit of null if none is found.</returns>
+        // ********************************************************************************
+        public Unit GetClosestUnit(Unit target, HashSet<uint> unitTypes, double withInDistance = 0, bool isNotBurrowed = false)
         {
             var units = GetUnits(unitTypes);
 
-            return GetClosestUnit(target, units, withInDistance);
+            return GetClosestUnit(target, units, withInDistance, isNotBurrowed);
         }
 
-        // Get the closest unit to the target unit from the passed unit type.
-        public Unit GetClosestUnit(Unit target, uint unitType, double withInDistance = 0)
+        // ********************************************************************************
+        /// <summary>
+        /// Get the closest unit to the target unit from the passed unit type.
+        /// </summary>
+        /// <param name="target">The unit to check distances to.</param>
+        /// <param name="unitTypes">The unit type to check for.</param>
+        /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
+        /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <returns>The closest unit of null if none is found.</returns>
+        // ********************************************************************************
+        public Unit GetClosestUnit(Unit target, uint unitType, double withInDistance = 0, bool isNotBurrowed = false)
         {
             var units = GetUnits(unitType);
 
-            return GetClosestUnit(target, units, withInDistance);
+            return GetClosestUnit(target, units, withInDistance, isNotBurrowed);
         }
 
         // Check and see if the bot has any of the passed completed units.
