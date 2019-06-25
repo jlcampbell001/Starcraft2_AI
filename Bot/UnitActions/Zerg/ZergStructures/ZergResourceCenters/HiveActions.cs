@@ -8,7 +8,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 {
     class HiveActions : ZergRescourceCenterActions
     {
-        public HiveActions(ZergController controller) : base(controller)
+        public HiveActions(ZergController controller, QueenToResourceCenterManager queenToResourceCenterManager) : base(controller, queenToResourceCenterManager)
         {
             unitType = Units.HIVE;
         }
@@ -16,6 +16,49 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
         public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
         {
             base.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
+
+            // Set the rally points.
+            SetUnitRally(unit);
+            SetWorkerRally(unit);
+
+            if (!doNotUseResources)
+            {
+                // If there is no queen near by create one.
+                if (random.Next(100) < chanceOfExtraQueens || GetAssignedQueen(unit) == null)
+                {
+                    var queenResult = BirthQueen(unit);
+                    if (saveFor && queenResult == BirthQueenResult.CanNotConstruct)
+                    {
+                        saveUnit = queen;
+                    }
+                }
+                else if (random.Next(100) < researchBurrowChance)
+                {
+                    var burrowResult = ResearchBurrow(unit);
+                    if (saveFor && burrowResult == ResearchResult.CanNotAfford)
+                    {
+                        saveUpgrade = researchBurrow;
+                    }
+                }
+                else if (random.Next(100) < researchPneumatizedCarapaceChance)
+                {
+                    var pneumatizedCarapaceResult = ResearchPneumatizedCarapace(unit);
+                    if (saveFor && pneumatizedCarapaceResult == ResearchResult.CanNotAfford)
+                    {
+                        saveUpgrade = researchPneumatizedCarapace;
+                    }
+                }
+                else
+                {
+                    /*
+                    var lairResult = UpgradeToLair(unit);
+                    if (saveFor && lairResult == LairResult.CanNotConstruct)
+                    {
+                        saveUnit = lair;
+                    }
+                    */
+                }
+            }
         }
 
         public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll,

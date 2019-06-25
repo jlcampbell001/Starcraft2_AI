@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Bot.UnitActions.Zerg
 {
+    // --------------------------------------------------------------------------------
+    /// <summary>
+    /// Object to control Zerg actions.
+    /// </summary>
+    // --------------------------------------------------------------------------------
     class ZergActions : UnitActions
     {
         protected new ZergController controller;
@@ -24,8 +29,13 @@ namespace Bot.UnitActions.Zerg
             this.controller = controller ?? throw new ArgumentNullException(nameof(controller));
         }
 
-        override
-            public void SetupUnitActionsList(ref UnitActionsList unitActionsList)
+        // ********************************************************************************
+        /// <summary>
+        /// Add this object to a unit actions list.
+        /// </summary>
+        /// <param name="unitActionsList">Unit actions list to add object to.</param>
+        // ********************************************************************************
+        public override void SetupUnitActionsList(ref UnitActionsList unitActionsList)
         {
             unitActionsList.addUnitAction(this, unitType);
 
@@ -35,7 +45,13 @@ namespace Bot.UnitActions.Zerg
             }
         }
 
-        // Checks to see if the passed unit is of the burrowed unit type that is action controller will deal with.
+        // ********************************************************************************
+        /// <summary>
+        /// Checks to see if the passed unit is of the burrowed unit type that is action controller will deal with.
+        /// </summary>
+        /// <param name="unit">The burrow unit to check.</param>
+        /// <returns>True if the unit is the burrow version type.</returns>
+        // ********************************************************************************
         public bool IsBurrowedUnitType(Unit unit)
         {
             var isUnitType = false;
@@ -48,7 +64,12 @@ namespace Bot.UnitActions.Zerg
             return isUnitType;
         }
 
-        // Used the units burrow command if it has it.
+        // ********************************************************************************
+        /// <summary>
+        /// Used the units burrow command if it has it.
+        /// </summary>
+        /// <param name="unit">The unit to burrow.</param>
+        // ********************************************************************************
         public void Burrow(Unit unit)
         {
             if (burrow == 0) return;
@@ -58,9 +79,16 @@ namespace Bot.UnitActions.Zerg
             if (!controller.HasUpgrade(burrowUpgrade)) return;
 
             unit.UseAbility(burrow);
+
+            controller.LogIfSelectedUnit(unit, "Burrow {0} {1} @ {2} / {3}", unit.name, unit.tag, unit.position.X, unit.position.Y);
         }
 
-        // Used the units unburrow command if it has it.
+        // ********************************************************************************
+        /// <summary>
+        /// Used the units unburrow command if it has it.
+        /// </summary>
+        /// <param name="unit">The unit to unborrow.</param>
+        // ********************************************************************************
         public void Unburrow(Unit unit)
         {
             if (burrow == 0) return;
@@ -70,6 +98,8 @@ namespace Bot.UnitActions.Zerg
             if (!controller.HasUpgrade(burrowUpgrade)) return;
 
             unit.UseAbility(unburrow);
+
+            controller.LogIfSelectedUnit(unit, "Unburrow {0} {1} @ {2} / {3}", unit.name, unit.tag, unit.position.X, unit.position.Y);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 
         public enum LairResult { Success, NotUnitType, UnitBusy, CanNotConstruct };
 
-        public HatcheryActions(ZergController controller) : base(controller)
+        public HatcheryActions(ZergController controller, QueenToResourceCenterManager queenToResourceCenterManager) : base(controller, queenToResourceCenterManager)
         {
             unitType = Units.HATCHERY;
         }
@@ -45,7 +45,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             if (!doNotUseResources)
             {
                 // If there is no queen near by create one.
-                if (random.Next(100) < chanceOfExtraQueens || GetNearestQueen(unit) == null)
+                if (random.Next(100) < chanceOfExtraQueens || GetAssignedQueen(unit) == null)
                 {
                     var queenResult = BirthQueen(unit);
                     if (saveFor && queenResult == BirthQueenResult.CanNotConstruct)

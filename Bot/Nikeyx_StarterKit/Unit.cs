@@ -32,6 +32,9 @@ namespace Bot
         public RepeatedField<PassengerUnit> passangers;
         public int cargoMax;
         public int cargoUsed;
+        public float energyCurrent;
+        public float energyMax;
+
 
         public Unit(SC2APIProtocol.Unit unit)
         {
@@ -63,6 +66,9 @@ namespace Bot
             this.passangers = unit.Passengers;
             this.cargoMax = unit.CargoSpaceMax;
             this.cargoUsed = unit.CargoSpaceTaken;
+
+            this.energyCurrent = unit.Energy;
+            this.energyMax = unit.EnergyMax;
         }
 
         // Return the distance between two units (X,Y,Z).

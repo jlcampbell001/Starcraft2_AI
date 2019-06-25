@@ -1077,5 +1077,11 @@ namespace Bot
             SPIRE,
             GREATER_SPIRE
         };
+
+        public static readonly HashSet<uint> Queens = new HashSet<uint>
+        {
+            QUEEN,
+            QUEEN_BURROWED
+        };
     }
 }

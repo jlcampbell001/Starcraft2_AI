@@ -55,6 +55,8 @@ namespace Bot
         public static int UNLOADAll_OVERLORD = 1408;
         public static int UNLOADUNIT_OVERLORD = 1409;
 
+        public static int SPAWN_LARVA = 251;
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;

@@ -1046,6 +1046,7 @@ namespace Bot
             var abilityName = "";
 
             abilityName = gameData.Abilities[abilityID].FriendlyName;
+            
             return abilityName;
         }
 

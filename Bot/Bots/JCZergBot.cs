@@ -59,6 +59,9 @@ namespace Bot
 
         private ZergController controller = new ZergController();
 
+        // Managers.
+        private QueenToResourceCenterManager queenToResourceCenterManager;
+
         // Unit actions.
         private UnitActionsList unitActionsList = new UnitActionsList();
         private DroneActions droneAction;
@@ -98,10 +101,13 @@ namespace Bot
 
         public JCZergBot()
         {
+            // Initialize all the managers.
+            queenToResourceCenterManager = new QueenToResourceCenterManager(controller);
+
             // Initialize all the unit actions objects.
             droneAction = new DroneActions(controller);
             zerglingAction = new ZerglingActions(controller);
-            queenAction = new QueenActions(controller);
+            queenAction = new QueenActions(controller, queenToResourceCenterManager);
             banelingAction = new BanelingActions(controller);
             roachAction = new RoachActions(controller);
             ravagerAction = new RavagerActions(controller);
@@ -116,9 +122,9 @@ namespace Bot
             overlordTransportActions = new OverlordTransportActions(controller);
             overseerActions = new OverseerActions(controller);
 
-            hatcheryAction = new HatcheryActions(controller);
-            lairActions = new LairActions(controller);
-            hiveActions = new HiveActions(controller);
+            hatcheryAction = new HatcheryActions(controller, queenToResourceCenterManager);
+            lairActions = new LairActions(controller, queenToResourceCenterManager);
+            hiveActions = new HiveActions(controller, queenToResourceCenterManager);
             banelingNestActions = new BanelingNestActions(controller);
             evolutionChamberActions = new EvolutionChamberActions(controller);
             extractorActions = new ExtractorActions(controller);

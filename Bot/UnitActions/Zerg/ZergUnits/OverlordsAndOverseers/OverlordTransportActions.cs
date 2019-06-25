@@ -200,6 +200,9 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             if (armyUnit == null) return false;
 
+            // Do not load a selected unit because I am watching it and I lose the selected when they get picked up.
+            if (armyUnit.isSelected) return false;
+
             unit.UseAbility(loadTransport, targetUnit: armyUnit);
 
             controller.LogIfSelectedUnit(unit, "OverLoad {0} loading {1} @ {2} / {3} ", unit.tag, armyUnit.name, armyUnit.position.X, armyUnit.position.Y);

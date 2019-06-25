@@ -12,6 +12,8 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 {
     class ZergRescourceCenterActions : ZergStructureActions
     {
+        protected QueenToResourceCenterManager queenToResourceCenterManager;
+
         protected int researchBurrow = Abilities.RESEARCH_BURROW;
 
         protected int researchPneumatizedCarapace = Abilities.RESEARCH_PNEUMATIZED_CARAPACE;
@@ -35,8 +37,9 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 
         public enum BirthQueenResult { Success, NotUnitType, UnitBusy, CanNotConstruct };
 
-        public ZergRescourceCenterActions(ZergController controller) : base(controller)
+        public ZergRescourceCenterActions(ZergController controller, QueenToResourceCenterManager queenToResourceCenterManager) : base(controller)
         {
+            this.queenToResourceCenterManager = queenToResourceCenterManager ?? throw new ArgumentNullException(nameof(queenToResourceCenterManager));
         }
 
         public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
@@ -115,18 +118,23 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             /// <summary>
             /// Summons all army units if under attack.
             /// </summary>
-            /// <param name="unit"> The unit under attack.</param>
+            /// <param name="unit">The unit under attack.</param>
+            /// <param name="summonHelp">If true summon help.</param>
             /// <returns>true if under attack.</returns>
             // ********************************************************************************
-            public override bool NeedHelpAction(Unit unit)
+            public override bool NeedHelpAction(Unit unit, bool summonHelp = true)
         {
             var enemyAttackers = controller.GetPotentialAttackers(unit);
             var underAttack = false;
 
             if (enemyAttackers.Count > 0)
             {
-                SummonHelp(unit, enemyAttackers[0], idleArmyOnly: false);
-                Logger.Info("{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
+                if (summonHelp)
+                {
+                    SummonHelp(unit, enemyAttackers[0], idleArmyOnly: false);
+                    controller.LogIfSelectedUnit(unit, "{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
+                }
+
                 underAttack = true;
             }
 
@@ -193,7 +201,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
                 unitRallySet.Add(unit.tag);
             }
 
-            Logger.Info("Set {0} unit rally point @ {1}, {2}", unit.name, rallySpot.X, rallySpot.Y);
+            controller.LogIfSelectedUnit(unit, "Set {0} unit rally point @ {1}, {2}", unit.name, rallySpot.X, rallySpot.Y);
         }
 
         // Set a worker rally point to the closest resource.
@@ -227,24 +235,30 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
                         workerRallySet.Add(unit.tag);
                     }
 
-                    Logger.Info("Set {0} worker rally point @ {1}, {2}", unit.name, rallySpot.X, rallySpot.Y);
+                    controller.LogIfSelectedUnit(unit, "Set {0} worker rally point @ {1}, {2}", unit.name, rallySpot.X, rallySpot.Y);
                 }
             }
         }
 
-        // Get the closest queen that can see the resource center.
-        protected Unit GetNearestQueen(Unit unit)
+        // ********************************************************************************
+        /// <summary>
+        /// Get the queen that is assigned the resource center.
+        /// </summary>
+        /// <param name="unit">The resource center.</param>
+        /// <returns>The found assigned queen or null if none is assigned.</returns>
+        // ********************************************************************************
+        protected Unit GetAssignedQueen(Unit unit)
         {
-            var queens = controller.GetUnits(queen);
+            var queenLink = queenToResourceCenterManager.FindLinkByResourceCenter(unit.tag, true);
 
-            Unit nearestQueen = null;
+            Unit foundQueen = null;
 
-            if (queens.Count > 0)
+            if (queenLink != null)
             {
-                nearestQueen = controller.GetClosestUnit(unit, queens, queens[0].sight);
+                foundQueen = controller.GetUnitByTag(queenLink.tag1);
             }
 
-            return nearestQueen;
+            return foundQueen;
         }
     }
 }

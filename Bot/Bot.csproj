@@ -89,6 +89,7 @@
     <Compile Include="UnitActions\UnitActionListItem.cs" />
     <Compile Include="UnitActions\UnitActions.cs" />
     <Compile Include="UnitActions\UnitActionsList.cs" />
+    <Compile Include="UnitActions\Zerg\QueenToResourceCenterManager.cs" />
     <Compile Include="UnitActions\Zerg\ZergActions.cs" />
     <Compile Include="UnitActions\Zerg\ZergStructures\BanelingNestActions.cs" />
     <Compile Include="UnitActions\Zerg\ZergStructures\EvolutionChamberActions.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Utilities\UnitDistance.cs" />
     <Compile Include="Utilities\UnitsDistanceFromList.cs" />
     <Compile Include="Utilities\LocationsDistanceFromList.cs" />
+    <Compile Include="Utilities\UnitsLink.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Notes\ZergUnitCosts.txt" />

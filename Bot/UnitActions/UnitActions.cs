@@ -7,6 +7,11 @@ using SC2APIProtocol;
 
 namespace Bot.UnitActions
 {
+    // --------------------------------------------------------------------------------
+    /// <summary>
+    /// Object to control a units actions.
+    /// </summary>
+    // --------------------------------------------------------------------------------
     class UnitActions
     {
         protected ControllerDefault controller;
@@ -24,7 +29,13 @@ namespace Bot.UnitActions
         }
 
 
-        // Checks to see if the passed unit is of the unit type that is action controller will deal with.
+        // ********************************************************************************
+        /// <summary>
+        /// Checks to see if the passed unit is of the unit type that is action controller will deal with.
+        /// </summary>
+        /// <param name="unit">The unit to check.</param>
+        /// <returns>True if the unit is the set unit type.</returns>
+        // ********************************************************************************
         public bool IsUnitType(Unit unit)
         {
             var isUnitType = false;
@@ -36,16 +47,25 @@ namespace Bot.UnitActions
             return isUnitType;
         }
 
-        // Add this unit action to the passed unit actions list.
-        virtual
-        public void SetupUnitActionsList(ref UnitActionsList unitActionsList)
+        // ********************************************************************************
+        /// <summary>
+        /// Add this unit action to the passed unit actions list.
+        /// </summary>
+        /// <param name="unitActionsList">The actions list to add this object to.</param>
+        // ********************************************************************************
+        public virtual void SetupUnitActionsList(ref UnitActionsList unitActionsList)
         {
             unitActionsList.addUnitAction(this, unitType);
         }
 
-        // Check and see if the unit is busy.
-        virtual
-            public bool IsBusy(Unit unit)
+            // ********************************************************************************
+            /// <summary>
+            /// Check and see if the unit is busy.
+            /// </summary>
+            /// <param name="unit">The unit to check.</param>
+            /// <returns>True if the unit is busy.</returns>
+            // ********************************************************************************
+            public virtual bool IsBusy(Unit unit)
         {
             if (unit.order.AbilityId != 0) return true;
 
@@ -88,6 +108,15 @@ namespace Bot.UnitActions
 
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Summon army help to the unit.
+        /// </summary>
+        /// <param name="unit">The unit to summon help to.</param>
+        /// <param name="attacker">The attacker to attack.  If null the army comes to the units position.</param>
+        /// <param name="idleArmyOnly">If true only idle army units come to help.</param>
+        /// <param name="includeNearByWorkers">If true workers with 12.0 distance will come to help also.</param>
+        // ********************************************************************************
         public void SummonHelp(Unit unit, Unit attacker = null, bool idleArmyOnly = true, bool includeNearByWorkers = false)
         {
             var army = controller.GetUnits(Units.ArmyUnits);
@@ -130,17 +159,22 @@ namespace Bot.UnitActions
             /// It is really actually just reacting to enemy units in sight, not actually being attacked.
             /// </summary>
             /// <param name="unit">The unit that will need help.</param>
+            /// <param name="summonHelp">If true it will summon help.</param>
             /// <returns>true if under attack.</returns>
             // ********************************************************************************
-            public virtual bool NeedHelpAction(Unit unit)
+            public virtual bool NeedHelpAction(Unit unit, bool summonHelp = true)
         {
             var enemyAttackers = controller.GetPotentialAttackers(unit);
             var underAttack = false;
 
             if (enemyAttackers.Count > 0)
             {
-                SummonHelp(unit, enemyAttackers[0]);
-                Logger.Info("{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
+                if (summonHelp)
+                {
+                    SummonHelp(unit, enemyAttackers[0]);
+                    controller.LogIfSelectedUnit(unit, "{0} is under attack by {1} and summons help.", unit.name, enemyAttackers[0].name);
+                }
+
                 underAttack = true;
             }
 
