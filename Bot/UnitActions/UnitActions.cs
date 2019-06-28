@@ -12,7 +12,7 @@ namespace Bot.UnitActions
     /// Object to control a units actions.
     /// </summary>
     // --------------------------------------------------------------------------------
-    class UnitActions
+    class UnitActions : IConvertible
     {
         protected ControllerDefault controller;
         protected static Random random = new Random();
@@ -180,5 +180,92 @@ namespace Bot.UnitActions
 
             return underAttack;
         }
-}
+
+        TypeCode IConvertible.GetTypeCode()
+        {
+            return  TypeCode.Object;
+        }
+
+        bool IConvertible.ToBoolean(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        char IConvertible.ToChar(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        sbyte IConvertible.ToSByte(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        byte IConvertible.ToByte(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        short IConvertible.ToInt16(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        ushort IConvertible.ToUInt16(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        int IConvertible.ToInt32(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        uint IConvertible.ToUInt32(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        long IConvertible.ToInt64(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        ulong IConvertible.ToUInt64(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        float IConvertible.ToSingle(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        double IConvertible.ToDouble(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        decimal IConvertible.ToDecimal(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        DateTime IConvertible.ToDateTime(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        string IConvertible.ToString(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+        {
+            // This is not the best way to do this but it is working because 
+            // it is being used on subclasses of UnitActions.
+            return this;
+        }
+    }
 }

@@ -92,6 +92,7 @@
     <Compile Include="UnitActions\Zerg\QueenToResourceCenterManager.cs" />
     <Compile Include="UnitActions\Zerg\ZergActions.cs" />
     <Compile Include="UnitActions\Zerg\ZergStructures\BanelingNestActions.cs" />
+    <Compile Include="UnitActions\Zerg\ZergStructures\CreepTumorActions.cs" />
     <Compile Include="UnitActions\Zerg\ZergStructures\EvolutionChamberActions.cs" />
     <Compile Include="UnitActions\Zerg\ZergStructures\ExtractorActions.cs" />
     <Compile Include="UnitActions\Zerg\ZergStructures\GreaterSpireActions.cs" />

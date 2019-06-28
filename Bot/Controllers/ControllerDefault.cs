@@ -363,6 +363,8 @@ namespace Bot
             {
                 unitName = gameData.Units[(int)unitType].Name;
             }
+            
+            
 
             return unitName;
         }
@@ -774,7 +776,7 @@ namespace Bot
             requestQuery.Query.Placements.Add(queryBuildingPlacement);
 
             var result = Program.gc.SendQuery(requestQuery.Query);
-
+            
             if (result.Result.Placements.Count > 0)
                 return (result.Result.Placements[0].Result == ActionResult.Success);
             return false;
@@ -923,7 +925,7 @@ namespace Bot
                         }
                         else
                         {
-                            // No units are withing range.
+                            // No units are within range.
                             break;
                         }
                     }
@@ -981,6 +983,63 @@ namespace Bot
             var units = GetUnits(unitType);
 
             return GetClosestUnit(target, units, withInDistance, isNotBurrowed);
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Get the closest unit to the target unit from the passed unit list.
+        /// </summary>
+        /// <param name="targetPosition">The position to check distances to.</param>
+        /// <param name="units">List of units to check for.</param>
+        /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
+        /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <returns>The closest unit of null if none is found.</returns>
+        // ********************************************************************************
+        public Unit GetClosestUnit(Vector3 targetPosition, List<Unit> units, double withInDistance = 0, bool isNotBurrowed = false)
+        {
+            Unit closestUnit = null;
+
+            if (units.Count > 0)
+            {
+                UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(targetPosition);
+                unitsDistanceFromList.AddUnits(units);
+
+                foreach (var unit in unitsDistanceFromList.toUnits)
+                {
+                    var foundUnit = false;
+
+                    if (withInDistance > 0)
+                    {
+                        if (unit.distance <= withInDistance)
+                        {
+                            foundUnit = true;
+                        }
+                        else
+                        {
+                            // No units are withing range.
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        foundUnit = true;
+                    }
+
+                    if (foundUnit && isNotBurrowed && unit.unit.isBurrowed)
+                    {
+                        foundUnit = false;
+                    }
+
+                    // Found the closest unit get out.
+                    if (foundUnit)
+                    {
+                        closestUnit = unit.unit;
+                        break;
+                    }
+                }
+            }
+
+            return closestUnit;
         }
 
         // ********************************************************************************
@@ -1204,6 +1263,32 @@ namespace Bot
             return IsResearchingUpgrade(abilityID, units);
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Checks to see if the unit has the passed ability. <para/>
+        /// It looks like abilities on a timer or ones that have used up there number of times to do will not show on the available ability list.
+        /// </summary>
+        /// <param name="abilityID">The ability ID to look for.</param>
+        /// <param name="unit">The unit to check.</param>
+        /// <returns>True if they have the ability.</returns>
+        // ********************************************************************************
+        public bool UnitHasAbility(int abilityID, Unit unit)
+        {
+            var hasAbility = false;
+
+            var abilities = unit.GetAvailableAbilities();
+
+            foreach(var ability in abilities)
+            {
+                if (ability.AbilityId == abilityID)
+                {
+                    hasAbility = true;
+                    break;
+                }
+            }
+
+            return hasAbility;
+        }
 
         /**********
          * Actions
@@ -1684,7 +1769,7 @@ namespace Bot
         public Vector3 GetRandomLocation(Vector3 startingLocation, int xMinRange = 0, int xMaxRange = 0, int yMinRange = 0, int yMaxRange = 0)
         {
             var randomLocation = new Vector3(startingLocation.X + random.Next(xMinRange, xMaxRange + 1),
-                    startingLocation.Y + random.Next(yMinRange, yMaxRange + 1), 0);
+                    startingLocation.Y + random.Next(yMinRange, yMaxRange + 1), startingLocation.Z);
 
             return randomLocation;
         }

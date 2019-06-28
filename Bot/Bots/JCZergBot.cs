@@ -98,6 +98,7 @@ namespace Bot
         private SpineCrawlerActions spineCrawlerActions;
         private SporeCrawlerActions sporeCrawlerActions;
         private UltraliskCavernActions ultraliskCavernActions;
+        private CreepTumorActions creepTumorActions;
 
         public JCZergBot()
         {
@@ -139,6 +140,7 @@ namespace Bot
             spireActions = new SpireActions(controller);
             sporeCrawlerActions = new SporeCrawlerActions(controller);
             ultraliskCavernActions = new UltraliskCavernActions(controller);
+            creepTumorActions = new CreepTumorActions(controller);
 
             // Add to the unit action list
             droneAction.SetupUnitActionsList(ref unitActionsList);
@@ -175,6 +177,7 @@ namespace Bot
             spireActions.SetupUnitActionsList(ref unitActionsList);
             sporeCrawlerActions.SetupUnitActionsList(ref unitActionsList);
             ultraliskCavernActions.SetupUnitActionsList(ref unitActionsList);
+            creepTumorActions.SetupUnitActionsList(ref unitActionsList);
 
             /*
             foreach(var actionItem in unitActionsList.unitActionListItems)
@@ -704,6 +707,16 @@ namespace Bot
         {
             var structures = controller.GetUnits(Units.Structures, onlyCompleted: true);
 
+            /* Get current unit information.
+            var all = controller.GetUnits(Units.All);
+            foreach(var unit in all)
+            {
+                if (unit.isSelected)
+                {
+                    var a = 1;
+                }
+            }
+            */
             var saveFor = true;
             var doNotUseResouces = false;
             var ignoreSaveRandomRoll = false;
@@ -805,7 +818,8 @@ namespace Bot
             var resourceCenters = controller.GetUnits(Units.ResourceCenters, onlyCompleted: true);
             foreach (var resourceCenter in resourceCenters)
             {
-                ZergRescourceCenterActions rescourceCenterActions = (ZergRescourceCenterActions)unitActionsList.GetUnitAction(resourceCenter.unitType);
+                //ZergRescourceCenterActions rescourceCenterActions = (ZergRescourceCenterActions)unitActionsList.GetUnitAction(resourceCenter.unitType);
+                var rescourceCenterActions = unitActionsList.GetUnitAction<ZergRescourceCenterActions>(resourceCenter.unitType);
 
                 if (rescourceCenterActions != null)
                 {
@@ -831,7 +845,8 @@ namespace Bot
             var overlords = controller.GetUnits(Units.OVERLORD);
             foreach (var overlord in overlords)
             {
-                OverlordActions overlordActions = (OverlordActions)unitActionsList.GetUnitAction(overlord.unitType);
+                //OverlordActions overlordActions = (OverlordActions)unitActionsList.GetUnitAction(overlord.unitType);
+                var overlordActions = unitActionsList.GetUnitAction<OverlordActions>(overlord.unitType);
 
                 if (overlordActions != null)
                 {
@@ -858,7 +873,9 @@ namespace Bot
             var overlords = controller.GetUnits(Units.OVERLORD);
             foreach (var overlord in overlords)
             {
-                OverlordActions overlordActions = (OverlordActions)unitActionsList.GetUnitAction(overlord.unitType);
+                //OverlordActions overlordActions = (OverlordActions)unitActionsList.GetUnitAction(overlord.unitType);
+                var overlordActions = unitActionsList.GetUnitAction<OverlordActions>(overlord.unitType);
+
 
                 if (overlordActions != null)
                 {
@@ -946,7 +963,8 @@ namespace Bot
 
             foreach (var resourceCenter in resourceCenters)
             {
-                ZergRescourceCenterActions rescourceCenterActions = (ZergRescourceCenterActions)unitActionsList.GetUnitAction(resourceCenter.unitType);
+                //ZergRescourceCenterActions rescourceCenterActions = (ZergRescourceCenterActions)unitActionsList.GetUnitAction(resourceCenter.unitType);
+                var rescourceCenterActions = unitActionsList.GetUnitAction< ZergRescourceCenterActions>(resourceCenter.unitType);
 
                 if (rescourceCenterActions != null)
                 {
@@ -989,7 +1007,8 @@ namespace Bot
 
             if (!Units.CanBurrowedUnits.Contains(unit.unitType)) return;
 
-            ZergActions unitActions = (ZergActions)unitActionsList.GetUnitAction(unit.unitType);
+            //ZergActions unitActions = (ZergActions)unitActionsList.GetUnitAction(unit.unitType);
+            var unitActions = unitActionsList.GetUnitAction<ZergActions>(unit.unitType);
 
             if (unitActions != null)
             {
@@ -1012,7 +1031,8 @@ namespace Bot
 
             //Logger.Info("Unburrow {0}, {1}", unit.name, unit.unitType);
 
-            ZergActions unitActions = (ZergActions)unitActionsList.GetUnitAction(unit.unitType);
+            //ZergActions unitActions = (ZergActions)unitActionsList.GetUnitAction(unit.unitType);
+            var unitActions = unitActionsList.GetUnitAction<ZergActions>(unit.unitType);
 
             if (unitActions != null)
             {

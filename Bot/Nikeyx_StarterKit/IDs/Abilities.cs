@@ -56,6 +56,9 @@ namespace Bot
         public static int UNLOADUNIT_OVERLORD = 1409;
 
         public static int SPAWN_LARVA = 251;
+        public static int SPAWN_CREEP_TUMOR_QUEEN = 1694;
+
+        public static int SPAWN_CREEP_TUMOR = 1733;
 
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;

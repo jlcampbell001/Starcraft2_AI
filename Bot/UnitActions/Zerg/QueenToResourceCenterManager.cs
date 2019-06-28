@@ -16,7 +16,7 @@ namespace Bot.UnitActions.Zerg
     class QueenToResourceCenterManager
     {
         protected List<UnitsLink> queensToResourceCenter = new List<UnitsLink>();
-        protected new ZergController controller;
+        protected ZergController controller;
 
         protected Random random = new Random();
 

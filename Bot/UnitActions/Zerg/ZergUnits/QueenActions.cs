@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,7 +17,10 @@ namespace Bot.UnitActions.Zerg.ZergUnits
     {
         protected QueenToResourceCenterManager queenToResourceCenterManager;
 
+        protected uint creepTumor = Units.CREEP_TUMOR;
+
         protected int spawnLarva = Abilities.SPAWN_LARVA;
+        protected int spawnCreepTumor = Abilities.SPAWN_CREEP_TUMOR_QUEEN;
 
         // Energy costs.
         protected float spawnLarvaCost = 25;
@@ -85,9 +89,9 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (IsUnitType(unit))
             {
-                var randomAction = random.Next(3);
+                var randomAction = random.Next(4);
 
-                switch(randomAction)
+                switch (randomAction)
                 {
                     case 0:
                         Burrow(unit);
@@ -97,6 +101,9 @@ namespace Bot.UnitActions.Zerg.ZergUnits
                         break;
                     case 2:
                         MoveToLinkedResourceCenter(unit);
+                        break;
+                    case 3:
+                        SpawnCreepTumor(unit);
                         break;
                 }
             }
@@ -131,7 +138,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             unit.UseAbility(spawnLarva, targetUnit: resourceCenter);
 
-            controller.LogIfSelectedUnit(unit, "Queen {0} spawning larva at {1} @ {2} / {3}", 
+            controller.LogIfSelectedUnit(unit, "Queen {0} spawning larva at {1} @ {2} / {3}",
                 unit.tag, resourceCenter.name, resourceCenter.position.X, resourceCenter.position.Y);
 
             return true;
@@ -186,6 +193,48 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             return resourceCenter;
         }
-        
+
+        // ********************************************************************************
+        /// <summary>
+        /// Has the queen spawn a creep tumor at a location. <para/>
+        /// If doing random it will try to get a location equal to randomCreepTumorPlacementTries variable.
+        /// </summary>
+        /// <param name="unit">Queen unit.</param>
+        /// <param name="targetPosition">To spawn if not supplied it will be a random position.</param>
+        /// <returns>True if it is able to spawn the creep tumor.</returns>
+        // ********************************************************************************
+        public bool SpawnCreepTumor(Unit unit, Vector3 targetPosition = new Vector3())
+        {
+            if (!IsUnitType(unit)) return false;
+
+            if (IsBusy(unit)) return false;
+
+            if (unit.energyCurrent < spawnCreepTumorCost) return false;
+
+            var positionOK = false;
+
+            // Get a random position if not supplied.
+            if (targetPosition == Vector3.Zero)
+            {
+                targetPosition = GetRandomSpawnCreepTurmorPositio(unit);
+
+                if (targetPosition != Vector3.Zero)
+                {
+                    positionOK = true;
+                }
+            }
+            else
+            {
+                positionOK = controller.CanPlace(creepTumor, targetPosition);
+            }
+
+            if (!positionOK) return false;
+
+            unit.UseAbility(spawnCreepTumor, targetPosition: targetPosition);
+
+            controller.LogIfSelectedUnit(unit, "Queen {0} is spawning a creep tumor @ {1} / {2}", unit.tag, targetPosition.X, targetPosition.Y);
+
+            return true;
+        }
     }
 }

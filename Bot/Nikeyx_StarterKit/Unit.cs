@@ -1,5 +1,6 @@
 using Google.Protobuf.Collections;
 using SC2APIProtocol;
+using System.Collections.Generic;
 using System.Numerics;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -34,7 +35,7 @@ namespace Bot
         public int cargoUsed;
         public float energyCurrent;
         public float energyMax;
-
+        public float weaponCooldown;
 
         public Unit(SC2APIProtocol.Unit unit)
         {
@@ -69,21 +70,41 @@ namespace Bot
 
             this.energyCurrent = unit.Energy;
             this.energyMax = unit.EnergyMax;
+
+            this.weaponCooldown = unit.WeaponCooldown;
         }
 
-        // Return the distance between two units (X,Y,Z).
+        // ********************************************************************************
+        /// <summary>
+        /// Return the distance between two units (X,Y,Z).
+        /// </summary>
+        /// <param name="otherUnit">The unit to check distance against.</param>
+        /// <returns>The distance between the two units.</returns>
+        // ********************************************************************************
         public double GetDistance(Unit otherUnit)
         {
             return Vector3.Distance(position, otherUnit.position);
         }
 
-        // Return the distance between the unit and a location (X,Y,Z).
+        // ********************************************************************************
+        /// <summary>
+        /// Return the distance between the unit and a location (X,Y,Z).
+        /// </summary>
+        /// <param name="location">The location to check distance against.</param>
+        /// <returns>The distance between the unit and location.</returns>
+        // ********************************************************************************
         public double GetDistance(Vector3 location)
         {
             return Vector3.Distance(position, location);
         }
 
-        // Train a unit.
+        // ********************************************************************************
+        /// <summary>
+        /// Train a unit.
+        /// </summary>
+        /// <param name="unitType">The unit type to train.</param>
+        /// <param name="queue">If true it will queue the training.</param>
+        // ********************************************************************************
         public void Train(uint unitType, bool queue = false)
         {
             if (!queue && orders.Count > 0)
@@ -98,7 +119,15 @@ namespace Bot
             Logger.Info("Started training: {0}", targetName);
         }
 
-        // Use an ability.
+        // ********************************************************************************
+        /// <summary>
+        /// Use an ability.
+        /// </summary>
+        /// <param name="abilityID">The ability to use.</param>
+        /// <param name="toggleAutoCast">If true it will tonggle the auto cast.</param>
+        /// <param name="targetUnit">If passed it will target this unit with the ability.</param>
+        /// <param name="targetPosition">If passed it will target this location with the ability.</param>
+        // ********************************************************************************
         public void UseAbility(int abilityID, bool toggleAutoCast = false, Unit targetUnit = null, Vector3 targetPosition = new Vector3())
         {
             if (orders.Count > 0) return;
@@ -130,7 +159,12 @@ namespace Bot
             ControllerDefault.AddAction(action);
         }
 
-        // Research
+        // ********************************************************************************
+        /// <summary>
+        /// Research ability.
+        /// </summary>
+        /// <param name="abilityID">The ability to research.</param>
+        // ********************************************************************************
         public void Research(int abilityID)
         {
             if (orders.Count > 0) return;
@@ -143,7 +177,11 @@ namespace Bot
             Logger.Info("Started researching: {0}", researchName);
         }
 
-        // Set the camera on a unit.
+        // ********************************************************************************
+        /// <summary>
+        /// Set the camera on a unit.
+        /// </summary>
+        // ********************************************************************************
         private void FocusCamera()
         {
             var action = new Action();
@@ -157,7 +195,12 @@ namespace Bot
         }
 
 
-        // Move a unit to a location.
+        // ********************************************************************************
+        /// <summary>
+        /// Move a unit to a location.
+        /// </summary>
+        /// <param name="target">The location to move to.</param>
+        // ********************************************************************************
         public void Move(Vector3 target)
         {
             var action = ControllerDefault.CreateRawUnitCommand(Abilities.MOVE);
@@ -168,8 +211,13 @@ namespace Bot
             ControllerDefault.AddAction(action);
         }
 
-        // Call the units smart ability.
-        // I believe this is smart casting so units will check if other units are already doing the ability, but i am not sure.
+        // ********************************************************************************
+        /// <summary>
+        /// Call the units smart ability. <parm/>
+        /// I believe this is smart casting so units will check if other units are already doing the ability, but i am not sure.
+        /// </summary>
+        /// <param name="unit">The unit to preform the smart command on.</param>
+        // ********************************************************************************
         public void Smart(Unit unit)
         {
             var action = ControllerDefault.CreateRawUnitCommand(Abilities.SMART);
@@ -178,6 +226,13 @@ namespace Bot
             ControllerDefault.AddAction(action);
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Attack a unit and location.
+        /// </summary>
+        /// <param name="unit">The unit to attack with.</param>
+        /// <param name="target">The target location.</param>
+        // ********************************************************************************
         public void Attack(Unit unit, Vector3 target)
         {
             var action = ControllerDefault.CreateRawUnitCommand(Abilities.ATTACK);
@@ -186,6 +241,34 @@ namespace Bot
             action.ActionRaw.UnitCommand.TargetWorldSpacePos.Y = target.Y;
             action.ActionRaw.UnitCommand.UnitTags.Add(unit.tag);
             ControllerDefault.AddAction(action);
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Get a list of available abilities for the unit. <para/>
+        /// It looks like abilities on a timer or ones that have used up there number of times to do will not show on the available ability list.
+        /// </summary>
+        /// <returns>The list of available abilities.</returns>
+        // ********************************************************************************
+        public List<AvailableAbility> GetAvailableAbilities()
+        {
+            RequestQueryAvailableAbilities requestQueryAvailableAbilities = new RequestQueryAvailableAbilities();
+            requestQueryAvailableAbilities.UnitTag = tag;
+
+            Request requestQuery = new Request();
+            requestQuery.Query = new RequestQuery();
+            requestQuery.Query.Abilities.Add(requestQueryAvailableAbilities);
+
+            var result = Program.gc.SendQuery(requestQuery.Query);
+
+            var availableAbilities = new List<AvailableAbility>();
+
+            foreach(var availableAbility in result.Result.Abilities[0].Abilities)
+            {
+                availableAbilities.Add(availableAbility);
+            }
+
+            return availableAbilities;
         }
     }
 }
