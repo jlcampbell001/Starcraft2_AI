@@ -11,7 +11,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
     {
         protected uint creepTumor = Units.CREEP_TUMOR;
 
-        protected int spawnCreepTumor = Abilities.SPAWN_CREEP_TUMOR;
+        protected int spawnCreepTumorID = Abilities.SPAWN_CREEP_TUMOR;
 
         public CreepTumorActions(ZergController controller) : base(controller)
         {
@@ -22,6 +22,8 @@ namespace Bot.UnitActions.Zerg.ZergStructures
         public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
         {
             base.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
+
+            SpawnCreepTumor(unit);
         }
 
         public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
@@ -49,7 +51,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
 
             if (IsBusy(unit)) return false;
 
-            if (!controller.UnitHasAbility(spawnCreepTumor, unit)) return false;
+            if (!controller.UnitHasAbility(spawnCreepTumorID, unit)) return false;
 
             var positionOK = false;
 
@@ -71,7 +73,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
             if (!positionOK)
                 return false;
 
-            unit.UseAbility(spawnCreepTumor, targetPosition: targetPosition);
+            unit.UseAbility(spawnCreepTumorID, targetPosition: targetPosition);
 
             controller.LogIfSelectedUnit(unit, "Creep tumor {0} is spawning a creep tumor @ {1} / {2}", unit.tag, targetPosition.X, targetPosition.Y);
 

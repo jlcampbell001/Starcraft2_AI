@@ -57,6 +57,7 @@ namespace Bot
 
         public static int SPAWN_LARVA = 251;
         public static int SPAWN_CREEP_TUMOR_QUEEN = 1694;
+        public static int TRANSFUSION = 1664;
 
         public static int SPAWN_CREEP_TUMOR = 1733;
 

@@ -36,6 +36,8 @@ namespace Bot
         public float energyCurrent;
         public float energyMax;
         public float weaponCooldown;
+        public float health;
+        public float healthMax;
 
         public Unit(SC2APIProtocol.Unit unit)
         {
@@ -72,6 +74,10 @@ namespace Bot
             this.energyMax = unit.EnergyMax;
 
             this.weaponCooldown = unit.WeaponCooldown;
+
+            this.health = unit.Health;
+            this.healthMax = unit.HealthMax;
+
         }
 
         // ********************************************************************************

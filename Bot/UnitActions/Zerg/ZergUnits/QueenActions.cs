@@ -19,13 +19,17 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
         protected uint creepTumor = Units.CREEP_TUMOR;
 
-        protected int spawnLarva = Abilities.SPAWN_LARVA;
-        protected int spawnCreepTumor = Abilities.SPAWN_CREEP_TUMOR_QUEEN;
+        protected int spawnLarvaID = Abilities.SPAWN_LARVA;
+        protected int spawnCreepTumorID = Abilities.SPAWN_CREEP_TUMOR_QUEEN;
+        protected int transfusionID = Abilities.TRANSFUSION;
 
         // Energy costs.
         protected float spawnLarvaCost = 25;
         protected float spawnCreepTumorCost = 25;
         protected float transfusionCost = 50;
+
+        protected int maxLarva = 19;
+        protected int chanceToSpawnLarva = 95;
 
         public QueenActions(ZergController controller, QueenToResourceCenterManager queenToResourceCenterManager) : base(controller)
         {
@@ -55,11 +59,30 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (IsUnitType(unit))
             {
-                var preformAction = MoveToLinkedResourceCenter(unit);
+
+                var preformAction = Transfusion(unit);
 
                 if (!preformAction)
                 {
-                    preformAction = SpawnLarva(unit);
+                    preformAction = MoveToLinkedResourceCenter(unit);
+                }
+
+                if (!preformAction)
+                {
+                    if (random.Next(100) < chanceToSpawnLarva)
+                    {
+                        // Want to tell it if its home RC has max larva spawn a creep tumor instead.
+                        var resourceCenter = GetAssignedResourceCenter(unit);
+                        if (resourceCenter != null && controller.GetUnitsInRange(resourceCenter.position, Units.LARVA, 5).Count < maxLarva)
+                        {
+                            preformAction = SpawnLarva(unit);
+                        }
+                    }
+                }
+
+                if (!preformAction)
+                {
+                    preformAction = SpawnCreepTumor(unit);
                 }
             }
 
@@ -89,7 +112,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (IsUnitType(unit))
             {
-                var randomAction = random.Next(4);
+                var randomAction = random.Next(5);
 
                 switch (randomAction)
                 {
@@ -104,6 +127,9 @@ namespace Bot.UnitActions.Zerg.ZergUnits
                         break;
                     case 3:
                         SpawnCreepTumor(unit);
+                        break;
+                    case 4:
+                        Transfusion(unit);
                         break;
                 }
             }
@@ -136,7 +162,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (resourceCenter == null) return false;
 
-            unit.UseAbility(spawnLarva, targetUnit: resourceCenter);
+            unit.UseAbility(spawnLarvaID, targetUnit: resourceCenter);
 
             controller.LogIfSelectedUnit(unit, "Queen {0} spawning larva at {1} @ {2} / {3}",
                 unit.tag, resourceCenter.name, resourceCenter.position.X, resourceCenter.position.Y);
@@ -230,9 +256,40 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (!positionOK) return false;
 
-            unit.UseAbility(spawnCreepTumor, targetPosition: targetPosition);
+            unit.UseAbility(spawnCreepTumorID, targetPosition: targetPosition);
 
             controller.LogIfSelectedUnit(unit, "Queen {0} is spawning a creep tumor @ {1} / {2}", unit.tag, targetPosition.X, targetPosition.Y);
+
+            return true;
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Cast transfusion (heal) on the closest hurt unit within sight.
+        /// </summary>
+        /// <param name="unit">The queen.</param>
+        /// <param name="target">The unit to heal if passed otherwise it will look for the closest hurt unit.</param>
+        /// <returns>True if it was able to create the action.</returns>
+        // ********************************************************************************
+        public bool Transfusion(Unit unit, Unit target = null)
+        {
+            if (!IsUnitType(unit)) return false;
+
+            //if (IsBusy(unit)) return false;
+
+            if (unit.energyCurrent < transfusionCost) return false;
+
+            // If the target was not passed get the closest one hurt to heal.
+            if (target == null)
+            {
+                target = controller.GetClosestUnit(unit, Units.Zerg, unit.sight, isHurt: true, ignoreSelf: true);
+            }
+
+            if (target == null) return false;
+
+            unit.UseAbility(transfusionID, targetUnit: target);
+
+            controller.LogIfSelectedUnit(unit, "Queen {0} is healing {1} {2}", unit.tag, target.name, target.tag);
 
             return true;
         }

@@ -624,6 +624,63 @@ namespace Bot
 
         // ********************************************************************************
         /// <summary>
+        /// Get all the units near a position.
+        /// </summary>
+        /// <param name="targetPosition">The position to check against.</param>
+        /// <param name="units">A list of units to scan.</param>
+        /// <param name="maxDistance">The distance the unit can be from the position.</param>
+        /// <returns>A list of units close to the position.</returns>
+        // ********************************************************************************
+        public List<Unit> GetUnitsInRange(Vector3 targetPosition, List<Unit> units, float maxDistance)
+        {
+            var inRangeUnits = new List<Unit>();
+
+            foreach(var unit in units)
+            {
+                if (unit.GetDistance(targetPosition) <= maxDistance)
+                {
+                    inRangeUnits.Add(unit);
+                }
+            }
+
+            return inRangeUnits;
+        }
+
+        // ********************************************************************************
+        ///  <summary>
+        /// Get all the units near a position.
+        /// </summary>
+        /// <param name="targetPosition">The position to check against.</param>
+        /// <param name="unitTypes">Unit types to scan against.</param>
+        /// <param name="maxDistance">The distance the unit can be from the position.</param>
+        /// <returns>A list of units close to the position.</returns>
+        // ********************************************************************************
+        public List<Unit> GetUnitsInRange(Vector3 targetPosition, HashSet<uint> unitTypes, float maxDistance)
+        {
+            var units = GetUnits(unitTypes);
+
+            return GetUnitsInRange(targetPosition, units, maxDistance);
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Get all the units near a position.
+        /// </summary>
+        /// <param name="targetPosition">The position to check against.</param>
+        /// <param name="unitType">Unit type to scan against.</param>
+        /// <param name="maxDistance">The distance the unit can be from the position.</param>
+        /// <returns>A list of units close to the position.</returns>
+        // ********************************************************************************
+        public List<Unit> GetUnitsInRange(Vector3 targetPosition, uint unitType, float maxDistance)
+        {
+            var units = GetUnits(unitType);
+
+            return GetUnitsInRange(targetPosition, units, maxDistance);
+        }
+
+
+        // ********************************************************************************
+        /// <summary>
         /// Check if the passed unit is in range of the target position based on the provided distance.
         /// </summary>
         /// <param name="targetPosition">The target position.</param>
@@ -902,53 +959,21 @@ namespace Bot
         /// <param name="units">List of units to check for.</param>
         /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
         /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <param name="isHurt">If true make sure the unit is hurt.</param>
+        /// <param name="ignoreSelf">If true skip the target unit if found in the list.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Unit target, List<Unit> units, double withInDistance = 0, bool isNotBurrowed = false)
+        public Unit GetClosestUnit(Unit target, List<Unit> units, double withInDistance = 0, 
+            bool isNotBurrowed = false, bool isHurt = false, bool ignoreSelf = true)
         {
-            Unit closestUnit = null;
+            ulong ignoreTag = 0;
 
-            if (units.Count > 0)
+            if (ignoreSelf)
             {
-                UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(target.position);
-                unitsDistanceFromList.AddUnits(units);
-
-                foreach (var unit in unitsDistanceFromList.toUnits)
-                {
-                    var foundUnit = false;
-
-                    if (withInDistance > 0)
-                    {
-                        if (unit.distance <= withInDistance)
-                        {
-                            foundUnit = true;
-                        }
-                        else
-                        {
-                            // No units are within range.
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        foundUnit = true;
-                    }
-
-                    if (foundUnit && isNotBurrowed && unit.unit.isBurrowed)
-                    {
-                        foundUnit = false;
-                    }
-
-                    // Found the closest unit get out.
-                    if (foundUnit)
-                    {
-                        closestUnit = unit.unit;
-                        break;
-                    }
-                }
+                ignoreTag = target.tag;
             }
 
-            return closestUnit;
+            return GetClosestUnit(target.position, units, withInDistance, isNotBurrowed, isHurt, ignoreTag);
         }
 
         // ********************************************************************************
@@ -959,13 +984,23 @@ namespace Bot
         /// <param name="unitTypes">The unit hashset to check for.</param>
         /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
         /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <param name="isHurt">If true make sure the unit is hurt.</param>
+        /// <param name="ignoreSelf">If true skip the target unit if found in the list.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Unit target, HashSet<uint> unitTypes, double withInDistance = 0, bool isNotBurrowed = false)
+        public Unit GetClosestUnit(Unit target, HashSet<uint> unitTypes, double withInDistance = 0, 
+            bool isNotBurrowed = false, bool isHurt = false, bool ignoreSelf = true)
         {
             var units = GetUnits(unitTypes);
 
-            return GetClosestUnit(target, units, withInDistance, isNotBurrowed);
+            ulong ignoreTag = 0;
+
+            if (ignoreSelf)
+            {
+                ignoreTag = target.tag;
+            }
+
+            return GetClosestUnit(target.position, units, withInDistance, isNotBurrowed, isHurt, ignoreTag);
         }
 
         // ********************************************************************************
@@ -973,16 +1008,26 @@ namespace Bot
         /// Get the closest unit to the target unit from the passed unit type.
         /// </summary>
         /// <param name="target">The unit to check distances to.</param>
-        /// <param name="unitTypes">The unit type to check for.</param>
+        /// <param name="unitType">The unit type to check for.</param>
         /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
         /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <param name="isHurt">If true make sure the unit is hurt.</param>
+        /// <param name="ignoreSelf">If true skip the target unit if found in the list.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Unit target, uint unitType, double withInDistance = 0, bool isNotBurrowed = false)
+        public Unit GetClosestUnit(Unit target, uint unitType, double withInDistance = 0, 
+            bool isNotBurrowed = false, bool isHurt = false, bool ignoreSelf = true)
         {
             var units = GetUnits(unitType);
 
-            return GetClosestUnit(target, units, withInDistance, isNotBurrowed);
+            ulong ignoreTag = 0;
+
+            if (ignoreSelf)
+            {
+                ignoreTag = target.tag;
+            }
+
+            return GetClosestUnit(target.position, units, withInDistance, isNotBurrowed, isHurt, ignoreTag);
         }
 
         // ********************************************************************************
@@ -993,9 +1038,12 @@ namespace Bot
         /// <param name="units">List of units to check for.</param>
         /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
         /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <param name="isHurt">If true make sure the unit is hurt.</param>
+        /// <param name="ignoreTag">If not 0 then skip the unit with the passed tag.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Vector3 targetPosition, List<Unit> units, double withInDistance = 0, bool isNotBurrowed = false)
+        public Unit GetClosestUnit(Vector3 targetPosition, List<Unit> units, double withInDistance = 0, 
+            bool isNotBurrowed = false, bool isHurt = false, ulong ignoreTag = 0)
         {
             Unit closestUnit = null;
 
@@ -1025,7 +1073,20 @@ namespace Bot
                         foundUnit = true;
                     }
 
+                    // Skip the passed unit.
+                    if (foundUnit && ignoreTag == unit.unit.tag)
+                    {
+                        foundUnit = false;
+                    }
+
+                    // Check if the unit is burrowed.
                     if (foundUnit && isNotBurrowed && unit.unit.isBurrowed)
+                    {
+                        foundUnit = false;
+                    }
+
+                    // Check if the unit is hurt.
+                    if (foundUnit && isHurt && unit.unit.health == unit.unit.healthMax)
                     {
                         foundUnit = false;
                     }
