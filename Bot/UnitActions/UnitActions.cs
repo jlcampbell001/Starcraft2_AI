@@ -21,7 +21,7 @@ namespace Bot.UnitActions
 
         protected double workerHelpDistance = 12.0;
 
-        public enum ResearchResult { Success, NotUnitType, AlreadyHas, IsResearching, CanNotAfford, UnitBusy, NoGasGysersStructures };
+        public enum ResearchResult { Success, NotUnitType, AlreadyHas, IsResearching, CanNotAfford, UnitBusy, NoGasGysersStructures, CanNotResearch };
 
         public UnitActions(ControllerDefault controller)
         {
@@ -40,7 +40,8 @@ namespace Bot.UnitActions
         {
             var isUnitType = false;
 
-            if (unit.unitType == unitType) {
+            if (unit.unitType == unitType)
+            {
                 isUnitType = true;
             }
 
@@ -58,15 +59,17 @@ namespace Bot.UnitActions
             unitActionsList.addUnitAction(this, unitType);
         }
 
-            // ********************************************************************************
-            /// <summary>
-            /// Check and see if the unit is busy.
-            /// </summary>
-            /// <param name="unit">The unit to check.</param>
-            /// <returns>True if the unit is busy.</returns>
-            // ********************************************************************************
-            public virtual bool IsBusy(Unit unit)
+        // ********************************************************************************
+        /// <summary>
+        /// Check and see if the unit is busy.
+        /// </summary>
+        /// <param name="unit">The unit to check.</param>
+        /// <returns>True if the unit is busy.</returns>
+        // ********************************************************************************
+        public virtual bool IsBusy(Unit unit)
         {
+            if (unit.buildProgress != 1) return true;
+
             if (unit.order.AbilityId != 0) return true;
 
             return false;
@@ -84,7 +87,7 @@ namespace Bot.UnitActions
         /// <param name="saveFor">If set true it will setup the save resource information.</param>
         /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
         // ********************************************************************************
-        public virtual void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
+        public virtual void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false,
             bool doNotUseResources = false)
         {
 
@@ -102,7 +105,7 @@ namespace Bot.UnitActions
         /// <param name="saveFor">If set true it will setup the save resource information.</param>
         /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
         // ********************************************************************************
-        public virtual void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, 
+        public virtual void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false,
             bool doNotUseResources = false)
         {
 
@@ -153,16 +156,16 @@ namespace Bot.UnitActions
             }
         }
 
-            // ********************************************************************************
-            /// <summary>
-            /// Summons help from idle army if under attack. <para/>
-            /// It is really actually just reacting to enemy units in sight, not actually being attacked.
-            /// </summary>
-            /// <param name="unit">The unit that will need help.</param>
-            /// <param name="summonHelp">If true it will summon help.</param>
-            /// <returns>true if under attack.</returns>
-            // ********************************************************************************
-            public virtual bool NeedHelpAction(Unit unit, bool summonHelp = true)
+        // ********************************************************************************
+        /// <summary>
+        /// Summons help from idle army if under attack. <para/>
+        /// It is really actually just reacting to enemy units in sight, not actually being attacked.
+        /// </summary>
+        /// <param name="unit">The unit that will need help.</param>
+        /// <param name="summonHelp">If true it will summon help.</param>
+        /// <returns>true if under attack.</returns>
+        // ********************************************************************************
+        public virtual bool NeedHelpAction(Unit unit, bool summonHelp = true)
         {
             var enemyAttackers = controller.GetPotentialAttackers(unit);
             var underAttack = false;
@@ -181,9 +184,38 @@ namespace Bot.UnitActions
             return underAttack;
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Research the passed ability if possible.
+        /// </summary>
+        /// <param name="unit">The unit doing the research.</param>
+        /// <param name="researchID">The research ID.</param>
+        /// <param name="upgradeID">The ID to look up to see if it is done already.</param>
+        /// <returns>A ReserachResult.</returns>
+        // ********************************************************************************
+        protected virtual ResearchResult ResearchAbility(Unit unit, int researchID, int upgradeID, bool needVespene = true)
+        {
+            if (!IsUnitType(unit)) return ResearchResult.NotUnitType;
+
+            if (controller.HasUpgrade(upgradeID)) return ResearchResult.AlreadyHas;
+
+            if (controller.IsResearchingUpgrade(researchID, unitType)) return ResearchResult.IsResearching;
+
+            if (needVespene && controller.GetTotalCount(Units.GasGeysersStructures) == 0) return ResearchResult.NoGasGysersStructures;
+
+            if (!controller.CanAffordUpgrade(researchID)) return ResearchResult.CanNotAfford;
+
+            if (IsBusy(unit)) return ResearchResult.UnitBusy;
+
+            unit.Research(researchID);
+
+            return ResearchResult.Success;
+        }
+
+
         TypeCode IConvertible.GetTypeCode()
         {
-            return  TypeCode.Object;
+            return TypeCode.Object;
         }
 
         bool IConvertible.ToBoolean(IFormatProvider provider)

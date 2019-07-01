@@ -953,18 +953,18 @@ namespace Bot
 
         // ********************************************************************************
         /// <summary>
-        /// Research an upgrade.
+        /// Research an upgrade from the resource center.
         /// </summary>
         /// <param name="researchID">The upgrade id to research.</param>
         // ********************************************************************************
-        private void Research(int researchID)
+        private void ResearchResourceCenters(int researchID)
         {
             var resourceCenters = controller.GetUnits(Units.ResourceCenters);
 
             foreach (var resourceCenter in resourceCenters)
             {
                 //ZergRescourceCenterActions rescourceCenterActions = (ZergRescourceCenterActions)unitActionsList.GetUnitAction(resourceCenter.unitType);
-                var rescourceCenterActions = unitActionsList.GetUnitAction< ZergRescourceCenterActions>(resourceCenter.unitType);
+                var rescourceCenterActions = unitActionsList.GetUnitAction<ZergRescourceCenterActions>(resourceCenter.unitType);
 
                 if (rescourceCenterActions != null)
                 {
@@ -984,6 +984,46 @@ namespace Bot
                         || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
                         || result == UnitActions.UnitActions.ResearchResult.CanNotAfford
                         || result == UnitActions.UnitActions.ResearchResult.NoGasGysersStructures)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Research an upgrade from the spawning pool.
+        /// </summary>
+        /// <param name="researchID">The upgrade id to research.</param>
+        // ********************************************************************************
+        private void ResearchSpawningPools(int researchID)
+        {
+            var spawningPools = controller.GetUnits(Units.SPAWNING_POOL);
+
+            foreach (var spawningPool in spawningPools)
+            {
+                var spawningPoolActions = unitActionsList.GetUnitAction<SpawningPoolActions>(spawningPool.unitType);
+
+                if (spawningPoolActions != null)
+                {
+                    var result = UnitActions.UnitActions.ResearchResult.Success;
+
+                    if (researchID == Abilities.RESEARCH_ADRENAL_GLANDS)
+                    {
+                        result = spawningPoolActions.ResearchAdrenalGlands(spawningPool);
+                    }
+                    else if (researchID == Abilities.RESEARCH_METABOLIC_BOOST)
+                    {
+                        result = spawningPoolActions.ResearchMetabolicBoost(spawningPool);
+                    }
+
+                    if (result == UnitActions.UnitActions.ResearchResult.Success
+                        || result == UnitActions.UnitActions.ResearchResult.IsResearching
+                        || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
+                        || result == UnitActions.UnitActions.ResearchResult.CanNotAfford
+                        || result == UnitActions.UnitActions.ResearchResult.NoGasGysersStructures
+                        || result == UnitActions.UnitActions.ResearchResult.CanNotResearch)
                     {
                         break;
                     }
@@ -1346,7 +1386,7 @@ namespace Bot
                     // Build structure.
                     BuildBuilding(saveForUnitType, saveFor: false);
                 }
-                else if ((Units.ArmyUnits.Contains(saveForUnitType)))
+                else if (Units.ArmyUnits.Contains(saveForUnitType))
                 {
                     // Build unit.
                     BuildUnit(saveForUnitType, saveFor: false);
@@ -1354,7 +1394,14 @@ namespace Bot
             }
             else if (saveForUpgrade != 0)
             {
-                Research(saveForUpgrade);
+                if (saveForUpgrade == Abilities.RESEARCH_PNEUMATIZED_CARAPACE || saveForUpgrade == Abilities.RESEARCH_BURROW)
+                {
+                    ResearchResourceCenters(saveForUpgrade);
+                }
+                else if (saveForUpgrade == Abilities.RESEARCH_ADRENAL_GLANDS || saveForUpgrade == Abilities.RESEARCH_METABOLIC_BOOST)
+                {
+                    ResearchSpawningPools(saveForUpgrade);
+                }
             }
 
             SetSaveResouces();

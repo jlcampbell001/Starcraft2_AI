@@ -42,29 +42,48 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             this.queenToResourceCenterManager = queenToResourceCenterManager ?? throw new ArgumentNullException(nameof(queenToResourceCenterManager));
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Preform an Intelligent actions for the unit.
+        /// </summary>
+        /// <param name="unit">The unit.</param>
+        /// <param name="saveUnit">Setting to return a value to save resources for a unit.</param>
+        /// <param name="saveUpgrade">Setting to return a value to save resources for an upgrade.</param>
+        /// <param name="ignoreSaveRandomRoll"> Setting to return to turn off the random chance when deciding to save resources.</param>
+        /// <param name="saveFor">If set true it will setup the save resource information.</param>
+        /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
+        // ********************************************************************************
         public override void PreformIntelligentActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
         {
             base.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Preform a random action for the passed unit.
+        /// </summary>
+        /// <param name="unit">The unit.</param>
+        /// <param name="saveUnit">Setting to return a value to save resources for a unit.</param>
+        /// <param name="saveUpgrade">Setting to return a value to save resources for an upgrade.</param>
+        /// <param name="ignoreSaveRandomRoll"> Setting to return to turn off the random chance when deciding to save resources.</param>
+        /// <param name="saveFor">If set true it will setup the save resource information.</param>
+        /// <param name="doNotUseResources">If set true it will not run any action that requires resources.</param>
+        // ********************************************************************************
         public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
         {
             base.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
         }
 
-        // Check and see if the unit is busy.
-        override
-            public bool IsBusy(Unit unit)
-        {
-            if (unit.buildProgress != 1) return true;
-
-            if (unit.order.AbilityId != 0) return true;
-
-            return false;
-        }
-
-        // Researches an ability.
-        private ResearchResult ResearchAbility(Unit unit, int researchID, int upgradeID)
+        // ********************************************************************************
+        /// <summary>
+        /// Research the passed ability if possible.
+        /// </summary>
+        /// <param name="unit">The unit doing the research.</param>
+        /// <param name="researchID">The research ID.</param>
+        /// <param name="upgradeID">The ID to look up to see if it is done already.</param>
+        /// <returns>A ReserachResult.</returns>
+        // ********************************************************************************
+        protected override ResearchResult ResearchAbility(Unit unit, int researchID, int upgradeID, bool needVespene = true)
         {
             if (!IsUnitType(unit)) return ResearchResult.NotUnitType;
 
@@ -83,8 +102,13 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             return ResearchResult.Success;
         }
 
-
-        // Researches the burrow ability.
+        // ********************************************************************************
+        /// <summary>
+        /// Researches the burrow ability.
+        /// </summary>
+        /// <param name="unit">The unit to do the research.</param>
+        /// <returns>The ResearchResult.</returns>
+        // ********************************************************************************
         public ResearchResult ResearchBurrow(Unit unit)
         {
             var result = ResearchAbility(unit, researchBurrow, burrowUpgrade);
@@ -92,7 +116,13 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             return result;
         }
 
-        // Researches the pneumatized carapace upgrade.
+        // ********************************************************************************
+        /// <summary>
+        /// Researches the pneumatized carapace upgrade.
+        /// </summary>
+        /// <param name="unit">The unit to do the research.</param>
+        /// <returns>The ResearchResult.</returns>
+        // ********************************************************************************
         public ResearchResult ResearchPneumatizedCarapace(Unit unit)
         {
             var result = ResearchAbility(unit, researchPneumatizedCarapace, pneumatizedCarapceUpgrade);
@@ -100,7 +130,13 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             return result;
         }
 
-        // Create a queen.
+        // ********************************************************************************
+        /// <summary>
+        /// Create a queen.
+        /// </summary>
+        /// <param name="unit">The unit to create the queen.</param>
+        /// <returns>The BirthQueenResult.</returns>
+        // ********************************************************************************
         public BirthQueenResult BirthQueen(Unit unit)
         {
             if (!IsUnitType(unit)) return BirthQueenResult.NotUnitType;
@@ -113,16 +149,16 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             return BirthQueenResult.Success;
         }
 
-       
-            // ********************************************************************************
-            /// <summary>
-            /// Summons all army units if under attack.
-            /// </summary>
-            /// <param name="unit">The unit under attack.</param>
-            /// <param name="summonHelp">If true summon help.</param>
-            /// <returns>true if under attack.</returns>
-            // ********************************************************************************
-            public override bool NeedHelpAction(Unit unit, bool summonHelp = true)
+
+        // ********************************************************************************
+        /// <summary>
+        /// Summons all army units if under attack.
+        /// </summary>
+        /// <param name="unit">The unit under attack.</param>
+        /// <param name="summonHelp">If true summon help.</param>
+        /// <returns>true if under attack.</returns>
+        // ********************************************************************************
+        public override bool NeedHelpAction(Unit unit, bool summonHelp = true)
         {
             var enemyAttackers = controller.GetPotentialAttackers(unit);
             var underAttack = false;
@@ -141,7 +177,12 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             return underAttack;
         }
 
-        // Set a unit rally point opposite the resources near by if any.
+        // ********************************************************************************
+        /// <summary>
+        /// Set a unit rally point opposite the resources near by if any.
+        /// </summary>
+        /// <param name="unit">The unit to set the rally for.</param>
+        // ********************************************************************************
         public void SetUnitRally(Unit unit)
         {
             // If the rally point is already set only reset it rarely.
@@ -204,7 +245,12 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             controller.LogIfSelectedUnit(unit, "Set {0} unit rally point @ {1}, {2}", unit.name, rallySpot.X, rallySpot.Y);
         }
 
-        // Set a worker rally point to the closest resource.
+        // ********************************************************************************
+        /// <summary>
+        /// Set a worker rally point to the closest resource.
+        /// </summary>
+        /// <param name="unit">The unit to set the work rally point.</param>
+        // ********************************************************************************
         public void SetWorkerRally(Unit unit)
         {
             // If the rally point is already set only reset it rarely.

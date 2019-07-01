@@ -61,6 +61,12 @@ namespace Bot
 
         public static int SPAWN_CREEP_TUMOR = 1733;
 
+        public static int RESEARCH_ADRENAL_GLANDS = 1252;
+        public static int ADRENAL_GLANDS = 65;
+
+        public static int RESEARCH_METABOLIC_BOOST = 1253;
+        public static int METABOLIC_BOOST = 66;
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;
