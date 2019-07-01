@@ -110,12 +110,14 @@ namespace Bot.UnitActions.Zerg
         // ********************************************************************************
         /// <summary>
         /// Get a random position to spawn a creep tumor. <para/>
-        /// It will not be within a certain distance of another creep tumor or a resource center.
+        /// It will not be within a certain distance of another creep tumor or a resource center. </param>
+        /// If the ending position is passed it will get the location between the unit and ending points.
         /// </summary>
         /// <param name="unit">The unit that will spawn the creep tumor.</param>
-        /// <returns>The position or null if one can not be figured out.</returns>
+        /// <param name="endingPosition">An ending position.</param>
+        /// <returns>The position or Zero position if one can not be figured out.</returns>
         // ********************************************************************************
-        public Vector3 GetRandomSpawnCreepTurmorPositio(Unit unit)
+        public Vector3 GetRandomSpawnCreepTumorPosition(Unit unit, Vector3 endingPosition = new Vector3())
         {
             Vector3 spawnPosition = Vector3.Zero;
 
@@ -126,7 +128,16 @@ namespace Bot.UnitActions.Zerg
 
             for (var i = 0; i < randomCreepTumorPlacementTries; i++)
             {
-                var targetPosition = controller.GetRandomLocation(unit.position, -sight, sight, -sight, sight);
+                var targetPosition = new Vector3();
+
+                if (endingPosition == Vector3.Zero)
+                {
+                    targetPosition = controller.GetRandomLocation(unit.position, -sight, sight, -sight, sight);
+                }
+                else
+                {
+                    targetPosition = controller.GetRandomLocationBetween2Points(unit.position, endingPosition, sight);
+                }
 
                 var canPlace = controller.CanPlace(Units.CREEP_TUMOR, targetPosition);
                 var closestCreepTumor = controller.GetClosestUnit(targetPosition, creepTumors, minSpawnTumorDistance);
@@ -140,6 +151,63 @@ namespace Bot.UnitActions.Zerg
             }
 
             return spawnPosition;
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Get a random location between the unit and an enemy position for a creep tumor. <para/>
+        /// If a creep tumor is already near the enemy position it will just pick a random position around the unit.
+        /// </summary>
+        /// <param name="unit">The unit to start with.</param>
+        /// <returns>The position or Zero position if one can not be figured out.</returns>
+        // ********************************************************************************
+        public Vector3 GetRandomSpawnCreepTumorPositionEnemyPosition(Unit unit)
+        {
+            var targetPosition = Vector3.Zero;
+
+            var enemyPosition = controller.enemyLocations[random.Next(controller.enemyLocations.Count)];
+
+            if (controller.GetClosestUnit(enemyPosition, Units.CREEP_TUMOR, unit.sight) == null)
+            {
+                targetPosition = GetRandomSpawnCreepTumorPosition(unit, enemyPosition);
+            }
+            else
+            {
+
+                targetPosition = GetRandomSpawnCreepTumorPosition(unit);
+            }
+
+            return targetPosition;
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Get a random location between the unit and an expansion position for a creep tumor. <para/>
+        /// It will try for the closest expansion position but if a creep tumor is near there it will go to the next one. <para/>
+        /// If a creep tumor is already near the enemy position it will just pick a random position around the unit.
+        /// </summary>
+        /// <param name="unit">The unit to start with.</param>
+        /// <returns>The position or Zero position if one can not be figured out.</returns>
+        // ********************************************************************************
+        public Vector3 GetRandomSpawnCreepTumorPositionExpansionPosition(Unit unit)
+        {
+            var targetPosition = Vector3.Zero;
+
+            var expansionPosition = Vector3.Zero;
+
+            foreach (var expansion in controller.expansionPositions.toLocations)
+            {
+                if (controller.GetClosestUnit(expansion.location, Units.CREEP_TUMOR, unit.sight) == null)
+                {
+                    expansionPosition = expansion.location;
+                    break;
+
+                }
+            }
+
+            targetPosition = GetRandomSpawnCreepTumorPosition(unit, expansionPosition);
+
+            return targetPosition;
         }
     }
 }

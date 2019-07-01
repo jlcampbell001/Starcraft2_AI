@@ -29,7 +29,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
         protected float transfusionCost = 50;
 
         protected int maxLarva = 19;
-        protected int chanceToSpawnLarva = 95;
+        protected int chanceToSpawnLarva = 95; //60; //95;
 
         public QueenActions(ZergController controller, QueenToResourceCenterManager queenToResourceCenterManager) : base(controller)
         {
@@ -82,7 +82,21 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
                 if (!preformAction)
                 {
-                    preformAction = SpawnCreepTumor(unit);
+                    var targetPosition = Vector3.Zero;
+
+                    if (random.Next(100) < 50)
+                    {
+                        targetPosition = GetRandomSpawnCreepTumorPositionEnemyPosition(unit);
+                    } 
+                    else
+                    {
+                        targetPosition = GetRandomSpawnCreepTumorPositionExpansionPosition(unit);
+                    }
+
+                    if (targetPosition != Vector3.Zero)
+                    {
+                        SpawnCreepTumor(unit, targetPosition);
+                    }
                 }
             }
 
@@ -242,7 +256,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
             // Get a random position if not supplied.
             if (targetPosition == Vector3.Zero)
             {
-                targetPosition = GetRandomSpawnCreepTurmorPositio(unit);
+                targetPosition = GetRandomSpawnCreepTumorPosition(unit);
 
                 if (targetPosition != Vector3.Zero)
                 {

@@ -23,7 +23,21 @@ namespace Bot.UnitActions.Zerg.ZergStructures
         {
             base.PreformIntelligentActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
 
-            SpawnCreepTumor(unit);
+            if (controller.UnitHasAbility(spawnCreepTumorID, unit))
+            {
+                var targetPosition = Vector3.Zero;
+
+                if (random.Next(100) < 50)
+                {
+                    targetPosition = GetRandomSpawnCreepTumorPositionEnemyPosition(unit);
+                }
+                else
+                {
+                    targetPosition = GetRandomSpawnCreepTumorPositionExpansionPosition(unit);
+                }
+
+                SpawnCreepTumor(unit, targetPosition);
+            }
         }
 
         public override void PreformRandomActions(Unit unit, ref uint saveUnit, ref int saveUpgrade, ref bool ignoreSaveRandomRoll, bool saveFor = false, bool doNotUseResources = false)
@@ -58,7 +72,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
             // Get a random position if not supplied.
             if (targetPosition == Vector3.Zero)
             {
-                targetPosition = GetRandomSpawnCreepTurmorPositio(unit);
+                targetPosition = GetRandomSpawnCreepTumorPosition(unit);
 
                 if (targetPosition != Vector3.Zero)
                 {

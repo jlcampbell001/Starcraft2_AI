@@ -1105,6 +1105,26 @@ namespace Bot
 
         // ********************************************************************************
         /// <summary>
+        /// Get the closest unit to the target unit from the passed unit type.
+        /// </summary>
+        /// <param name="targetPosition">The position to check distances to.</param>
+        /// <param name="unitType">The unit type to check for.</param>
+        /// <param name="withInDistance">The max distance allowed. 0 means any distance.</param>
+        /// <param name="isNotBurrowed">If true make sure it is not burrowed.</param>
+        /// <param name="isHurt">If true make sure the unit is hurt.</param>
+        /// <param name="ignoreTag">The unit tag to skip if found in the list.</param>
+        /// <returns>The closest unit of null if none is found.</returns>
+        // ********************************************************************************
+        public Unit GetClosestUnit(Vector3 targetPosition, uint unitType, double withInDistance = 0,
+            bool isNotBurrowed = false, bool isHurt = false, ulong ignoreTag = 0)
+        {
+            var units = GetUnits(unitType);
+
+            return GetClosestUnit(targetPosition, units, withInDistance, isNotBurrowed, isHurt, ignoreTag);
+        }
+
+        // ********************************************************************************
+        /// <summary>
         /// Check and see if the bot has any of the passed completed units.
         /// </summary>
         /// <param name="unitType">The unit type to look up.</param>
@@ -1831,6 +1851,45 @@ namespace Bot
         {
             var randomLocation = new Vector3(startingLocation.X + random.Next(xMinRange, xMaxRange + 1),
                     startingLocation.Y + random.Next(yMinRange, yMaxRange + 1), startingLocation.Z);
+
+            return randomLocation;
+        }
+
+        // ********************************************************************************
+        /// <summary>
+        /// Gets a random location between two passed point with in a distance from the starting point.
+        /// </summary>
+        /// <param name="startingPoint">The point to start with.</param>
+        /// <param name="endingPoint">The point to end with.</param>
+        /// <param name="maxDistance">The max distance from the starting point a location can be set.</param>
+        /// <returns>A random location.</returns>
+        // ********************************************************************************
+        public Vector3 GetRandomLocationBetween2Points(Vector3 startingPoint, Vector3 endingPoint, int maxDistance = 10)
+        {
+            var xMin = -maxDistance;
+            var xMax = maxDistance;
+            var yMin = -maxDistance;
+            var yMax = maxDistance;
+
+            if (endingPoint.X >= startingPoint.X)
+            {
+                xMin = 1;
+            }
+            else
+            {
+                xMax = -1;
+            }
+
+            if (endingPoint.Y >= startingPoint.Y)
+            {
+                yMin = 1;
+            }
+            else
+            {
+                yMax = -1;
+            }
+
+            var randomLocation = GetRandomLocation(startingPoint, xMin, xMax, yMin, yMax);
 
             return randomLocation;
         }
