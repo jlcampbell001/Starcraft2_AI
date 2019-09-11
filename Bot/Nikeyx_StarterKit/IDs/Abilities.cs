@@ -67,6 +67,13 @@ namespace Bot
         public static int RESEARCH_METABOLIC_BOOST = 1253;
         public static int METABOLIC_BOOST = 66;
 
+        public static int RESEARCH_MELEE_ATTACK1 = 1186;
+        public static int RESEARCH_MELEE_ATTACK2 = 1187;
+        public static int RESEARCH_MELEE_ATTACK3 = 1188;
+        public static int MELEE_ATTACK1 = 53;
+        public static int MELEE_ATTACK2 = 54;
+        public static int MELEE_ATTACK3 = 55;
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;
@@ -139,6 +146,22 @@ namespace Bot
             DRONE_GATHER_RESOURCES,
         };
 
+        public static readonly HashSet<int> EvolutionChamberResearch = new HashSet<int>
+        {
+            RESEARCH_MELEE_ATTACK1,
+            RESEARCH_MELEE_ATTACK2,
+            RESEARCH_MELEE_ATTACK3
+        };
+        
+        public static readonly HashSet<int> RequiresLair = new HashSet<int>
+        {
+            RESEARCH_MELEE_ATTACK2
+        };
+
+        public static readonly HashSet<int> RequiresHive = new HashSet<int>
+        {
+            RESEARCH_MELEE_ATTACK3
+        };
 
         // Get the id of a unit.
         public static int GetID(uint unit)

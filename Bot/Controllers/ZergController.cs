@@ -183,6 +183,30 @@
         {
             BuildExpansion(Units.HATCHERY);
         }
+
+        // ********************************************************************************
+        /// <summary>
+        /// A function that will check to see if the required structures for an upgrade have been built.
+        /// </summary>
+        /// <param name="abilityID">The research ID of the upgrade to check.</param>
+        /// <returns>True if they have the requirements.</returns>
+        // ********************************************************************************
+        public override bool HasUpgradeRequirements(int abilityID)
+        {
+            // Do we lairs only for the unit? 
+            if (Abilities.RequiresLair.Contains(abilityID))
+            {
+                if (!HasUnits(Units.LAIR)) return false;
+            }
+
+            // Do we hive only for the unit? 
+            if (Abilities.RequiresHive.Contains(abilityID))
+            {
+                if (!HasUnits(Units.HIVE)) return false;
+            }
+
+            return true;
+        }
     }
 }
 

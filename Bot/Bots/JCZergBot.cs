@@ -17,7 +17,7 @@ namespace Bot
     // --------------------------------------------------------------------------------
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = false;
+        private readonly bool totalRandom = true;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -605,28 +605,19 @@ namespace Bot
         /// </summary>
         /// <param name="saveFor">If true and the upgrade can not be built resources will be saved to build it.</param>
         // ********************************************************************************
-        private void UpgradeToHive(bool saveFor = true)
+        private void UpgradeToHive()
         {
             var lairs = controller.GetUnits(Units.LAIR, onlyCompleted: true);
 
-            if (controller.CanConstruct(Units.HIVE))
+            foreach (var lair in lairs)
             {
-                foreach (var lair in lairs)
-                {
-                    if (lair.order.AbilityId != 0) continue;
 
-                    lair.Train(Units.HIVE);
-                    Logger.Info("Upgrade to Hive @ {0} / {1}", lair.position.X, lair.position.Y);
-                    break;
-                }
-            }
-            if (saveFor && lairs.Count > 0)
-            {
-                foreach (var hive in lairs)
-                {
-                    if (hive.order.AbilityId != 0) continue;
+                var result = lairActions.UpgradeToHive(lair);
 
-                    SaveResourcesForUnit(Units.HIVE);
+                if (result == LairActions.HiveResult.Success
+                    || result == LairActions.HiveResult.NotUnitType
+                    || result == LairActions.HiveResult.CanNotConstruct)
+                {
                     break;
                 }
             }
@@ -1031,6 +1022,48 @@ namespace Bot
             }
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Research an upgrade from the evolution chamber.
+        /// </summary>
+        /// <param name="researchID">The upgrade research id.</param>
+        // ********************************************************************************
+        private void ResearchEvolutionChambers(int researchID)
+        {
+            var evolutionChambers = controller.GetUnits(Units.EVOLUTION_CHAMBER);
+
+            foreach (var evolutionChamber in evolutionChambers)
+            {
+                var evolutionChamberActions = unitActionsList.GetUnitAction<EvolutionChamberActions>(evolutionChamber.unitType);
+
+                if (evolutionChamberActions != null)
+                {
+                    var result = UnitActions.UnitActions.ResearchResult.Success;
+
+                    if (researchID == Abilities.RESEARCH_MELEE_ATTACK1 
+                        || researchID == Abilities.RESEARCH_MELEE_ATTACK2
+                        || researchID == Abilities.RESEARCH_MELEE_ATTACK3)
+                    {
+                        result = evolutionChamberActions.ResearchMeleeAttack(evolutionChamber);
+                    }
+                    else if (researchID == Abilities.RESEARCH_METABOLIC_BOOST)
+                    {
+                        //result = evolutionChamberActions.ResearchMetabolicBoost(evolutionChamber);
+                    }
+
+                    if (result == UnitActions.UnitActions.ResearchResult.Success
+                        || result == UnitActions.UnitActions.ResearchResult.IsResearching
+                        || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
+                        || result == UnitActions.UnitActions.ResearchResult.CanNotAfford
+                        || result == UnitActions.UnitActions.ResearchResult.NoGasGysersStructures
+                        || result == UnitActions.UnitActions.ResearchResult.CanNotResearch)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
         /**********
          * Abilities
          **********/
@@ -1367,7 +1400,7 @@ namespace Bot
                 }
                 else if (saveForUnitType == Units.HIVE)
                 {
-                    UpgradeToHive(saveFor: false);
+                    UpgradeToHive();
                 }
                 else if (saveForUnitType == Units.EXPANSION_BASE)
                 {
@@ -1401,6 +1434,10 @@ namespace Bot
                 else if (saveForUpgrade == Abilities.RESEARCH_ADRENAL_GLANDS || saveForUpgrade == Abilities.RESEARCH_METABOLIC_BOOST)
                 {
                     ResearchSpawningPools(saveForUpgrade);
+                }
+                else if (Abilities.EvolutionChamberResearch.Contains(saveForUpgrade))
+                {
+                    ResearchEvolutionChambers(saveForUpgrade);
                 }
             }
 
@@ -1452,7 +1489,7 @@ namespace Bot
                     BuildBuilding(Units.BANELING_NEST);
                     break;
                 case 8:
-                    //BuildBuilding(Units.EVOLUTION_CHAMBER);
+                    BuildBuilding(Units.EVOLUTION_CHAMBER);
                     break;
                 case 9:
                     BuildBuilding(Units.SPIRE);

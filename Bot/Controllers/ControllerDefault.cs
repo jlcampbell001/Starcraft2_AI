@@ -1262,6 +1262,20 @@ namespace Bot
 
         // ********************************************************************************
         /// <summary>
+        /// A function to be overriden that will check to see if the required structures for an upgrade have been built.
+        /// </summary>
+        /// <param name="abilityID">The research ID of the upgrade to check.</param>
+        /// <returns>True if they have the requirements.</returns>
+        // ********************************************************************************
+        public virtual bool HasUpgradeRequirements(int abilityID)
+        {
+            var hasRequirements = true;
+
+            return hasRequirements;
+        }
+
+        // ********************************************************************************
+        /// <summary>
         /// Check and see if the upgrade has been researched.
         /// </summary>
         /// <param name="abilityID">The upgrade id.</param>

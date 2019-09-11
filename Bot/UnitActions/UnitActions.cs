@@ -201,6 +201,8 @@ namespace Bot.UnitActions
 
             if (controller.IsResearchingUpgrade(researchID, unitType)) return ResearchResult.IsResearching;
 
+            if (!controller.HasUpgradeRequirements(researchID)) return ResearchResult.CanNotResearch;
+
             if (needVespene && controller.GetTotalCount(Units.GasGeysersStructures) == 0) return ResearchResult.NoGasGysersStructures;
 
             if (!controller.CanAffordUpgrade(researchID)) return ResearchResult.CanNotAfford;

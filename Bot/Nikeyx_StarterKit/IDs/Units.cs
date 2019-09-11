@@ -997,7 +997,8 @@ namespace Bot
 
         public static readonly HashSet<uint> NeedInfestationPit = new HashSet<uint> {
             INFESTOR,
-            SWARM_HOST
+            SWARM_HOST,
+            HIVE
         };
 
         public static readonly HashSet<uint> NeedSpireOrGreaterSpire = new HashSet<uint> {
