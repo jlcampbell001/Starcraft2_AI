@@ -67,12 +67,26 @@ namespace Bot
         public static int RESEARCH_METABOLIC_BOOST = 1253;
         public static int METABOLIC_BOOST = 66;
 
-        public static int RESEARCH_MELEE_ATTACK1 = 1186;
-        public static int RESEARCH_MELEE_ATTACK2 = 1187;
-        public static int RESEARCH_MELEE_ATTACK3 = 1188;
-        public static int MELEE_ATTACK1 = 53;
-        public static int MELEE_ATTACK2 = 54;
-        public static int MELEE_ATTACK3 = 55;
+        public static int RESEARCH_MELEE_ATTACK1_ZERG = 1186;
+        public static int RESEARCH_MELEE_ATTACK2_ZERG = 1187;
+        public static int RESEARCH_MELEE_ATTACK3_ZERG = 1188;
+        public static int MELEE_ATTACK1_ZERG = 53;
+        public static int MELEE_ATTACK2_ZERG = 54;
+        public static int MELEE_ATTACK3_ZERG = 55;
+
+        public static int RESEARCH_MISSILE_ATTACK1_ZERG = 1192;
+        public static int RESEARCH_MISSILE_ATTACK2_ZERG = 1193;
+        public static int RESEARCH_MISSILE_ATTACK3_ZERG = 1194;
+        public static int MISSILE_ATTACK1_ZERG = 59;
+        public static int MISSILE_ATTACK2_ZERG = 60;
+        public static int MISSILE_ATTACK3_ZERG = 61;
+
+        public static int RESEARCH_GROUND_ARMOR1_ZERG = 1189;
+        public static int RESEARCH_GROUND_ARMOR2_ZERG = 1190;
+        public static int RESEARCH_GROUND_ARMOR3_ZERG = 1191;
+        public static int GROUND_ARMOR1_ZERG = 56;
+        public static int GROUND_ARMOR2_ZERG = 57;
+        public static int GROUND_ARMOR3_ZERG = 58;
 
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
@@ -148,19 +162,29 @@ namespace Bot
 
         public static readonly HashSet<int> EvolutionChamberResearch = new HashSet<int>
         {
-            RESEARCH_MELEE_ATTACK1,
-            RESEARCH_MELEE_ATTACK2,
-            RESEARCH_MELEE_ATTACK3
+            RESEARCH_MELEE_ATTACK1_ZERG,
+            RESEARCH_MELEE_ATTACK2_ZERG,
+            RESEARCH_MELEE_ATTACK3_ZERG,
+            RESEARCH_MISSILE_ATTACK1_ZERG,
+            RESEARCH_MISSILE_ATTACK2_ZERG,
+            RESEARCH_MISSILE_ATTACK3_ZERG,
+            RESEARCH_GROUND_ARMOR1_ZERG,
+            RESEARCH_GROUND_ARMOR2_ZERG,
+            RESEARCH_GROUND_ARMOR3_ZERG
         };
         
         public static readonly HashSet<int> RequiresLair = new HashSet<int>
         {
-            RESEARCH_MELEE_ATTACK2
+            RESEARCH_MELEE_ATTACK2_ZERG,
+            RESEARCH_MISSILE_ATTACK2_ZERG,
+            RESEARCH_GROUND_ARMOR2_ZERG
         };
 
         public static readonly HashSet<int> RequiresHive = new HashSet<int>
         {
-            RESEARCH_MELEE_ATTACK3
+            RESEARCH_MELEE_ATTACK3_ZERG,
+            RESEARCH_MISSILE_ATTACK3_ZERG,
+            RESEARCH_GROUND_ARMOR3_ZERG
         };
 
         // Get the id of a unit.

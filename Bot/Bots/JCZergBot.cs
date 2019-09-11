@@ -17,7 +17,7 @@ namespace Bot
     // --------------------------------------------------------------------------------
     internal class JCZergBot : Bot
     {
-        private readonly bool totalRandom = true;
+        private readonly bool totalRandom = false;
 
         private const int WAIT_IN_SECONDS = 1;
 
@@ -32,6 +32,7 @@ namespace Bot
         private const int MAX_SPAWNING_POOLS = 2;
         private const int MAX_HYDRALISK_DENS = 1;
         private const int MAX_SPIRES = 1;
+        private const int MAX_EVOLUTION_CHAMBERS = 2;
         private const int CHANCE_TO_SAVE_RESOURCES = 1;
         private const int CHANCE_BUILD_DEF_BUILDING = 10;
         private const int SPINE_PER_RC = 10;
@@ -408,6 +409,12 @@ namespace Bot
             {
                 //Logger.Info("Build EX");
                 BuildExtractor();
+            }
+
+            if (controller.GetTotalCount(Units.EVOLUTION_CHAMBER, inConstruction: true) < MAX_EVOLUTION_CHAMBERS)
+            {
+                //Logger.Info("Build EC");
+                BuildBuilding(Units.EVOLUTION_CHAMBER);
             }
 
             if (controller.GetTotalCount(Units.HYDRALISK_DEN, inConstruction: true) < MAX_HYDRALISK_DENS)
@@ -1040,17 +1047,24 @@ namespace Bot
                 {
                     var result = UnitActions.UnitActions.ResearchResult.Success;
 
-                    if (researchID == Abilities.RESEARCH_MELEE_ATTACK1 
-                        || researchID == Abilities.RESEARCH_MELEE_ATTACK2
-                        || researchID == Abilities.RESEARCH_MELEE_ATTACK3)
+                    if (researchID == Abilities.RESEARCH_MELEE_ATTACK1_ZERG 
+                        || researchID == Abilities.RESEARCH_MELEE_ATTACK2_ZERG
+                        || researchID == Abilities.RESEARCH_MELEE_ATTACK3_ZERG)
                     {
                         result = evolutionChamberActions.ResearchMeleeAttack(evolutionChamber);
                     }
-                    else if (researchID == Abilities.RESEARCH_METABOLIC_BOOST)
+                    else if (researchID == Abilities.RESEARCH_MISSILE_ATTACK1_ZERG
+                        || researchID == Abilities.RESEARCH_MISSILE_ATTACK2_ZERG
+                        || researchID == Abilities.RESEARCH_MISSILE_ATTACK3_ZERG)
                     {
-                        //result = evolutionChamberActions.ResearchMetabolicBoost(evolutionChamber);
+                        result = evolutionChamberActions.ResearchMissileAttack(evolutionChamber);
                     }
-
+                    else if (researchID == Abilities.RESEARCH_GROUND_ARMOR1_ZERG
+                        || researchID == Abilities.RESEARCH_GROUND_ARMOR2_ZERG
+                        || researchID == Abilities.RESEARCH_GROUND_ARMOR3_ZERG)
+                    {
+                        result = evolutionChamberActions.ResearchGroundArmor(evolutionChamber);
+                    }
                     if (result == UnitActions.UnitActions.ResearchResult.Success
                         || result == UnitActions.UnitActions.ResearchResult.IsResearching
                         || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
