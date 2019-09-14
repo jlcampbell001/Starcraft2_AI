@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bot.UnitActions.Zerg.ZergStructures
 {
@@ -132,7 +128,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
         {
             base.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
 
-            var randomAction = random.Next(3);
+            var randomAction = Random.Next(3);
             var level = 1;
 
             switch (randomAction)

@@ -14,8 +14,8 @@ namespace Bot.UnitActions
     // --------------------------------------------------------------------------------
     class UnitActions : IConvertible
     {
+        protected static Random Random = new Random();
         protected ControllerDefault controller;
-        protected static Random random = new Random();
 
         protected uint unitType = 0;
 
@@ -56,7 +56,7 @@ namespace Bot.UnitActions
         // ********************************************************************************
         public virtual void SetupUnitActionsList(ref UnitActionsList unitActionsList)
         {
-            unitActionsList.addUnitAction(this, unitType);
+            unitActionsList.AddUnitAction(this, unitType);
         }
 
         // ********************************************************************************
@@ -142,7 +142,7 @@ namespace Bot.UnitActions
             {
                 var workers = controller.GetUnits(Units.Workers);
 
-                List<Unit> attackWorkers = new List<Unit>();
+                var attackWorkers = new List<Unit>();
 
                 foreach (var worker in workers)
                 {

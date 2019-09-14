@@ -1,4 +1,4 @@
-using Google.Protobuf.Collections;
+﻿using Google.Protobuf.Collections;
 using SC2APIProtocol;
 using System.Collections.Generic;
 using System.Numerics;
@@ -42,7 +42,7 @@ namespace Bot
         public Unit(SC2APIProtocol.Unit unit)
         {
             this.original = unit;
-            this.unitTypeData = ControllerDefault.gameData.Units[(int)unit.UnitType];
+            this.unitTypeData = ControllerDefault.GameData.Units[(int)unit.UnitType];
 
             this.name = unitTypeData.Name;
             this.tag = unit.Tag;
@@ -130,14 +130,14 @@ namespace Bot
         /// Use an ability.
         /// </summary>
         /// <param name="abilityID">The ability to use.</param>
-        /// <param name="toggleAutoCast">If true it will tonggle the auto cast.</param>
+        /// <param name="toggleAutoCast">If true it will toggle the auto cast.</param>
         /// <param name="targetUnit">If passed it will target this unit with the ability.</param>
         /// <param name="targetPosition">If passed it will target this location with the ability.</param>
         // ********************************************************************************
         public void UseAbility(int abilityID, bool toggleAutoCast = false, Unit targetUnit = null, Vector3 targetPosition = new Vector3())
         {
             if (orders.Count > 0) return;
-            Action action = null;
+            Action action;
 
             if (toggleAutoCast)
             {
@@ -258,10 +258,10 @@ namespace Bot
         // ********************************************************************************
         public List<AvailableAbility> GetAvailableAbilities()
         {
-            RequestQueryAvailableAbilities requestQueryAvailableAbilities = new RequestQueryAvailableAbilities();
+            var requestQueryAvailableAbilities = new RequestQueryAvailableAbilities();
             requestQueryAvailableAbilities.UnitTag = tag;
 
-            Request requestQuery = new Request();
+            var requestQuery = new Request();
             requestQuery.Query = new RequestQuery();
             requestQuery.Query.Abilities.Add(requestQueryAvailableAbilities);
 

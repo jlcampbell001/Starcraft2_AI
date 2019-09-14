@@ -69,7 +69,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
                 if (!preformAction)
                 {
-                    if (random.Next(100) < chanceToSpawnLarva)
+                    if (Random.Next(100) < chanceToSpawnLarva)
                     {
                         // Want to tell it if its home RC has max larva spawn a creep tumor instead.
                         var resourceCenter = GetAssignedResourceCenter(unit);
@@ -84,7 +84,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
                 {
                     var targetPosition = Vector3.Zero;
 
-                    if (random.Next(100) < 50)
+                    if (Random.Next(100) < 50)
                     {
                         targetPosition = GetRandomSpawnCreepTumorPositionEnemyPosition(unit);
                     } 
@@ -126,7 +126,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (IsUnitType(unit))
             {
-                var randomAction = random.Next(5);
+                var randomAction = Random.Next(5);
 
                 switch (randomAction)
                 {
@@ -228,7 +228,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (queenLink != null)
             {
-                resourceCenter = controller.GetUnitByTag(queenLink.tag2);
+                resourceCenter = controller.GetUnitByTag(queenLink.Tag2);
             }
 
             return resourceCenter;

@@ -14,9 +14,12 @@ namespace Bot.Utilities
     // --------------------------------------------------------------------------------
     class UnitsDistanceFromList
     {
-        public Vector3 fromLocation;
+        private Vector3 fromLocation;
 
-        public List<UnitDistance> toUnits = new List<UnitDistance>();
+        private List<UnitDistance> toUnits = new List<UnitDistance>();
+
+        public Vector3 FromLocation { get => fromLocation; set => fromLocation = value; }
+        internal List<UnitDistance> ToUnits { get => toUnits; set => toUnits = value; }
 
         // ********************************************************************************
         /// <summary>
@@ -27,7 +30,7 @@ namespace Bot.Utilities
         // ********************************************************************************
         public UnitsDistanceFromList(Vector3 fromLocation)
         {
-            this.fromLocation = fromLocation;
+            this.FromLocation = fromLocation;
         }
 
         // ********************************************************************************
@@ -37,13 +40,13 @@ namespace Bot.Utilities
         /// <param name="unit">The unit to look up.</param>
         /// <returns>The distance the unit is from the location.</returns>
         // ********************************************************************************
-        private Double getDistanceforUnit(Unit unit)
+        private double GetDistanceforUnit(Unit unit)
         {
             var distance = 0.0;
 
-            if (fromLocation != null)
+            if (FromLocation != null)
             {
-                distance = unit.GetDistance(fromLocation);
+                distance = unit.GetDistance(FromLocation);
             }
             return distance;
         }
@@ -55,12 +58,12 @@ namespace Bot.Utilities
         // ********************************************************************************
         public void UpdateDistances()
         {
-            foreach (var toUnit in toUnits)
+            foreach (var toUnit in ToUnits)
             {
-                toUnit.distance = getDistanceforUnit(toUnit.unit);
+                toUnit.Distance = GetDistanceforUnit(toUnit.Unit);
             }
 
-            toUnits.Sort();
+            ToUnits.Sort();
         }
 
         // ********************************************************************************
@@ -73,14 +76,14 @@ namespace Bot.Utilities
         public void AddUnit(Unit unit, bool sortAfter = true)
         {
             var toUnit = new UnitDistance();
-            toUnit.unit = unit;
-            toUnit.distance = getDistanceforUnit(unit);
+            toUnit.Unit = unit;
+            toUnit.Distance = GetDistanceforUnit(unit);
 
-            toUnits.Add(toUnit);
+            ToUnits.Add(toUnit);
 
             if (sortAfter)
             {
-                toUnits.Sort();
+                ToUnits.Sort();
             }
         }
 
@@ -99,7 +102,7 @@ namespace Bot.Utilities
 
             if (units.Count > 0)
             {
-                toUnits.Sort();
+                ToUnits.Sort();
             }
         }
 
@@ -111,12 +114,12 @@ namespace Bot.Utilities
         // ********************************************************************************
         public override string ToString()
         {
-            var result = "From Location = " + fromLocation + " {" + Environment.NewLine;
-            foreach (var toUnit in toUnits)
+            var result = "From Location = " + FromLocation + " {" + Environment.NewLine;
+            foreach (var toUnit in ToUnits)
             {
                 result = result + toUnit + "; " + Environment.NewLine;
             }
-            result = result + "}";
+            result += "}";
 
             return result;
         }

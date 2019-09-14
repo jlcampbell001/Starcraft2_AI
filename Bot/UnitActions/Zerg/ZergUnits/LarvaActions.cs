@@ -51,7 +51,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits
                 {
                     rollRange = 2;
                 }
-                var randomMorph = random.Next(rollRange);
+                var randomMorph = Random.Next(rollRange);
 
                 switch (randomMorph)
                 {

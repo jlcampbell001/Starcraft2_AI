@@ -11,8 +11,11 @@ namespace Bot.UnitActions.Zerg.ZergUnits
     //Note: The drones morph into building ability is being handled by the bot and controller instead.
     class DroneActions : ZergActions
     {
-        public int BURROW_CHANCE = 10;
-        public int UNBURROW_CHANCE = 80;
+        private int burrowchance = 10;
+        private int unburrowchance = 80;
+
+        public int BurrowChance { get => burrowchance; set => burrowchance = value; }
+        public int UnburrowChance { get => unburrowchance; set => unburrowchance = value; }
 
         public DroneActions(ZergController controller) : base(controller)
         {
@@ -54,14 +57,14 @@ namespace Bot.UnitActions.Zerg.ZergUnits
 
             if (unit.isBurrowed)
             {
-                if (random.Next(100) < UNBURROW_CHANCE)
+                if (Random.Next(100) < UnburrowChance)
                 {
                     Unburrow(unit);
                 }
             }
             else
             {
-                if (!IsBusy(unit) && random.Next(100) < BURROW_CHANCE)
+                if (!IsBusy(unit) && Random.Next(100) < BurrowChance)
                 {
                     Burrow(unit);
                 }

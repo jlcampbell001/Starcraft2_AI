@@ -14,11 +14,13 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
     // --------------------------------------------------------------------------------
     class OverlordTransportActions : OverlordActions
     {
+        private int chanceToLoadUnload = 30;
+
         protected int loadTransport = Abilities.LOAD_OVERLORD;
         protected int unloadTransportAll = Abilities.UNLOADAll_OVERLORD;
         protected int unloadTransportOneUnit = Abilities.UNLOADUNIT_OVERLORD;
 
-        public int chanceToLoadUnload = 30;
+        public int ChanceToLoadUnload { get => chanceToLoadUnload; set => chanceToLoadUnload = value; }
 
         public OverlordTransportActions(ZergController controller) : base(controller)
         {
@@ -78,11 +80,11 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
                     if (unit.cargoUsed == unit.cargoMax)
                     {
                         unloading = true;
-                    } else if (random.Next(100) < chanceToLoadUnload)
+                    } else if (Random.Next(100) < ChanceToLoadUnload)
                     {
                         var tempCalculation = ((decimal)unit.cargoUsed / (decimal)unit.cargoMax * 100m);
                         var cargoBaseChance = (int)(tempCalculation);
-                        if (unit.cargoUsed !=0 && random.Next(100) < Math.Min(50, cargoBaseChance))
+                        if (unit.cargoUsed !=0 && Random.Next(100) < Math.Min(50, cargoBaseChance))
                         {
                             unloading = true;
                         } else
@@ -97,11 +99,11 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
                     } else if (unloading)
                     {
                         var possibleLocations = controller.expansionPositions.toLocations;
-                        var position = possibleLocations[random.Next(possibleLocations.Count())].location;
+                        var position = possibleLocations[Random.Next(possibleLocations.Count())].location;
                         preformingAction = UnloadTransport(unit, targetPosition: position);
                     }
                     // Lets try and generate creep or stop generating.
-                    else if (random.Next(100) < 50)
+                    else if (Random.Next(100) < 50)
                     {
                         preformingAction = GenerateCreep(unit);
                     }
@@ -142,7 +144,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             if (!preformingAction)
             {
-                var randomAction = random.Next(5);
+                var randomAction = Random.Next(5);
 
                 switch (randomAction)
                 {

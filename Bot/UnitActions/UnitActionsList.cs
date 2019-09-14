@@ -22,11 +22,11 @@ namespace Bot.UnitActions
         /// <param name="unitAction">The unit action object.</param>
         /// <param name="unitType">The unit type to link to the unit action.</param>
         // ********************************************************************************
-        public void addUnitAction(UnitActions unitAction, uint unitType)
+        public void AddUnitAction(UnitActions unitAction, uint unitType)
         {
-            UnitActionListItem unitActionListItem = new UnitActionListItem();
-            unitActionListItem.unitAction = unitAction;
-            unitActionListItem.unitType = unitType;
+            var unitActionListItem = new UnitActionListItem();
+            unitActionListItem.UnitAction = unitAction;
+            unitActionListItem.UnitType = unitType;
 
             unitActionListItems.Add(unitActionListItem);
         }
@@ -42,9 +42,9 @@ namespace Bot.UnitActions
         {
             foreach(var unitActionListItem in unitActionListItems)
             {
-                if (unitActionListItem.unitType == unitType)
+                if (unitActionListItem.UnitType == unitType)
                 {
-                    return unitActionListItem.unitAction;
+                    return unitActionListItem.UnitAction;
                 }
             }
 
@@ -65,9 +65,9 @@ namespace Bot.UnitActions
 
             foreach (var unitActionListItem in unitActionListItems)
             {
-                if (unitActionListItem.unitType == unitType)
+                if (unitActionListItem.UnitType == unitType)
                 {
-                    unitActions = (T) Convert.ChangeType(unitActionListItem.unitAction, typeof(T));
+                    unitActions = (T) Convert.ChangeType(unitActionListItem.UnitAction, typeof(T));
                     break;
                 }
             }

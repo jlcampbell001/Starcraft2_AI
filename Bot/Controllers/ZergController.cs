@@ -18,39 +18,39 @@
         // ********************************************************************************
         public override bool CanAfford(uint unitType, ref int unitMinerals, ref int unitVespene)
         {
-            var unitData = gameData.Units[(int)unitType];
+            var unitData = GameData.Units[(int)unitType];
             unitMinerals = (int)unitData.MineralCost;
             unitVespene = (int)unitData.VespeneCost;
 
             // For some reason the mineral cost for these structures includes the drone cost but this is already paid for so we need to take it out.
             if (Units.IncludesDroneCost.Contains(unitType))
             {
-                var droneData = gameData.Units[(int)Units.DRONE];
-                unitMinerals = unitMinerals - (int)droneData.MineralCost;
+                var droneData = GameData.Units[(int)Units.DRONE];
+                unitMinerals -= (int)droneData.MineralCost;
                 //Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
             // For some reason the mineral cost for lair includes the hatchery cost but this is already paid for so we need to take it out.
             if (unitType == Units.LAIR)
             {
-                var hatcheryData = gameData.Units[(int)Units.HATCHERY];
-                unitMinerals = unitMinerals - (int)hatcheryData.MineralCost;
+                var hatcheryData = GameData.Units[(int)Units.HATCHERY];
+                unitMinerals -= (int)hatcheryData.MineralCost;
                 // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
             // For some reason the mineral cost for hive includes the lair cost but this is already paid for so we need to take it out.
             if (unitType == Units.HIVE)
             {
-                var lairData = gameData.Units[(int)Units.LAIR];
-                unitMinerals = unitMinerals - (int)lairData.MineralCost;
+                var lairData = GameData.Units[(int)Units.LAIR];
+                unitMinerals -= (int)lairData.MineralCost;
                 // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
             // For some reason the mineral cost for overseer includes the overlord cost but this is already paid for so we need to take it out.
             if (unitType == Units.OVERSEER)
             {
-                var overlordData = gameData.Units[(int)Units.OVERLORD];
-                unitMinerals = unitMinerals - (int)overlordData.MineralCost;
+                var overlordData = GameData.Units[(int)Units.OVERLORD];
+                unitMinerals -= (int)overlordData.MineralCost;
                 // Logger.Info("Name = {0};  minerals = {1}; vespene = {2}", unitData.Name, unitMinerals, unitVespene);
             }
 
@@ -157,7 +157,7 @@
                 if (!ignoreResourceSupply)
                 {
                     // Do we have enough supply?
-                    var requiredSupply = gameData.Units[(int)unitType].FoodRequired;
+                    var requiredSupply = GameData.Units[(int)unitType].FoodRequired;
                     if (requiredSupply > (maxSupply - currentSupply))
                         return false;
                 }

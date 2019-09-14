@@ -68,7 +68,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
                 {
                     buildTransport = true;
                 }
-                else if (random.Next(100) < 50)
+                else if (Random.Next(100) < 50)
                 {
                     buildOverseer = true;
                 }
@@ -98,7 +98,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
                 else
                 {
                     // Lets try and generate creep or stop generating.
-                    if (random.Next(100) < 50)
+                    if (Random.Next(100) < 50)
                     {
                         preformingAction = GenerateCreep(unit);
                     }
@@ -137,7 +137,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             var preformingAction = false;
 
-            var randomAction = random.Next(4);
+            var randomAction = Random.Next(4);
 
             switch (randomAction)
             {

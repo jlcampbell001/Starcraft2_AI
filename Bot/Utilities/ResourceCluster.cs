@@ -13,6 +13,8 @@ namespace Bot.Utilities
     // --------------------------------------------------------------------------------
     class ResourceCluster
     {
-        public List<Unit> resources = new List<Unit>();
+        private List<Unit> resources = new List<Unit>();
+
+        public List<Unit> Resources { get => resources; set => resources = value; }
     }
 }

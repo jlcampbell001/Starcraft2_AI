@@ -13,8 +13,11 @@ namespace Bot.Utilities
     // --------------------------------------------------------------------------------
     class UnitDistance : IComparable<UnitDistance>
     {
-        public Unit unit;
-        public Double distance;
+        private Unit unit;
+        private double distance;
+
+        public Unit Unit { get => unit; set => unit = value; }
+        public double Distance { get => distance; set => distance = value; }
 
         // ********************************************************************************
         /// <summary>
@@ -31,7 +34,7 @@ namespace Bot.Utilities
             }
             else
             {
-                return this.distance.CompareTo(compareUnitDistance.distance);
+                return this.Distance.CompareTo(compareUnitDistance.Distance);
             }
         }
 
@@ -41,9 +44,9 @@ namespace Bot.Utilities
         /// </summary>
         /// <returns>A string version.</returns>
         // ********************************************************************************
-        public override String ToString()
+        public override string ToString()
         {
-            return "Tag = " + unit.tag + ", Name = " + unit.name + ", distance = " + distance;
+            return "Tag = " + Unit.tag + ", Name = " + Unit.name + ", distance = " + Distance;
         }
     }
 }

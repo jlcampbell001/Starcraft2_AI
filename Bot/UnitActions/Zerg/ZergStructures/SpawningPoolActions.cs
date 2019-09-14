@@ -70,7 +70,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
         {
             base.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
 
-            var randomAction = random.Next(2);
+            var randomAction = Random.Next(2);
 
             switch (randomAction)
             {

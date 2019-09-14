@@ -186,13 +186,13 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
         public void SetUnitRally(Unit unit)
         {
             // If the rally point is already set only reset it rarely.
-            if (unitRallySet.Contains(unit.tag) && random.Next(100) >= 1) return;
+            if (unitRallySet.Contains(unit.tag) && Random.Next(100) >= 1) return;
 
             var unitSight = (int)unit.sight;
 
             var resources = controller.GetUnits(Units.Resources, alliance: Alliance.Neutral);
 
-            LocationsDistanceFromList resourceDistance = new LocationsDistanceFromList(unit.position);
+            var resourceDistance = new LocationsDistanceFromList(unit.position);
             resourceDistance.AddLocation(resources);
 
             var xMin = -unitSight;
@@ -254,13 +254,13 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
         public void SetWorkerRally(Unit unit)
         {
             // If the rally point is already set only reset it rarely.
-            if (workerRallySet.Contains(unit.tag) && random.Next(100) >= 1) return;
+            if (workerRallySet.Contains(unit.tag) && Random.Next(100) >= 1) return;
 
             var unitSight = (int)unit.sight;
 
             var resources = controller.GetUnits(Units.Resources, alliance: Alliance.Neutral);
 
-            LocationsDistanceFromList resourceDistance = new LocationsDistanceFromList(unit.position);
+            var resourceDistance = new LocationsDistanceFromList(unit.position);
             resourceDistance.AddLocation(resources);
 
             if (resourceDistance.toLocations.Count > 0)
@@ -301,7 +301,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
 
             if (queenLink != null)
             {
-                foundQueen = controller.GetUnitByTag(queenLink.tag1);
+                foundQueen = controller.GetUnitByTag(queenLink.Tag1);
             }
 
             return foundQueen;

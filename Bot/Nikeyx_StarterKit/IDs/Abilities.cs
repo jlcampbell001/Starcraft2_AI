@@ -190,7 +190,7 @@ namespace Bot
         // Get the id of a unit.
         public static int GetID(uint unit)
         {
-            return (int)ControllerDefault.gameData.Units[(int)unit].AbilityId;
+            return (int)ControllerDefault.GameData.Units[(int)unit].AbilityId;
         }
 
     }

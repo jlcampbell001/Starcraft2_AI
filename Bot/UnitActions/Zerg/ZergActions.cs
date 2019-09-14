@@ -42,11 +42,11 @@ namespace Bot.UnitActions.Zerg
         // ********************************************************************************
         public override void SetupUnitActionsList(ref UnitActionsList unitActionsList)
         {
-            unitActionsList.addUnitAction(this, unitType);
+            unitActionsList.AddUnitAction(this, unitType);
 
             if (burrowedUnitType != 0)
             {
-                unitActionsList.addUnitAction(this, burrowedUnitType);
+                unitActionsList.AddUnitAction(this, burrowedUnitType);
             }
         }
 
@@ -165,7 +165,7 @@ namespace Bot.UnitActions.Zerg
         {
             var targetPosition = Vector3.Zero;
 
-            var enemyPosition = controller.enemyLocations[random.Next(controller.enemyLocations.Count)];
+            var enemyPosition = controller.enemyLocations[Random.Next(controller.enemyLocations.Count)];
 
             if (controller.GetClosestUnit(enemyPosition, Units.CREEP_TUMOR, unit.sight) == null)
             {

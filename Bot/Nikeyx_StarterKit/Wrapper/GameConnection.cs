@@ -228,8 +228,8 @@ namespace Bot
 
             var dataResponse = await proxy.SendRequest(dataReq);
 
-            ControllerDefault.gameInfo = gameInfoResponse.GameInfo;
-            ControllerDefault.gameData = dataResponse.Data;
+            ControllerDefault.GameInfo = gameInfoResponse.GameInfo;
+            ControllerDefault.GameData = dataResponse.Data;
 
             while (true)
             {
@@ -252,7 +252,7 @@ namespace Bot
                     break;
                 }
 
-                ControllerDefault.obs = observation;
+                ControllerDefault.Obs = observation;
                 var actions = bot.OnFrame();
 
                 var actionRequest = new Request();

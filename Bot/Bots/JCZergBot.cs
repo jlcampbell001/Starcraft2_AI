@@ -21,7 +21,6 @@ namespace Bot
 
         private const int WAIT_IN_SECONDS = 1;
 
-
         private const int BUILD_OVERLORD_RANGE = 2;
         private const int DRONE_PER_RC = 19;
         private const int DRONE_MIN = 10;
@@ -205,7 +204,7 @@ namespace Bot
             {
                 Logger.Info("JCZergBot");
                 Logger.Info("--------------------------------------");
-                Logger.Info("Map: {0}", ZergController.gameInfo.MapName);
+                Logger.Info("Map: {0}", ZergController.GameInfo.MapName);
                 Logger.Info("--------------------------------------");
 
             }
@@ -272,7 +271,7 @@ namespace Bot
 
                     foreach (var mineralField in mineralFields)
                     {
-                        totalMineralsLeft = totalMineralsLeft + mineralField.minerals;
+                        totalMineralsLeft += mineralField.minerals;
                     }
 
                     if (totalMineralsLeft < saveForMinerals)
@@ -291,8 +290,8 @@ namespace Bot
                     var totalWorkersAssigned = 0;
                     foreach (var gasBuilding in gasBuildings)
                     {
-                        totalVespeneLeft = totalVespeneLeft + gasBuilding.vespene;
-                        totalWorkersAssigned = totalWorkersAssigned + gasBuilding.assignedWorkers;
+                        totalVespeneLeft += gasBuilding.vespene;
+                        totalWorkersAssigned += gasBuilding.assignedWorkers;
                     }
 
                     if (totalVespeneLeft < saveForVespene)
@@ -343,7 +342,7 @@ namespace Bot
                     switch (randAction)
                     {
                         case 0:
-                            nextWaitFrame = nextWaitFrame + controller.SecsToFrames(WAIT_IN_SECONDS);
+                            nextWaitFrame += controller.SecsToFrames(WAIT_IN_SECONDS);
                             break;
                         case 1:
                             BuildBuildingsRandom();
@@ -365,7 +364,7 @@ namespace Bot
 
                     if (randAction < 10)
                     {
-                        nextWaitFrame = nextWaitFrame + controller.SecsToFrames(WAIT_IN_SECONDS * random.Next(1, 10));
+                        nextWaitFrame += controller.SecsToFrames(WAIT_IN_SECONDS * random.Next(1, 10));
                     }
                     else if (randAction < 70)
                     {
@@ -670,12 +669,12 @@ namespace Bot
                     var sight = (int)resourceCenter.sight;
                     var buildHatchery = false;
 
-                    UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(resourceCenter.position);
+                    var unitsDistanceFromList = new UnitsDistanceFromList(resourceCenter.position);
                     unitsDistanceFromList.AddUnits(resouceCenters);
 
-                    if (unitsDistanceFromList.toUnits.Count > 1)
+                    if (unitsDistanceFromList.ToUnits.Count > 1)
                     {
-                        if (unitsDistanceFromList.toUnits[1].distance > sight)
+                        if (unitsDistanceFromList.ToUnits[1].Distance > sight)
                         {
                             buildHatchery = true;
                         }
@@ -719,7 +718,7 @@ namespace Bot
             var doNotUseResouces = false;
             var ignoreSaveRandomRoll = false;
             uint saveUnit = 0;
-            int saveUpgrade = 0;
+            var saveUpgrade = 0;
 
             if (saveForMinerals != 0 || saveForVespene != 0)
             {
@@ -904,7 +903,7 @@ namespace Bot
             var doNotUseResouces = false;
             var ignoreSaveRandomRoll = false;
             uint saveUnit = 0;
-            int saveUpgrade = 0;
+            var saveUpgrade = 0;
 
             if (saveForMinerals != 0 || saveForVespene != 0)
             {
@@ -1110,7 +1109,7 @@ namespace Bot
         /// <param name="unit">The unit to unburrow.</param>
         /// <param name="setAutoCastOn">Set the auto cast on.</param>
         // ********************************************************************************
-        private void UnburrowUnit(Unit unit, bool setAutoCastOn = false)
+        private void UnburrowUnit(Unit unit)
         {
             if (!controller.HasUpgrade(Abilities.BURROW)) return;
 
@@ -1166,7 +1165,7 @@ namespace Bot
         {
             // Get visible enemy structures first.
             var enemyStructures = controller.GetUnits(Units.Structures, alliance: Alliance.Enemy, displayType: DisplayType.Visible);
-            List<Unit> army = new List<Unit>();
+            var army = new List<Unit>();
 
             if (enemyStructures.Count == 0)
             {

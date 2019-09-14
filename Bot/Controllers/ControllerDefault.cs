@@ -15,21 +15,23 @@ namespace Bot
     // --------------------------------------------------------------------------------
     class ControllerDefault
     {
+        public static ResponseGameInfo GameInfo;
+        public static ResponseData GameData;
+        public static ResponseObservation Obs;
+
+        private readonly static List<Action> actions = new List<Action>();
+
         private readonly int frameDelay = 0; //too fast? increase this to e.g. 20
 
         private const int MIN_WORKERS_MINING_PER_ACTIVE_GAS_BUILDING = 2;
         private const int BUILD_RANGE_RADIUS = 12;
         private const int PLACEMENT_TRIES = 1000;
 
-        private readonly static List<Action> actions = new List<Action>();
         private readonly Random random = new Random();
         private const double FRAMES_PER_SECOND = 22.4;
 
         private bool gatheredInitalInfo = false;
 
-        public static ResponseGameInfo gameInfo;
-        public static ResponseData gameData;
-        public static ResponseObservation obs;
         public ulong frame;
         public uint currentSupply;
         public uint maxSupply;
@@ -75,11 +77,11 @@ namespace Bot
         // ********************************************************************************
         public void OpenFrame()
         {
-            if (gameInfo == null || gameData == null || obs == null)
+            if (GameInfo == null || GameData == null || Obs == null)
             {
-                if (gameInfo == null)
+                if (GameInfo == null)
                     Logger.Info("GameInfo is null! The application will terminate.");
-                else if (gameData == null)
+                else if (GameData == null)
                     Logger.Info("GameData is null! The application will terminate.");
                 else
                     Logger.Info("ResponseObservation is null! The application will terminate.");
@@ -89,14 +91,14 @@ namespace Bot
 
             actions.Clear();
 
-            foreach (var chat in obs.Chat)
+            foreach (var chat in Obs.Chat)
                 chatLog.Add(chat.Message);
 
-            frame = obs.Observation.GameLoop;
-            currentSupply = obs.Observation.PlayerCommon.FoodUsed;
-            maxSupply = obs.Observation.PlayerCommon.FoodCap;
-            minerals = obs.Observation.PlayerCommon.Minerals;
-            vespene = obs.Observation.PlayerCommon.Vespene;
+            frame = Obs.Observation.GameLoop;
+            currentSupply = Obs.Observation.PlayerCommon.FoodUsed;
+            maxSupply = Obs.Observation.PlayerCommon.FoodCap;
+            minerals = Obs.Observation.PlayerCommon.Minerals;
+            vespene = Obs.Observation.PlayerCommon.Vespene;
 
             //initialization
             if (!gatheredInitalInfo)
@@ -108,7 +110,7 @@ namespace Bot
                 {
                     playerStartLocation = resourceCenters[0].position;
 
-                    foreach (var startLocation in gameInfo.StartRaw.StartLocations)
+                    foreach (var startLocation in GameInfo.StartRaw.StartLocations)
                     {
                         var enemyLocation = new Vector3(startLocation.X, startLocation.Y, 0);
                         var distance = Vector3.Distance(enemyLocation, playerStartLocation);
@@ -138,7 +140,9 @@ namespace Bot
             Logger.Info("Setting up expansion points...Please wait.");
 
             // Figure out the bot race's base resource center for later.
-            var botRace = getBotRace();
+            var botRace = GetBotRace();
+
+            var pointsChecked = 0;
 
             uint baseResourceCenter;
             if (botRace == Race.Terran)
@@ -161,8 +165,8 @@ namespace Bot
             var resourceCenters = GetUnits(Units.ResourceCenters);
 
             // Get a list of resources that a near each other.
-            List<ResourceCluster> initialResourceClusters = new List<ResourceCluster>();
-            List<ResourceCluster> resourceClusters = new List<ResourceCluster>();
+            var initialResourceClusters = new List<ResourceCluster>();
+            var resourceClusters = new List<ResourceCluster>();
 
             foreach (var resource in resources)
             {
@@ -171,15 +175,15 @@ namespace Bot
                 foreach (var resourceCluster in initialResourceClusters)
                 {
                     // Maps do not have more then 10 mineral together.
-                    if (resourceCluster.resources.Count == 10) continue;
+                    if (resourceCluster.Resources.Count == 10) continue;
 
                     // Note: This was the original code but the z axis is not the object sitting on the terrain so it is different for each object.
                     //if (Vector3.DistanceSquared(resource.position, resourceCluster.resources[0].position) < 225
                     //&& resource.position.Z == resourceCluster.resources[0].position.Z)
 
-                    if (Vector3.DistanceSquared(resource.position, resourceCluster.resources[0].position) < 225)
+                    if (Vector3.DistanceSquared(resource.position, resourceCluster.Resources[0].position) < 225)
                     {
-                        resourceCluster.resources.Add(resource);
+                        resourceCluster.Resources.Add(resource);
                         addedMineral = true;
                         break;
                     }
@@ -187,8 +191,8 @@ namespace Bot
 
                 if (!addedMineral)
                 {
-                    ResourceCluster resourceCluster = new ResourceCluster();
-                    resourceCluster.resources.Add(resource);
+                    var resourceCluster = new ResourceCluster();
+                    resourceCluster.Resources.Add(resource);
                     initialResourceClusters.Add(resourceCluster);
                 }
             }
@@ -196,14 +200,14 @@ namespace Bot
             // Remove all the single resource clusters.
             foreach (var resourceCluster in initialResourceClusters)
             {
-                if (resourceCluster.resources.Count != 1)
+                if (resourceCluster.Resources.Count != 1)
                 {
                     resourceClusters.Add(resourceCluster);
                 }
             }
 
             // Setup the offsets.
-            List<Vector2> offsets = new List<Vector2>();
+            var offsets = new List<Vector2>();
 
             for (var x = -9; x < 11; x++)
             {
@@ -212,7 +216,7 @@ namespace Bot
                     var value = Math.Pow(x, 2) + Math.Pow(y, 2);
                     if (75 >= value && value >= 49)
                     {
-                        Vector2 vector = new Vector2(x, y);
+                        var vector = new Vector2(x, y);
                         offsets.Add(vector);
                     }
                 }
@@ -221,9 +225,9 @@ namespace Bot
             // Figure out the closest points to place a resource center to each cluster.
             foreach (var resourceCluster in resourceClusters)
             {
-                List<LocationDistance> possiblePoints = new List<LocationDistance>();
+                var possiblePoints = new List<LocationDistance>();
 
-                foreach (var resource in resourceCluster.resources)
+                foreach (var resource in resourceCluster.Resources)
                 {
                     // Set up the minimum distance you can build to a resource.
                     var minDistance = 6.0;
@@ -232,7 +236,7 @@ namespace Bot
                         minDistance = 7.0;
                     }
 
-                    LocationDistance closestPoint = new LocationDistance();
+                    var closestPoint = new LocationDistance();
                     closestPoint.location = Vector3.Zero;
                     closestPoint.distance = float.MaxValue;
 
@@ -244,11 +248,12 @@ namespace Bot
                         // Figure out the closest point to the resource based on the offsets setup above.
                         foreach (var offset in offsets)
                         {
-                            Vector3 vector = new Vector3(offset.X + resource.position.X, offset.Y + resource.position.Y, resource.position.Z);
+                            var vector = new Vector3(offset.X + resource.position.X, offset.Y + resource.position.Y, resource.position.Z);
 
+                            pointsChecked++;
 
                             var distance = Vector3.Distance(resource.position, vector);
-                            // Note: Need to figure a better way of doing this.  It takes 30 - 60 seconds total to check the canplace.
+                            // Note: Need to figure a better way of doing this.  It takes 30 - 60 seconds total to check the can place.
                             if (distance >= minDistance && closestPoint.distance >= distance && CanPlace(baseResourceCenter, vector))
                             {
                                 closestPoint.location = vector;
@@ -271,15 +276,15 @@ namespace Bot
                 // Figure out the 3 closest points to a resource cluster and record them for placement.
                 if (possiblePoints.Count > 0)
                 {
-                    LocationDistance center = new LocationDistance();
+                    var center = new LocationDistance();
                     center.location = Vector3.Zero;
                     center.distance = float.MaxValue;
 
-                    LocationDistance center2 = new LocationDistance();
+                    var center2 = new LocationDistance();
                     center2.location = Vector3.Zero;
                     center2.distance = float.MaxValue;
 
-                    LocationDistance center3 = new LocationDistance();
+                    var center3 = new LocationDistance();
                     center3.location = Vector3.Zero;
                     center3.distance = float.MaxValue;
 
@@ -314,6 +319,7 @@ namespace Bot
             }
 
             expansionPositions.UpdateDistances();
+            Logger.Info("Points Checked: {0}", pointsChecked);
             Logger.Info("Finished setup expansion points.");
         }
 
@@ -327,10 +333,10 @@ namespace Bot
         /// </summary>
         /// <returns>The race of the bot.</returns>
         // ********************************************************************************
-        public Race getBotRace()
+        public Race GetBotRace()
         {
             var botRace = Race.NoRace;
-            foreach (var player in gameInfo.PlayerInfo)
+            foreach (var player in GameInfo.PlayerInfo)
             {
                 if (player.Type == PlayerType.Participant)
                 {
@@ -353,7 +359,7 @@ namespace Bot
         // ********************************************************************************
         public static string GetUnitName(uint unitType)
         {
-            var unitName = "";
+            string unitName;
 
             if (unitType == Units.EXPANSION_BASE)
             {
@@ -361,10 +367,10 @@ namespace Bot
             }
             else
             {
-                unitName = gameData.Units[(int)unitType].Name;
+                unitName = GameData.Units[(int)unitType].Name;
             }
-            
-            
+
+
 
             return unitName;
         }
@@ -380,7 +386,7 @@ namespace Bot
         {
             Unit foundUnit = null;
 
-            foreach(var unit in obs.Observation.RawData.Units)
+            foreach (var unit in Obs.Observation.RawData.Units)
             {
                 if (unit.Tag == tag)
                 {
@@ -402,12 +408,12 @@ namespace Bot
         /// <param name="hasVespene">Gas geysers that contain vespene.</param>
         /// <returns>The list of units.</returns>
         // ********************************************************************************
-        public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false, 
+        public List<Unit> GetUnits(HashSet<uint> hashset, Alliance alliance = Alliance.Self, bool onlyCompleted = false,
             DisplayType displayType = DisplayType.Unset, bool hasVespene = false)
         {
             // Ideally this should be cached in the future and cleared at each new frame.
             var units = new List<Unit>();
-            foreach (var unit in obs.Observation.RawData.Units)
+            foreach (var unit in Obs.Observation.RawData.Units)
                 if (hashset.Contains(unit.UnitType) && unit.Alliance == alliance)
                 {
                     if (onlyCompleted && unit.BuildProgress < 1)
@@ -440,7 +446,7 @@ namespace Bot
         {
             // Ideally this should be cached in the future and cleared at each new frame.
             var units = new List<Unit>();
-            foreach (var unit in obs.Observation.RawData.Units)
+            foreach (var unit in Obs.Observation.RawData.Units)
                 if (unit.UnitType == unitType && unit.Alliance == alliance)
                 {
                     if (onlyCompleted && unit.BuildProgress < 1)
@@ -554,9 +560,9 @@ namespace Bot
         {
             var enemyArmy = GetUnits(Units.ArmyUnits, alliance: Alliance.Enemy);
 
-            List<Unit> enemies = new List<Unit>();
+            var enemies = new List<Unit>();
 
-            foreach(var enemy in enemyArmy)
+            foreach (var enemy in enemyArmy)
             {
                 if (enemy.GetDistance(target) <= enemy.sight)
                 {
@@ -577,7 +583,7 @@ namespace Bot
         // ********************************************************************************
         public List<Unit> GetPotentialAttackers(List<Unit> targets)
         {
-            List<Unit> enemies = new List<Unit>();
+            var enemies = new List<Unit>();
 
             foreach (var target in targets)
             {
@@ -635,7 +641,7 @@ namespace Bot
         {
             var inRangeUnits = new List<Unit>();
 
-            foreach(var unit in units)
+            foreach (var unit in units)
             {
                 if (unit.GetDistance(targetPosition) <= maxDistance)
                 {
@@ -789,7 +795,7 @@ namespace Bot
         // ********************************************************************************
         public virtual bool CanAfford(uint unitType, ref int unitMinerals, ref int unitVespene)
         {
-            var unitData = gameData.Units[(int)unitType];
+            var unitData = GameData.Units[(int)unitType];
             unitMinerals = (int)unitData.MineralCost;
             unitVespene = (int)unitData.VespeneCost;
             return (minerals >= unitMinerals) && (vespene >= unitVespene);
@@ -822,18 +828,18 @@ namespace Bot
             //Note: this is a blocking call! Use it sparingly, or you will slow down your execution significantly!
             var abilityID = Abilities.GetID(unitType);
 
-            RequestQueryBuildingPlacement queryBuildingPlacement = new RequestQueryBuildingPlacement();
+            var queryBuildingPlacement = new RequestQueryBuildingPlacement();
             queryBuildingPlacement.AbilityId = abilityID;
             queryBuildingPlacement.TargetPos = new Point2D();
             queryBuildingPlacement.TargetPos.X = targetPos.X;
             queryBuildingPlacement.TargetPos.Y = targetPos.Y;
 
-            Request requestQuery = new Request();
+            var requestQuery = new Request();
             requestQuery.Query = new RequestQuery();
             requestQuery.Query.Placements.Add(queryBuildingPlacement);
 
             var result = Program.gc.SendQuery(requestQuery.Query);
-            
+
             if (result.Result.Placements.Count > 0)
                 return (result.Result.Placements[0].Result == ActionResult.Success);
             return false;
@@ -963,7 +969,7 @@ namespace Bot
         /// <param name="ignoreSelf">If true skip the target unit if found in the list.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Unit target, List<Unit> units, double withInDistance = 0, 
+        public Unit GetClosestUnit(Unit target, List<Unit> units, double withInDistance = 0,
             bool isNotBurrowed = false, bool isHurt = false, bool ignoreSelf = true)
         {
             ulong ignoreTag = 0;
@@ -988,7 +994,7 @@ namespace Bot
         /// <param name="ignoreSelf">If true skip the target unit if found in the list.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Unit target, HashSet<uint> unitTypes, double withInDistance = 0, 
+        public Unit GetClosestUnit(Unit target, HashSet<uint> unitTypes, double withInDistance = 0,
             bool isNotBurrowed = false, bool isHurt = false, bool ignoreSelf = true)
         {
             var units = GetUnits(unitTypes);
@@ -1015,7 +1021,7 @@ namespace Bot
         /// <param name="ignoreSelf">If true skip the target unit if found in the list.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Unit target, uint unitType, double withInDistance = 0, 
+        public Unit GetClosestUnit(Unit target, uint unitType, double withInDistance = 0,
             bool isNotBurrowed = false, bool isHurt = false, bool ignoreSelf = true)
         {
             var units = GetUnits(unitType);
@@ -1042,23 +1048,23 @@ namespace Bot
         /// <param name="ignoreTag">If not 0 then skip the unit with the passed tag.</param>
         /// <returns>The closest unit of null if none is found.</returns>
         // ********************************************************************************
-        public Unit GetClosestUnit(Vector3 targetPosition, List<Unit> units, double withInDistance = 0, 
+        public Unit GetClosestUnit(Vector3 targetPosition, List<Unit> units, double withInDistance = 0,
             bool isNotBurrowed = false, bool isHurt = false, ulong ignoreTag = 0)
         {
             Unit closestUnit = null;
 
             if (units.Count > 0)
             {
-                UnitsDistanceFromList unitsDistanceFromList = new UnitsDistanceFromList(targetPosition);
+                var unitsDistanceFromList = new UnitsDistanceFromList(targetPosition);
                 unitsDistanceFromList.AddUnits(units);
 
-                foreach (var unit in unitsDistanceFromList.toUnits)
+                foreach (var unit in unitsDistanceFromList.ToUnits)
                 {
                     var foundUnit = false;
 
                     if (withInDistance > 0)
                     {
-                        if (unit.distance <= withInDistance)
+                        if (unit.Distance <= withInDistance)
                         {
                             foundUnit = true;
                         }
@@ -1074,19 +1080,19 @@ namespace Bot
                     }
 
                     // Skip the passed unit.
-                    if (foundUnit && ignoreTag == unit.unit.tag)
+                    if (foundUnit && ignoreTag == unit.Unit.tag)
                     {
                         foundUnit = false;
                     }
 
                     // Check if the unit is burrowed.
-                    if (foundUnit && isNotBurrowed && unit.unit.isBurrowed)
+                    if (foundUnit && isNotBurrowed && unit.Unit.isBurrowed)
                     {
                         foundUnit = false;
                     }
 
                     // Check if the unit is hurt.
-                    if (foundUnit && isHurt && unit.unit.health == unit.unit.healthMax)
+                    if (foundUnit && isHurt && unit.Unit.health == unit.Unit.healthMax)
                     {
                         foundUnit = false;
                     }
@@ -1094,7 +1100,7 @@ namespace Bot
                     // Found the closest unit get out.
                     if (foundUnit)
                     {
-                        closestUnit = unit.unit;
+                        closestUnit = unit.Unit;
                         break;
                     }
                 }
@@ -1164,7 +1170,7 @@ namespace Bot
             var totalWorkersAssigned = 0;
             foreach (var gasBuilding in gasBuildings)
             {
-                totalWorkersAssigned = totalWorkersAssigned + gasBuilding.assignedWorkers;
+                totalWorkersAssigned += gasBuilding.assignedWorkers;
             }
 
             return (totalWorkersAssigned >= minWorkersGathering);
@@ -1183,10 +1189,8 @@ namespace Bot
         // ********************************************************************************
         public static string GetAbilityName(int abilityID)
         {
-            var abilityName = "";
+            var abilityName = GameData.Abilities[abilityID].FriendlyName;
 
-            abilityName = gameData.Abilities[abilityID].FriendlyName;
-            
             return abilityName;
         }
 
@@ -1202,7 +1206,7 @@ namespace Bot
         {
             var isOrderedTo = false;
 
-            foreach(var order in unit.orders)
+            foreach (var order in unit.orders)
             {
                 if (order.AbilityId == abilityID)
                 {
@@ -1227,7 +1231,7 @@ namespace Bot
         {
             var canAfford = false;
 
-            foreach (var upgrade in gameData.Upgrades)
+            foreach (var upgrade in GameData.Upgrades)
             {
                 if (upgrade.AbilityId == abilityID)
                 {
@@ -1284,7 +1288,7 @@ namespace Bot
         public bool HasUpgrade(int abilityID)
         {
             var hasAbility = false;
-            if (obs.Observation.RawData.Player.UpgradeIds.Contains((uint)abilityID))
+            if (Obs.Observation.RawData.Player.UpgradeIds.Contains((uint)abilityID))
             {
                 hasAbility = true;
             }
@@ -1303,9 +1307,10 @@ namespace Bot
         {
             var isResearching = false;
 
-            foreach(var unit in units)
+            foreach (var unit in units)
             {
-                if (IsOrderedTo(unit, abilityID)) {
+                if (IsOrderedTo(unit, abilityID))
+                {
                     isResearching = true;
                     break;
                 }
@@ -1373,7 +1378,7 @@ namespace Bot
 
             var abilities = unit.GetAvailableAbilities();
 
-            foreach(var ability in abilities)
+            foreach (var ability in abilities)
             {
                 if (ability.AbilityId == abilityID)
                 {
@@ -1446,7 +1451,7 @@ namespace Bot
             var workers = GetUnits(Units.Workers);
 
             // Get a list of idle workers.
-            List<Unit> idleWorkers = new List<Unit>();
+            var idleWorkers = new List<Unit>();
             foreach (var worker in workers)
             {
                 if (worker.order.AbilityId != 0) continue;
@@ -1594,7 +1599,7 @@ namespace Bot
                 bool completed = false;
 
                 // Zerg need completed resource centers so there is creep to build on.
-                if (getBotRace() == Race.Zerg)
+                if (GetBotRace() == Race.Zerg)
                 {
                     completed = true;
                 }
@@ -1768,7 +1773,7 @@ namespace Bot
             var resourceCenters = GetUnits(Units.ResourceCenters);
 
             // Find a mineral field that is not within sight of the basic resource center.
-            var basicResourceSight = gameData.Units[(int)unitType].SightRange;
+            var basicResourceSight = GameData.Units[(int)unitType].SightRange;
 
             foreach (var expansionPosition in expansionPositions.toLocations)
             {

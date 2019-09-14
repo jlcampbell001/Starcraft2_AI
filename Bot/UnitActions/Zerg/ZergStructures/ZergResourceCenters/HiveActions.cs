@@ -24,7 +24,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
             if (!doNotUseResources)
             {
                 // If there is no queen near by create one.
-                if (random.Next(100) < chanceOfExtraQueens || GetAssignedQueen(unit) == null)
+                if (Random.Next(100) < chanceOfExtraQueens || GetAssignedQueen(unit) == null)
                 {
                     var queenResult = BirthQueen(unit);
                     if (saveFor && queenResult == BirthQueenResult.CanNotConstruct)
@@ -32,7 +32,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
                         saveUnit = queen;
                     }
                 }
-                else if (random.Next(100) < researchBurrowChance)
+                else if (Random.Next(100) < researchBurrowChance)
                 {
                     var burrowResult = ResearchBurrow(unit);
                     if (saveFor && burrowResult == ResearchResult.CanNotAfford)
@@ -40,7 +40,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
                         saveUpgrade = researchBurrow;
                     }
                 }
-                else if (random.Next(100) < researchPneumatizedCarapaceChance)
+                else if (Random.Next(100) < researchPneumatizedCarapaceChance)
                 {
                     var pneumatizedCarapaceResult = ResearchPneumatizedCarapace(unit);
                     if (saveFor && pneumatizedCarapaceResult == ResearchResult.CanNotAfford)
@@ -66,7 +66,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures.ZergResourceCenters
         {
             base.PreformRandomActions(unit, ref saveUnit, ref saveUpgrade, ref ignoreSaveRandomRoll, saveFor, doNotUseResources);
 
-            var randomAction = random.Next(6);
+            var randomAction = Random.Next(6);
 
             switch (randomAction)
             {

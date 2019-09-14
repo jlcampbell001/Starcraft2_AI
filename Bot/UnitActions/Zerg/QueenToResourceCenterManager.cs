@@ -72,13 +72,13 @@ namespace Bot.UnitActions.Zerg
         {
             UnitsLink foundLink = null;
 
-            List<UnitsLink> removeLinks = new List<UnitsLink>();
+            var removeLinks = new List<UnitsLink>();
 
             foreach (var unitLink in queensToResourceCenter)
             {
-                if (resourceCenterTag == unitLink.tag2)
+                if (resourceCenterTag == unitLink.Tag2)
                 {
-                    if (controller.GetUnitByTag(unitLink.tag1) == null)
+                    if (controller.GetUnitByTag(unitLink.Tag1) == null)
                     {
                         removeLinks.Add(unitLink);
                     }
@@ -101,7 +101,7 @@ namespace Bot.UnitActions.Zerg
 
                     if (tempLink != null)
                     {
-                        if (controller.GetUnitByTag(tempLink.tag2) == null)
+                        if (controller.GetUnitByTag(tempLink.Tag2) == null)
                         {
                             removeLinks.Add(tempLink);
                             tempLink = null;
@@ -137,13 +137,13 @@ namespace Bot.UnitActions.Zerg
         {
             UnitsLink foundLink = null;
 
-            List<UnitsLink> removeLinks = new List<UnitsLink>();
+            var removeLinks = new List<UnitsLink>();
 
             foreach (var unitLink in queensToResourceCenter)
             {
-                if (queenTag == unitLink.tag1)
+                if (queenTag == unitLink.Tag1)
                 {
-                    var resourceCenter = controller.GetUnitByTag(unitLink.tag2);
+                    var resourceCenter = controller.GetUnitByTag(unitLink.Tag2);
 
                     // It must have been destroyed or morphed so remove it from the list.
                     if (resourceCenter == null)
@@ -182,9 +182,9 @@ namespace Bot.UnitActions.Zerg
         // ********************************************************************************
         private UnitsLink AddLink(ulong queenTag, ulong resourceCenterTag)
         {
-            UnitsLink queenLink = new UnitsLink();
-            queenLink.tag1 = queenTag;
-            queenLink.tag2 = resourceCenterTag;
+            var queenLink = new UnitsLink();
+            queenLink.Tag1 = queenTag;
+            queenLink.Tag2 = resourceCenterTag;
 
             queensToResourceCenter.Add(queenLink);
 

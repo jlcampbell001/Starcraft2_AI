@@ -13,7 +13,10 @@ namespace Bot.Utilities
     // --------------------------------------------------------------------------------
     class UnitsLink
     {
-        public ulong tag1 = 0;
-        public ulong tag2 = 0;
+        private ulong tag1 = 0;
+        private ulong tag2 = 0;
+
+        public ulong Tag1 { get => tag1; set => tag1 = value; }
+        public ulong Tag2 { get => tag2; set => tag2 = value; }
     }
 }

@@ -38,7 +38,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
             {
                 var targetPosition = Vector3.Zero;
 
-                if (random.Next(100) < 50)
+                if (Random.Next(100) < 50)
                 {
                     targetPosition = GetRandomSpawnCreepTumorPositionEnemyPosition(unit);
                 }
@@ -75,7 +75,7 @@ namespace Bot.UnitActions.Zerg.ZergStructures
         /// If doing random it will try to get a location equal to randomCreepTumorPlacementTries variable.
         /// </summary>
         /// <remarks>
-        /// Note: Need to figure out a way to tell if the cooldown is still running and if they have already unused the ability.
+        /// Note: Need to figure out a way to tell if the cool down is still running and if they have already unused the ability.
         /// </remarks>
         /// <param name="unit">Creep tumor unit.</param>
         /// <param name="targetPosition">To spawn if not supplied it will be a random position.</param>

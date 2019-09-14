@@ -8,7 +8,10 @@ namespace Bot.UnitActions
 {
     class UnitActionListItem
     {
-        public uint unitType;
-        public UnitActions unitAction;
+        private uint unitType;
+        private UnitActions unitAction;
+
+        public uint UnitType { get => unitType; set => unitType = value; }
+        internal UnitActions UnitAction { get => unitAction; set => unitAction = value; }
     }
 }
