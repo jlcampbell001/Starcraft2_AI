@@ -1087,5 +1087,25 @@ namespace Bot
             QUEEN,
             QUEEN_BURROWED
         };
+
+        public static readonly HashSet<uint> Hydralisks = new HashSet<uint>
+        {
+            HYDRALISK,
+            HYDRALISK_BURROWED
+        };
+
+        public static readonly HashSet<uint> Zerglings = new HashSet<uint>
+        {
+            ZERGLING,
+            ZERGLING_BURROWED
+        };
+
+        public static readonly HashSet<uint> Roaches = new HashSet<uint>
+        {
+            ROACH,
+            ROACH_BURROWED,
+            RAVAGER,
+            RAVAGER_BURROWED
+        };
     }
 }

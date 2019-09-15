@@ -88,6 +88,13 @@ namespace Bot
         public static int GROUND_ARMOR2_ZERG = 57;
         public static int GROUND_ARMOR3_ZERG = 58;
 
+        public static int RESEARCH_GLIAL_RECONSITUTION = 216;
+        public static int GLIAL_RECONSITUTION = 2;
+
+        public static int RESEARCH_TUNNELING_CLAWS = 217;
+        public static int TUNNELING_CLAWS = 3;
+
+
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;
@@ -160,6 +167,18 @@ namespace Bot
             DRONE_GATHER_RESOURCES,
         };
 
+        public static readonly HashSet<int> ZergResourceCenterResearch = new HashSet<int>
+        {
+            RESEARCH_PNEUMATIZED_CARAPACE,
+            RESEARCH_BURROW
+        };
+
+        public static readonly HashSet<int> SpawingPoolResearch = new HashSet<int>
+        {
+           RESEARCH_ADRENAL_GLANDS,
+           RESEARCH_METABOLIC_BOOST
+        };
+
         public static readonly HashSet<int> EvolutionChamberResearch = new HashSet<int>
         {
             RESEARCH_MELEE_ATTACK1_ZERG,
@@ -172,12 +191,41 @@ namespace Bot
             RESEARCH_GROUND_ARMOR2_ZERG,
             RESEARCH_GROUND_ARMOR3_ZERG
         };
-        
+
+        public static readonly HashSet<int> RoachWarrenResearch = new HashSet<int>
+        {
+           RESEARCH_GLIAL_RECONSITUTION,
+           RESEARCH_TUNNELING_CLAWS
+        };
+
+        public static readonly HashSet<int> ZergMeleeAttackResearch = new HashSet<int>
+        {
+            RESEARCH_MELEE_ATTACK1_ZERG,
+            RESEARCH_MELEE_ATTACK2_ZERG,
+            RESEARCH_MELEE_ATTACK3_ZERG
+        };
+
+        public static readonly HashSet<int> ZergMissileAttackResearch = new HashSet<int>
+        {
+            RESEARCH_MISSILE_ATTACK1_ZERG,
+            RESEARCH_MISSILE_ATTACK2_ZERG,
+            RESEARCH_MISSILE_ATTACK3_ZERG
+        };
+
+        public static readonly HashSet<int> ZergGroundArmorResearch = new HashSet<int>
+        {
+            RESEARCH_GROUND_ARMOR1_ZERG,
+            RESEARCH_GROUND_ARMOR2_ZERG,
+            RESEARCH_GROUND_ARMOR3_ZERG
+        };
+
         public static readonly HashSet<int> RequiresLair = new HashSet<int>
         {
             RESEARCH_MELEE_ATTACK2_ZERG,
             RESEARCH_MISSILE_ATTACK2_ZERG,
-            RESEARCH_GROUND_ARMOR2_ZERG
+            RESEARCH_GROUND_ARMOR2_ZERG,
+            RESEARCH_GLIAL_RECONSITUTION,
+            RESEARCH_TUNNELING_CLAWS
         };
 
         public static readonly HashSet<int> RequiresHive = new HashSet<int>

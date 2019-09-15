@@ -27,11 +27,13 @@ namespace Bot
         private const int DRONE_MAX = 50;
         private const int ZERGLINGS_PER_HYDRALISK = 4;
         private const int ZERGLINGS_PER_MUTALISKS = 3;
+        private const int ZERGLINGS_PER_ROACH = 5;
 
         private const int MAX_SPAWNING_POOLS = 2;
         private const int MAX_HYDRALISK_DENS = 1;
         private const int MAX_SPIRES = 1;
         private const int MAX_EVOLUTION_CHAMBERS = 2;
+        private const int MAX_ROACH_WARRENS = 1;
         private const int CHANCE_TO_SAVE_RESOURCES = 1;
         private const int CHANCE_BUILD_DEF_BUILDING = 10;
         private const int SPINE_PER_RC = 10;
@@ -43,6 +45,8 @@ namespace Bot
         private const int ATTACK_ARMY_MAX = 40;
 
         private const int MIN_VESPENE = 50;
+
+        private const int MIN_ARMY_FOR_RESEARCH = 5;
 
         private readonly System.Random random = new System.Random();
 
@@ -428,6 +432,12 @@ namespace Bot
                 BuildBuilding(Units.SPIRE);
             }
 
+            if (controller.GetTotalCount(Units.ROACH_WARREN, inConstruction: true) < MAX_ROACH_WARRENS)
+            {
+                //Logger.Info("Build RW");
+                BuildBuilding(Units.ROACH_WARREN);
+            }
+
             if (gameMin >= expandBaseMinute)
             {
                 BuildExpansionBase();
@@ -467,7 +477,7 @@ namespace Bot
                 return;
             }
 
-            var totalZergling = controller.GetTotalCount(Units.ZERGLING);
+            var totalZergling = controller.GetTotalCount(Units.Zerglings);
             var totalWorkers = controller.GetTotalCount(Units.Workers);
 
             if (controller.maxSupply - controller.currentSupply <= BUILD_OVERLORD_RANGE)
@@ -478,13 +488,17 @@ namespace Bot
             {
                 BuildUnit(Units.DRONE);
             }
-            else if (controller.GetTotalCount(Units.HYDRALISK_DEN) > 0 && controller.GetTotalCount(Units.HYDRALISK) < totalZergling / ZERGLINGS_PER_HYDRALISK)
+            else if (controller.GetTotalCount(Units.HYDRALISK_DEN) > 0 && controller.GetTotalCount(Units.Hydralisks) < totalZergling / ZERGLINGS_PER_HYDRALISK)
             {
                 BuildUnit(Units.HYDRALISK);
             }
             else if (controller.GetTotalCount(Units.SPIRE) > 0 && controller.GetTotalCount(Units.MUTALISK) < totalZergling / ZERGLINGS_PER_MUTALISKS)
             {
                 BuildUnit(Units.MUTALISK);
+            }
+            else if (controller.GetTotalCount(Units.ROACH_WARREN) > 0 && controller.GetTotalCount(Units.Roaches) < totalZergling / ZERGLINGS_PER_ROACH)
+            {
+                BuildUnit(Units.ROACH);
             }
             else
             {
@@ -1046,21 +1060,15 @@ namespace Bot
                 {
                     var result = UnitActions.UnitActions.ResearchResult.Success;
 
-                    if (researchID == Abilities.RESEARCH_MELEE_ATTACK1_ZERG 
-                        || researchID == Abilities.RESEARCH_MELEE_ATTACK2_ZERG
-                        || researchID == Abilities.RESEARCH_MELEE_ATTACK3_ZERG)
+                    if (Abilities.ZergMeleeAttackResearch.Contains(researchID))
                     {
                         result = evolutionChamberActions.ResearchMeleeAttack(evolutionChamber);
                     }
-                    else if (researchID == Abilities.RESEARCH_MISSILE_ATTACK1_ZERG
-                        || researchID == Abilities.RESEARCH_MISSILE_ATTACK2_ZERG
-                        || researchID == Abilities.RESEARCH_MISSILE_ATTACK3_ZERG)
+                    else if (Abilities.ZergMissileAttackResearch.Contains(researchID))
                     {
                         result = evolutionChamberActions.ResearchMissileAttack(evolutionChamber);
                     }
-                    else if (researchID == Abilities.RESEARCH_GROUND_ARMOR1_ZERG
-                        || researchID == Abilities.RESEARCH_GROUND_ARMOR2_ZERG
-                        || researchID == Abilities.RESEARCH_GROUND_ARMOR3_ZERG)
+                    else if (Abilities.ZergGroundArmorResearch.Contains(researchID))
                     {
                         result = evolutionChamberActions.ResearchGroundArmor(evolutionChamber);
                     }
@@ -1077,6 +1085,45 @@ namespace Bot
             }
         }
 
+        // ********************************************************************************
+        /// <summary>
+        /// Research an upgrade from the roach warren.
+        /// </summary>
+        /// <param name="researchID">The upgrade research id.</param>
+        // ********************************************************************************
+        private void ResearchRoachWarrens(int researchID)
+        {
+            var roachWarrens = controller.GetUnits(Units.ROACH_WARREN);
+
+            foreach (var roachWarren in roachWarrens)
+            {
+                var roachWarrenActions = unitActionsList.GetUnitAction<RoachWarrenActions>(roachWarren.unitType);
+
+                if (roachWarrenActions != null)
+                {
+                    var result = UnitActions.UnitActions.ResearchResult.Success;
+
+                    if (researchID == Abilities.RESEARCH_GLIAL_RECONSITUTION)
+                    {
+                        result = roachWarrenActions.ResearchGlialReconstitution(roachWarren);
+                    }
+                    else if (researchID == Abilities.RESEARCH_TUNNELING_CLAWS)
+                    {
+                        result = roachWarrenActions.ResearchTunnelingClaws(roachWarren);
+                    }
+
+                    if (result == UnitActions.UnitActions.ResearchResult.Success
+                        || result == UnitActions.UnitActions.ResearchResult.IsResearching
+                        || result == UnitActions.UnitActions.ResearchResult.AlreadyHas
+                        || result == UnitActions.UnitActions.ResearchResult.CanNotAfford
+                        || result == UnitActions.UnitActions.ResearchResult.NoGasGysersStructures
+                        || result == UnitActions.UnitActions.ResearchResult.CanNotResearch)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
         /**********
          * Abilities
          **********/
@@ -1334,11 +1381,15 @@ namespace Bot
         // ********************************************************************************
         private void SaveResourcesForUpgrade(int saveUpgradeId = 0)
         {
-            var mineralCost = 0;
-            var vespeneCost = 0;
-            controller.CanAffordUpgrade(saveUpgradeId, ref mineralCost, ref vespeneCost);
+            var army = controller.GetUnits(Units.ArmyUnits);
+            if (army.Count >= MIN_ARMY_FOR_RESEARCH)
+            {
+                var mineralCost = 0;
+                var vespeneCost = 0;
+                controller.CanAffordUpgrade(saveUpgradeId, ref mineralCost, ref vespeneCost);
 
-            SetSaveResouces(unitType: 0, saveUpgradeId, mineralCost, vespeneCost);
+                SetSaveResouces(unitType: 0, saveUpgradeId, mineralCost, vespeneCost);
+            }
         }
 
         // ********************************************************************************
@@ -1440,17 +1491,21 @@ namespace Bot
             }
             else if (saveForUpgrade != 0)
             {
-                if (saveForUpgrade == Abilities.RESEARCH_PNEUMATIZED_CARAPACE || saveForUpgrade == Abilities.RESEARCH_BURROW)
+                if (Abilities.ZergResourceCenterResearch.Contains(saveForUpgrade))
                 {
                     ResearchResourceCenters(saveForUpgrade);
                 }
-                else if (saveForUpgrade == Abilities.RESEARCH_ADRENAL_GLANDS || saveForUpgrade == Abilities.RESEARCH_METABOLIC_BOOST)
+                else if (Abilities.SpawingPoolResearch.Contains(saveForUpgrade))
                 {
                     ResearchSpawningPools(saveForUpgrade);
                 }
                 else if (Abilities.EvolutionChamberResearch.Contains(saveForUpgrade))
                 {
                     ResearchEvolutionChambers(saveForUpgrade);
+                }
+                else if (Abilities.RoachWarrenResearch.Contains(saveForUpgrade))
+                {
+                    ResearchRoachWarrens(saveForUpgrade);
                 }
             }
 
