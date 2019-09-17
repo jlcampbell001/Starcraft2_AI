@@ -221,7 +221,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             unit.Train(overseer);
 
-            Logger.Info("Overlord {2} morphing to overseer @ {0} / {1}.", unit.position.X, unit.position.Y, unit.tag);
+            controller.LogIfSelectedUnit(unit, "Overlord {2} morphing to overseer @ {0} / {1}.", unit.position.X, unit.position.Y, unit.tag);
 
             return OverseerResult.Success;
         }
@@ -289,7 +289,7 @@ namespace Bot.UnitActions.Zerg.ZergUnits.OverlordsAndOverseers
 
             unit.UseAbility(morphToTransport);
 
-            Logger.Info("Overlord {2} morphing to transport @ {0} / {1}.", unit.position.X, unit.position.Y, unit.tag);
+            controller.LogIfSelectedUnit(unit, "Overlord {2} morphing to transport @ {0} / {1}.", unit.position.X, unit.position.Y, unit.tag);
 
             return MorphToTransportResult.Success;
         }

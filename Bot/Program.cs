@@ -32,6 +32,8 @@ namespace Bot
         private static readonly string mapName = maps[random.Next(maps.Length)];
 
         private static readonly Race opponentRace = Race.Terran;
+        //private static readonly Race opponentRace = Race.Protoss;
+        //private static readonly Race opponentRace = Race.Zerg;
         //        private static readonly Race opponentRace = Race.Random;
         private static readonly Difficulty opponentDifficulty = Difficulty.VeryEasy;
 

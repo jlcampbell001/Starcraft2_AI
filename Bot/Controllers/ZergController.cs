@@ -114,6 +114,12 @@
                 if (!HasUnits(Units.ROACH_WARREN)) return false;
             }
 
+            // Do we baneling nest for the unit? 
+            if (Units.NeedBanlingNest.Contains(unitType))
+            {
+                if (!HasUnits(Units.BANELING_NEST)) return false;
+            }
+
             // Do we a spire or greater spire for the unit? 
             if (Units.NeedSpireOrGreaterSpire.Contains(unitType))
             {

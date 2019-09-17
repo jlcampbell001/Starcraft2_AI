@@ -995,6 +995,9 @@ namespace Bot
             ROACH
         };
 
+        public static readonly HashSet<uint> NeedBanlingNest = new HashSet<uint> {
+            BANELING
+        };
         public static readonly HashSet<uint> NeedInfestationPit = new HashSet<uint> {
             INFESTOR,
             SWARM_HOST,
@@ -1098,6 +1101,12 @@ namespace Bot
         {
             ZERGLING,
             ZERGLING_BURROWED
+        };
+
+        public static readonly HashSet<uint> Banelings = new HashSet<uint>
+        {
+            BANELING,
+            BANELING_BURROWED
         };
 
         public static readonly HashSet<uint> Roaches = new HashSet<uint>

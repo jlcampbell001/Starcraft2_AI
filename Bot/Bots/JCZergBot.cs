@@ -1140,7 +1140,6 @@ namespace Bot
 
             if (!Units.CanBurrowedUnits.Contains(unit.unitType)) return;
 
-            //ZergActions unitActions = (ZergActions)unitActionsList.GetUnitAction(unit.unitType);
             var unitActions = unitActionsList.GetUnitAction<ZergActions>(unit.unitType);
 
             if (unitActions != null)
@@ -1164,7 +1163,6 @@ namespace Bot
 
             //Logger.Info("Unburrow {0}, {1}", unit.name, unit.unitType);
 
-            //ZergActions unitActions = (ZergActions)unitActionsList.GetUnitAction(unit.unitType);
             var unitActions = unitActionsList.GetUnitAction<ZergActions>(unit.unitType);
 
             if (unitActions != null)
@@ -1278,7 +1276,7 @@ namespace Bot
                 if (!unit.isBurrowed)
                 {
                     BurrowUnit(unit);
-                    //Logger.Info("Burrowing: {0}", unit.name);
+                    controller.LogIfSelectedUnit(unit, "Burrowing: {0}", unit.name);
                 }
             }
         }
@@ -1298,7 +1296,7 @@ namespace Bot
                 if (unit.isBurrowed)
                 {
                     UnburrowUnit(unit);
-                    //Logger.Info("Unburrowing: {0}", unit.name);
+                    controller.LogIfSelectedUnit(unit, "Unburrowing: {0}", unit.name);
                 }
             }
         }

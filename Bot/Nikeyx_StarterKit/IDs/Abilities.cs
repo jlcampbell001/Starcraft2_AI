@@ -94,7 +94,6 @@ namespace Bot
         public static int RESEARCH_TUNNELING_CLAWS = 217;
         public static int TUNNELING_CLAWS = 3;
 
-
         public static int CANCEL_CONSTRUCTION = 314;
         public static int CANCEL = 3659;
         public static int CANCEL_LAST = 3671;
